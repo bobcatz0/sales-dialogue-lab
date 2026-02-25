@@ -129,10 +129,16 @@ const ScriptsSection = () => {
           className="max-w-2xl mb-16"
         >
           <h2 className="font-heading text-3xl font-bold md:text-4xl text-foreground">
-            Sales Scripts
+            Sales Call Scripts
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Three practical scripts for the most common sales conversations. Each one gives you a structure to follow — not a script to read word-for-word. Adapt the language to your style and industry.
+            These scripts are designed as conversation structures, not word-for-word templates.
+          </p>
+          <p className="mt-2 text-muted-foreground">
+            Read them aloud, adapt them to your own voice, and use them as a guide for real sales calls.
+          </p>
+          <p className="mt-2 text-muted-foreground">
+            The goal of every call is a clear next step — not a hard close.
           </p>
         </motion.div>
 
