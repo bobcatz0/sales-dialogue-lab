@@ -3,7 +3,7 @@ import { Lightbulb, Shield, Zap } from "lucide-react";
 
 const frameworks = [
   {
-    title: "Open – Probe – Pitch – Close",
+    title: "Cold Call Structure: Open – Probe – Pitch – Close",
     icon: Lightbulb,
     whenToUse: "Use this framework on structured sales calls when you need to guide the conversation without sounding robotic.",
     steps: [
@@ -15,7 +15,7 @@ const frameworks = [
     example: "\"Let me quickly outline how I'd like to use our time…\"\n\"What's the biggest challenge you're dealing with here?\"\n\"Based on that, here's how we usually help…\"\n\"Does it make sense to take the next step?\"",
   },
   {
-    title: "Situation – Problem – Impact – Ask",
+    title: "Discovery Structure: Situation – Problem – Impact – Ask",
     icon: Shield,
     whenToUse: "Use this during discovery calls to move from surface-level problems to real urgency.",
     steps: [
@@ -27,7 +27,7 @@ const frameworks = [
     example: "\"How are you handling this today?\"\n\"What part of that is frustrating?\"\n\"What happens if this doesn't change?\"\n\"How important is it to solve this now?\"",
   },
   {
-    title: "Anchor – Shift – Resolve – Step",
+    title: "Objection Structure: Anchor – Shift – Resolve – Step",
     icon: Zap,
     whenToUse: "Use this framework when handling objections or pushback.",
     steps: [
@@ -53,13 +53,8 @@ const FrameworksPage = () => {
             Sales Frameworks
           </h1>
           <p className="mt-4 text-muted-foreground">
-            Frameworks give you a repeatable structure for common sales moments.
-          </p>
-          <p className="mt-2 text-muted-foreground">
-            Learn the pattern, practice it out loud, and adapt it to your own style.
-          </p>
-          <p className="mt-2 text-muted-foreground">
-            Each one is simple enough to memorize and flexible enough to use in real conversations.
+            These frameworks give you a repeatable structure for the most common sales conversations.
+            Learn the steps, practice them out loud, and adapt them to your own style.
           </p>
         </motion.div>
 
