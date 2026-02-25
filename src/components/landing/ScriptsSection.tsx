@@ -5,56 +5,115 @@ const scripts = [
   {
     title: "Cold Call Script",
     icon: Phone,
-    whenToUse: "Use this when reaching out to a prospect for the first time with no prior relationship or context.",
-    lines: [
-      { speaker: "You", text: "Hi [Name], this is [Your Name] from [Company]. Did I catch you at an okay time?" },
-      { speaker: "Them", text: "(If yes or neutral)" },
-      { speaker: "You", text: "I'll be quick. I noticed [trigger — e.g. your team just grew / you recently launched X]. A lot of [role/industry] teams we talk to are dealing with [specific problem]. Is that something you're running into?" },
-      { speaker: "Them", text: "(Responds with context)" },
-      { speaker: "You", text: "That makes sense. We help [type of company] with [one-line value prop]. Would it make sense to set up 15 minutes this week so I can show you how it works?" },
+    whenToUse: "First-time outreach to a prospect you've never spoken to. Your goal is to earn 30 more seconds, not close a deal.",
+    sections: [
+      {
+        label: "Permission-Based Opener",
+        lines: [
+          { speaker: "You", text: "Hey [Name], this is [Your Name] with [Company]. I know I'm calling out of the blue — do you have a quick minute?" },
+        ],
+      },
+      {
+        label: "Brief Value Statement",
+        lines: [
+          { speaker: "You", text: "The reason I'm reaching out — we work with [type of team] that are struggling with [specific challenge]. I noticed [relevant trigger], and wanted to see if that's on your radar." },
+        ],
+      },
+      {
+        label: "Outcome-Focused Question",
+        lines: [
+          { speaker: "You", text: "When your team runs into [problem], how are you handling that right now?" },
+        ],
+      },
+      {
+        label: "Next-Step Ask",
+        lines: [
+          { speaker: "You", text: "It sounds like there might be a fit. Would it make sense to grab 15 minutes later this week so I can show you what we're doing differently?" },
+        ],
+      },
     ],
     notes: [
-      "Keep it under 30 seconds before your first question.",
-      "Reference something specific — generic openers get ignored.",
-      "Always ask a question that invites them to talk, not just listen.",
+      "Get to a question within 20 seconds. If you're monologuing, you've already lost them.",
+      "Use a real trigger — a job posting, a product launch, a funding round. Generic calls get generic rejections.",
+      "You're not selling the product. You're selling the next conversation.",
     ],
   },
   {
     title: "Discovery Call Script",
     icon: Search,
-    whenToUse: "Use this after a prospect has agreed to a meeting. The goal is to understand their situation, pain, and priorities before pitching anything.",
-    lines: [
-      { speaker: "You", text: "Thanks for taking the time, [Name]. Before I walk through anything, I'd love to understand what's going on with your team right now. What prompted you to take this call?" },
-      { speaker: "Them", text: "(Shares context)" },
-      { speaker: "You", text: "Got it. When that [problem] happens, what does that look like day-to-day for your team?" },
-      { speaker: "Them", text: "(Describes impact)" },
-      { speaker: "You", text: "And have you tried to solve that before? What worked, what didn't?" },
-      { speaker: "Them", text: "(Shares history)" },
-      { speaker: "You", text: "That's helpful. If you could fix one thing about [area], what would it be?" },
-      { speaker: "Them", text: "(States priority)" },
-      { speaker: "You", text: "Okay — based on what you've shared, here's how we'd approach it. [Brief, relevant walkthrough]. Does that align with what you're looking for?" },
+    whenToUse: "The prospect agreed to a meeting. Now your job is to understand their world before you present anything.",
+    sections: [
+      {
+        label: "Current Situation",
+        lines: [
+          { speaker: "You", text: "Before I jump into anything, I'd like to understand where things stand. Can you walk me through how your team handles [area] today?" },
+        ],
+      },
+      {
+        label: "Pain Clarification",
+        lines: [
+          { speaker: "You", text: "You mentioned [problem]. When that happens, what does it actually look like day-to-day?" },
+        ],
+      },
+      {
+        label: "Impact Questions",
+        lines: [
+          { speaker: "You", text: "How is that affecting [revenue / team performance / pipeline]? Have you been able to put a number on it?" },
+        ],
+      },
+      {
+        label: "Desired Outcome",
+        lines: [
+          { speaker: "You", text: "If you could change one thing about how this works right now, what would it be?" },
+        ],
+      },
+      {
+        label: "Timeline & Next Step",
+        lines: [
+          { speaker: "You", text: "That's really helpful. Is this something you're looking to solve this quarter, or more of a longer-term priority? Based on what you've shared, I think it'd make sense to [specific next step]. How does that sound?" },
+        ],
+      },
     ],
     notes: [
-      "Listen more than you talk — aim for a 70/30 split in their favor.",
-      "Ask follow-up questions instead of moving to the next topic.",
-      "Don't pitch until you understand their problem clearly.",
+      "Aim for a 70/30 talk ratio in their favor. If you're talking more than they are, slow down and ask another question.",
+      "Follow up on what they say — don't just move to the next question on your list.",
+      "Don't pitch until you fully understand the problem. Premature solutions kill deals.",
     ],
   },
   {
     title: "Follow-Up Call Script",
     icon: RotateCcw,
-    whenToUse: "Use this when reconnecting with a prospect after a previous conversation, demo, or proposal — especially if they've gone quiet.",
-    lines: [
-      { speaker: "You", text: "Hi [Name], it's [Your Name] from [Company]. We spoke [timeframe] ago about [topic]. I wanted to check in — has anything changed on your end since then?" },
-      { speaker: "Them", text: "(Responds with update or hesitation)" },
-      { speaker: "You", text: "Totally understand. A lot of teams we work with had the same concern around [objection or delay reason]. What ended up happening with [their specific situation]?" },
-      { speaker: "Them", text: "(Shares status)" },
-      { speaker: "You", text: "That's helpful to know. Based on where you are now, would it make sense to [specific next step — e.g. revisit the proposal / loop in your team / schedule a short follow-up]?" },
+    whenToUse: "You've already had a conversation, sent a proposal, or done a demo — and the prospect has gone quiet or hasn't committed to a next step.",
+    sections: [
+      {
+        label: "Reference Previous Conversation",
+        lines: [
+          { speaker: "You", text: "Hey [Name], it's [Your Name]. Last time we spoke, you mentioned [specific detail from previous call]. I wanted to circle back on that." },
+        ],
+      },
+      {
+        label: "Reconfirm Priority",
+        lines: [
+          { speaker: "You", text: "Is [problem/goal] still a priority for your team, or have things shifted since we last talked?" },
+        ],
+      },
+      {
+        label: "Check for Changes",
+        lines: [
+          { speaker: "You", text: "Has anything changed internally — new stakeholders involved, budget conversations, anything like that?" },
+        ],
+      },
+      {
+        label: "Propose Next Step",
+        lines: [
+          { speaker: "You", text: "Based on where you are now, would it help to [specific, low-commitment action — e.g. loop in your manager for a quick 10-minute overview / revisit the proposal with updated numbers]?" },
+        ],
+      },
     ],
     notes: [
-      "Reference something specific from your last conversation to show you were paying attention.",
-      "Don't assume the deal is dead — ask what changed.",
-      "Offer a clear, low-commitment next step.",
+      "Reference something specific from your last conversation. It shows you were listening, not just following a sequence.",
+      "Don't assume the deal is dead. Sometimes people just got busy.",
+      "Always propose a concrete next step — vague follow-ups go nowhere.",
     ],
   },
 ];
@@ -97,30 +156,22 @@ const ScriptsSection = () => {
                 <span className="font-medium text-secondary-foreground">When to use:</span> {script.whenToUse}
               </p>
 
-              <div className="space-y-3 mb-8">
-                {script.lines.map((line, j) => (
-                  <div
-                    key={j}
-                    className={`flex gap-3 ${line.speaker === "Them" ? "pl-8" : ""}`}
-                  >
-                    <span
-                      className={`shrink-0 text-xs font-semibold mt-1 w-12 ${
-                        line.speaker === "You"
-                          ? "text-primary"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {line.speaker}
-                    </span>
-                    <p
-                      className={`text-sm leading-relaxed ${
-                        line.speaker === "You"
-                          ? "text-foreground"
-                          : "text-muted-foreground italic"
-                      }`}
-                    >
-                      {line.text}
+              <div className="space-y-6 mb-8">
+                {script.sections.map((section, si) => (
+                  <div key={si}>
+                    <p className="text-xs font-medium text-secondary-foreground uppercase tracking-wider mb-2">
+                      {section.label}
                     </p>
+                    {section.lines.map((line, j) => (
+                      <div key={j} className="flex gap-3">
+                        <span className="shrink-0 text-xs font-semibold mt-1 w-12 text-primary">
+                          {line.speaker}
+                        </span>
+                        <p className="text-sm leading-relaxed text-foreground">
+                          {line.text}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
