@@ -3,118 +3,116 @@ import { Phone, Search, RotateCcw } from "lucide-react";
 
 const scripts = [
   {
-    title: "Cold Call Script",
+    title: "Cold Call – Getting a Stranger to Have a Real Conversation",
     icon: Phone,
-    whenToUse: "First-time outreach to a prospect you've never spoken to. Your goal is to earn 30 more seconds, not close a deal.",
     sections: [
       {
-        label: "Permission-Based Opener",
-        lines: [
-          { speaker: "You", text: "Hey [Name], this is [Your Name] with [Company]. I know I'm calling out of the blue — do you have a quick minute?" },
-        ],
+        label: "Opening – First 10 Seconds",
+        line: "Hi [Name], this is [Your Name] from [Company] — I'll be quick. Is this a bad time?",
+        note: "Ask permission immediately to disarm resistance.",
       },
       {
-        label: "Brief Value Statement",
-        lines: [
-          { speaker: "You", text: "The reason I'm reaching out — we work with [type of team] that are struggling with [specific challenge]. I noticed [relevant trigger], and wanted to see if that's on your radar." },
-        ],
+        label: "The Hook",
+        line: "I work with [type of company] to help them [specific outcome]. I thought it was worth a quick conversation to see if it's relevant.",
+        note: "Lead with outcome, not product features.",
       },
       {
-        label: "Outcome-Focused Question",
-        lines: [
-          { speaker: "You", text: "When your team runs into [problem], how are you handling that right now?" },
-        ],
+        label: "Opening Question",
+        line: "How are you currently handling [problem area]?",
+        note: "Ask one short question and listen.",
       },
       {
-        label: "Next-Step Ask",
-        lines: [
-          { speaker: "You", text: "It sounds like there might be a fit. Would it make sense to grab 15 minutes later this week so I can show you what we're doing differently?" },
-        ],
+        label: "Handling Pushback – 'We're already using something'",
+        line: "Out of curiosity, is there anything about how it's working that you'd change if you could?",
+      },
+      {
+        label: "Handling 'Not Interested'",
+        line: "Is it timing, or just not relevant right now?",
+      },
+      {
+        label: "Closing",
+        line: "Would [day] or [day] work for a 20-minute call?",
+      },
+      {
+        label: "If Not Ready",
+        line: "Can I follow up by email and check back in [timeframe]?",
       },
     ],
-    notes: [
-      "Get to a question within 20 seconds. If you're monologuing, you've already lost them.",
-      "Use a real trigger — a job posting, a product launch, a funding round. Generic calls get generic rejections.",
-      "You're not selling the product. You're selling the next conversation.",
-    ],
+    commonMistake: "Pitching before asking a question.",
   },
   {
-    title: "Discovery Call Script",
+    title: "Discovery Call – Diagnose Before You Present",
     icon: Search,
-    whenToUse: "The prospect agreed to a meeting. Now your job is to understand their world before you present anything.",
     sections: [
       {
-        label: "Current Situation",
-        lines: [
-          { speaker: "You", text: "Before I jump into anything, I'd like to understand where things stand. Can you walk me through how your team handles [area] today?" },
-        ],
+        label: "Set the Agenda",
+        line: "I'd like to understand your situation, share briefly what we do, and see if there's a fit. Does that work?",
       },
       {
-        label: "Pain Clarification",
-        lines: [
-          { speaker: "You", text: "You mentioned [problem]. When that happens, what does it actually look like day-to-day?" },
-        ],
+        label: "Situation Question",
+        line: "Can you walk me through how things currently work around [area]?",
       },
       {
-        label: "Impact Questions",
-        lines: [
-          { speaker: "You", text: "How is that affecting [revenue / team performance / pipeline]? Have you been able to put a number on it?" },
-        ],
+        label: "Problem Question",
+        line: "What part of that process causes the most friction?",
       },
       {
-        label: "Desired Outcome",
-        lines: [
-          { speaker: "You", text: "If you could change one thing about how this works right now, what would it be?" },
-        ],
+        label: "Impact Question",
+        line: "What does that cost you in time, money, or headaches?",
       },
       {
-        label: "Timeline & Next Step",
-        lines: [
-          { speaker: "You", text: "That's really helpful. Is this something you're looking to solve this quarter, or more of a longer-term priority? Based on what you've shared, I think it'd make sense to [specific next step]. How does that sound?" },
-        ],
+        label: "Priority Question",
+        line: "How much of a priority is solving this right now?",
+      },
+      {
+        label: "Decision Process",
+        line: "If you were to move forward, how would that decision get made?",
+      },
+      {
+        label: "Brief Positioning",
+        note: "Short 2–3 sentence explanation tied to their stated pain.",
+      },
+      {
+        label: "Close",
+        line: "What makes sense as a next step?",
       },
     ],
-    notes: [
-      "Aim for a 70/30 talk ratio in their favor. If you're talking more than they are, slow down and ask another question.",
-      "Follow up on what they say — don't just move to the next question on your list.",
-      "Don't pitch until you fully understand the problem. Premature solutions kill deals.",
-    ],
+    commonMistake: "Demoing before diagnosing.",
   },
   {
-    title: "Follow-Up Call Script",
+    title: "Follow-Up Call – Keep Momentum Without Pressure",
     icon: RotateCcw,
-    whenToUse: "You've already had a conversation, sent a proposal, or done a demo — and the prospect has gone quiet or hasn't committed to a next step.",
     sections: [
       {
-        label: "Reference Previous Conversation",
-        lines: [
-          { speaker: "You", text: "Hey [Name], it's [Your Name]. Last time we spoke, you mentioned [specific detail from previous call]. I wanted to circle back on that." },
-        ],
-      },
-      {
-        label: "Reconfirm Priority",
-        lines: [
-          { speaker: "You", text: "Is [problem/goal] still a priority for your team, or have things shifted since we last talked?" },
-        ],
+        label: "Reference Last Conversation",
+        line: "We spoke [timeframe] ago about [topic]. Do you have a few minutes to pick up where we left off?",
       },
       {
         label: "Check for Changes",
-        lines: [
-          { speaker: "You", text: "Has anything changed internally — new stakeholders involved, budget conversations, anything like that?" },
-        ],
+        line: "Has anything changed since we last spoke?",
       },
       {
-        label: "Propose Next Step",
-        lines: [
-          { speaker: "You", text: "Based on where you are now, would it help to [specific, low-commitment action — e.g. loop in your manager for a quick 10-minute overview / revisit the proposal with updated numbers]?" },
-        ],
+        label: "Re-Anchor",
+        line: "You mentioned [specific pain]. Is that still the main priority?",
+      },
+      {
+        label: "If They've Gone Cold",
+        line: "Usually silence means timing changed, priority shifted, or something didn't land. What's the case here?",
+      },
+      {
+        label: "Budget Objection",
+        line: "Is that a hard stop or more of a timing issue?",
+      },
+      {
+        label: "Going With Competitor",
+        line: "Can I ask what made the difference?",
+      },
+      {
+        label: "Close",
+        line: "Can we set up the next step now while we're talking?",
       },
     ],
-    notes: [
-      "Reference something specific from your last conversation. It shows you were listening, not just following a sequence.",
-      "Don't assume the deal is dead. Sometimes people just got busy.",
-      "Always propose a concrete next step — vague follow-ups go nowhere.",
-    ],
+    commonMistake: "'Just checking in' without a real question.",
   },
 ];
 
@@ -152,15 +150,12 @@ const ScriptsSection = () => {
               transition={{ delay: i * 0.1 }}
               className="card-elevated p-8"
             >
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-3 mb-6">
                 <script.icon className="h-5 w-5 text-primary" />
                 <h3 className="font-heading text-xl font-semibold text-foreground">
                   {script.title}
                 </h3>
               </div>
-              <p className="text-sm text-muted-foreground mb-6 max-w-2xl">
-                <span className="font-medium text-secondary-foreground">When to use:</span> {script.whenToUse}
-              </p>
 
               <div className="space-y-6 mb-8">
                 {script.sections.map((section, si) => (
@@ -168,35 +163,25 @@ const ScriptsSection = () => {
                     <p className="text-xs font-medium text-secondary-foreground uppercase tracking-wider mb-2">
                       {section.label}
                     </p>
-                    {section.lines.map((line, j) => (
-                      <div key={j} className="flex gap-3">
-                        <span className="shrink-0 text-xs font-semibold mt-1 w-12 text-primary">
-                          {line.speaker}
-                        </span>
-                        <p className="text-sm leading-relaxed text-foreground">
-                          {line.text}
-                        </p>
-                      </div>
-                    ))}
+                    {section.line && (
+                      <p className="text-sm leading-relaxed text-foreground italic">
+                        "{section.line}"
+                      </p>
+                    )}
+                    {section.note && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {section.note}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
 
               <div className="border-t border-border pt-5">
-                <p className="text-xs font-medium text-secondary-foreground mb-3 uppercase tracking-wider">
-                  Coaching Notes
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-secondary-foreground">Common Mistake:</span>{" "}
+                  {script.commonMistake}
                 </p>
-                <ul className="space-y-2">
-                  {script.notes.map((note, j) => (
-                    <li
-                      key={j}
-                      className="text-sm text-muted-foreground flex items-start gap-2"
-                    >
-                      <span className="text-primary mt-1">•</span>
-                      {note}
-                    </li>
-                  ))}
-                </ul>
               </div>
             </motion.div>
           ))}
