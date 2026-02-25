@@ -5,12 +5,14 @@ const features = [
   {
     icon: PhoneCall,
     title: "Realistic Roleplays",
-    description: "Practice cold calls, discovery calls, and closing conversations with realistic scenario context and dialogue.",
+    description:
+      "Practice cold calls, discovery calls, and closing conversations with realistic scenario context and dialogue.",
   },
   {
     icon: FileText,
-    title: "Proven Scripts",
-    description: "Battle-tested cold call and discovery call scripts you can use immediately to structure better conversations.",
+    title: "Sales Call Scripts",
+    description:
+      "Battle-tested cold call and discovery call scripts you can use immediately to structure better conversations.",
   },
   {
     icon: Shield,
@@ -20,7 +22,8 @@ const features = [
   {
     icon: LayoutGrid,
     title: "Sales Frameworks",
-    description: "Simple, repeatable frameworks that give structure to any sales conversation without sounding robotic.",
+    description:
+      "Simple, repeatable frameworks that give structure to any sales conversation without sounding robotic.",
   },
 ];
 
@@ -36,8 +39,7 @@ const FeaturesSection = () => {
           className="text-center mb-16"
         >
           <h2 className="font-heading text-3xl font-bold md:text-5xl">
-            Everything You Need to{" "}
-            <span className="text-gradient">Sell Better</span>
+            Everything You Need to <span className="text-gradient">Sell Better</span>
           </h2>
           <p className="mt-4 text-muted-foreground max-w-lg mx-auto">
             Practical tools and resources designed for reps who want to improve on real calls — not theory.
@@ -57,12 +59,8 @@ const FeaturesSection = () => {
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary mb-5 group-hover:bg-primary/20 transition-colors">
                 <feature.icon className="h-6 w-6" />
               </div>
-              <h3 className="font-heading text-xl font-semibold text-foreground mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {feature.description}
-              </p>
+              <h3 className="font-heading text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
             </motion.div>
           ))}
         </div>
