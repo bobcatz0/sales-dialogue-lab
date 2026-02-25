@@ -12,7 +12,7 @@ const features = [
     icon: FileText,
     title: "Sales Call Scripts",
     description:
-      "Battle-tested cold call and discovery call scripts you can use immediately to structure better conversations.",
+      "Practical call structures you can use immediately. These are frameworks to guide your conversations — not word-for-word templates.",
   },
   {
     icon: Shield,
