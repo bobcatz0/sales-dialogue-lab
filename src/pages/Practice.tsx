@@ -11,6 +11,7 @@ import type { ChatMessage, Feedback, SessionRecord } from "@/components/practice
 import { FeedbackPanel } from "@/components/practice/FeedbackPanel";
 import { SessionHistory } from "@/components/practice/SessionHistory";
 import { loadHistory, saveSession } from "@/components/practice/sessionStorage";
+import { VoiceInputButton } from "@/components/practice/VoiceInputButton";
 
 // --- Streaming ---
 
@@ -404,9 +405,13 @@ const PracticePage = () => {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Type your response…"
+                    placeholder="Type or use mic…"
                     disabled={!selectedRole || isLoading}
                     className="flex-1"
+                  />
+                  <VoiceInputButton
+                    onTranscript={(text) => setInput((prev) => (prev ? prev + " " + text : text))}
+                    disabled={!selectedRole || isLoading}
                   />
                   <Button
                     onClick={handleSend}
