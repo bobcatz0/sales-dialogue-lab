@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { UserCheck, MessageSquare, Clock, ShieldCheck, PhoneCall, Send, RotateCcw, ArrowLeftRight } from "lucide-react";
+import { UserCheck, MessageSquare, Clock, ShieldCheck, PhoneCall, Send, RotateCcw, ArrowLeftRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import Navbar from "@/components/landing/Navbar";
+import { toast } from "sonner";
 
 const roles = [
   {
@@ -12,35 +12,40 @@ const roles = [
     title: "Calm Hiring Manager",
     description: "Professional interviewer focused on clarity and structured answers.",
     icon: UserCheck,
-    systemPrompt: "You are a calm, professional hiring manager interviewing a sales candidate.",
+    systemPrompt:
+      "You are a calm, professional hiring manager interviewing a sales candidate. Ask realistic interview questions. Push gently when answers are vague. Stay neutral and composed throughout the conversation. Keep responses concise (2-4 sentences). Stay in character at all times.",
   },
   {
     id: "b2b-prospect",
     title: "Neutral B2B Prospect",
     description: "Open but guarded — won't volunteer information unless asked.",
     icon: MessageSquare,
-    systemPrompt: "You are a neutral B2B prospect, open to learning but skeptical of pitches.",
+    systemPrompt:
+      "You are a neutral B2B prospect. You are open to learning but skeptical of sales pitches. Answer questions honestly, but do not volunteer information unless asked clearly. Keep responses concise (2-4 sentences). Stay in character at all times.",
   },
   {
     id: "decision-maker",
     title: "Busy Decision Maker",
     description: "Short on time, impatient, cares only about outcomes.",
     icon: Clock,
-    systemPrompt: "You are a senior decision maker with limited time who interrupts long explanations.",
+    systemPrompt:
+      "You are a senior decision maker with limited time. You interrupt when explanations are too long. You care about outcomes, not features. Keep responses very short (1-2 sentences). Be impatient. Stay in character at all times.",
   },
   {
     id: "skeptical-buyer",
     title: "Skeptical Buyer",
     description: "Pushes back on price, timing, and credibility.",
     icon: ShieldCheck,
-    systemPrompt: "You are skeptical due to past bad experiences. Push back on everything.",
+    systemPrompt:
+      "You are skeptical due to past bad experiences. Push back on price, timing, and credibility. Require clear reasoning to move forward. Keep responses concise (2-4 sentences). Stay in character at all times.",
   },
   {
     id: "follow-up",
     title: "Follow-Up Prospect",
     description: "Went quiet after a previous call — busy, not opposed.",
     icon: PhoneCall,
-    systemPrompt: "You previously spoke with the rep but deprioritized the decision.",
+    systemPrompt:
+      "You previously spoke with the rep but deprioritized the decision. You are not opposed — just busy and undecided. Respond realistically to follow-up attempts. Keep responses concise (2-4 sentences). Stay in character at all times.",
   },
 ];
 
@@ -49,11 +54,87 @@ interface ChatMessage {
   text: string;
 }
 
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-chat`;
+
+async function streamChat({
+  messages,
+  systemPrompt,
+  onDelta,
+  onDone,
+}: {
+  messages: { role: string; content: string }[];
+  systemPrompt: string;
+  onDelta: (text: string) => void;
+  onDone: () => void;
+}) {
+  const resp = await fetch(CHAT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+    },
+    body: JSON.stringify({ messages, systemPrompt }),
+  });
+
+  if (!resp.ok || !resp.body) {
+    const err = await resp.json().catch(() => ({ error: "Request failed" }));
+    throw new Error(err.error || "Failed to start stream");
+  }
+
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let done = false;
+
+  while (!done) {
+    const { done: readerDone, value } = await reader.read();
+    if (readerDone) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let idx: number;
+    while ((idx = buffer.indexOf("\n")) !== -1) {
+      let line = buffer.slice(0, idx);
+      buffer = buffer.slice(idx + 1);
+      if (line.endsWith("\r")) line = line.slice(0, -1);
+      if (line.startsWith(":") || line.trim() === "") continue;
+      if (!line.startsWith("data: ")) continue;
+      const json = line.slice(6).trim();
+      if (json === "[DONE]") { done = true; break; }
+      try {
+        const parsed = JSON.parse(json);
+        const content = parsed.choices?.[0]?.delta?.content;
+        if (content) onDelta(content);
+      } catch {
+        buffer = line + "\n" + buffer;
+        break;
+      }
+    }
+  }
+
+  // flush
+  if (buffer.trim()) {
+    for (let raw of buffer.split("\n")) {
+      if (!raw) continue;
+      if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+      if (!raw.startsWith("data: ")) continue;
+      const json = raw.slice(6).trim();
+      if (json === "[DONE]") continue;
+      try {
+        const parsed = JSON.parse(json);
+        const content = parsed.choices?.[0]?.delta?.content;
+        if (content) onDelta(content);
+      } catch { /* ignore */ }
+    }
+  }
+
+  onDone();
+}
+
 const PracticePage = () => {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const [userSide, setUserSide] = useState<"user" | "prospect">("user");
+  const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeRole = roles.find((r) => r.id === selectedRole);
@@ -68,7 +149,7 @@ const PracticePage = () => {
     setSelectedRole(id);
     setMessages([]);
     setInput("");
-    setUserSide("user");
+    setIsLoading(false);
     const role = roles.find((r) => r.id === id);
     if (role) {
       setMessages([
@@ -77,18 +158,50 @@ const PracticePage = () => {
     }
   };
 
-  const handleSend = () => {
-    if (!input.trim() || !selectedRole) return;
-    setMessages((prev) => [...prev, { role: userSide, text: input.trim() }]);
+  const handleSend = async () => {
+    if (!input.trim() || !activeRole || isLoading) return;
+    const userText = input.trim();
     setInput("");
+
+    const newMessages: ChatMessage[] = [...messages, { role: "user", text: userText }];
+    setMessages(newMessages);
+    setIsLoading(true);
+
+    // Build history for the AI
+    const aiMessages = newMessages.map((m) => ({
+      role: m.role === "user" ? "user" : "assistant",
+      content: m.text,
+    }));
+
+    let prospectText = "";
+
+    try {
+      await streamChat({
+        messages: aiMessages,
+        systemPrompt: activeRole.systemPrompt,
+        onDelta: (chunk) => {
+          prospectText += chunk;
+          setMessages((prev) => {
+            const last = prev[prev.length - 1];
+            if (last?.role === "prospect" && prev.length === newMessages.length + 1) {
+              return prev.map((m, i) =>
+                i === prev.length - 1 ? { ...m, text: prospectText } : m
+              );
+            }
+            return [...prev, { role: "prospect", text: prospectText }];
+          });
+        },
+        onDone: () => setIsLoading(false),
+      });
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Something went wrong");
+      setIsLoading(false);
+    }
   };
 
   const handleReset = () => {
     if (selectedRole) handleStart(selectedRole);
-  };
-
-  const handleSwitchRole = () => {
-    setUserSide((prev) => (prev === "user" ? "prospect" : "user"));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -164,7 +277,7 @@ const PracticePage = () => {
               </h2>
               {activeRole && (
                 <span className="text-xs text-muted-foreground">
-                  Speaking as: <span className="text-foreground font-medium">{userSide === "user" ? "Sales Rep" : "Prospect"}</span>
+                  Practicing with: <span className="text-foreground font-medium">{activeRole.title}</span>
                 </span>
               )}
             </div>
@@ -196,6 +309,14 @@ const PracticePage = () => {
                   </div>
                 </motion.div>
               ))}
+              {isLoading && messages[messages.length - 1]?.role === "user" && (
+                <div className="flex justify-start">
+                  <div className="bg-muted text-muted-foreground rounded-xl px-4 py-2.5 text-sm flex items-center gap-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Thinking…
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Input Area */}
@@ -206,10 +327,10 @@ const PracticePage = () => {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type your response…"
-                  disabled={!selectedRole}
+                  disabled={!selectedRole || isLoading}
                   className="flex-1"
                 />
-                <Button onClick={handleSend} disabled={!selectedRole || !input.trim()} size="icon">
+                <Button onClick={handleSend} disabled={!selectedRole || !input.trim() || isLoading} size="icon">
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
@@ -217,10 +338,6 @@ const PracticePage = () => {
                 <Button variant="outline" size="sm" onClick={handleReset} disabled={!selectedRole}>
                   <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
                   Reset
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleSwitchRole} disabled={!selectedRole}>
-                  <ArrowLeftRight className="h-3.5 w-3.5 mr-1.5" />
-                  Switch Role
                 </Button>
               </div>
             </div>
