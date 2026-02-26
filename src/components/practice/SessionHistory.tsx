@@ -160,7 +160,7 @@ export function SessionHistory({
                         </span>
                       </div>
                       <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                        {session.rank}
+                        {session.rank} · Lvl {session.peakDifficulty ?? 1}
                       </p>
                     </div>
                     <div

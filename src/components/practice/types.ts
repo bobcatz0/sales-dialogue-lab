@@ -19,6 +19,7 @@ export interface SessionRecord {
   roleTitle: string;
   score: number;
   rank: string;
+  peakDifficulty: number;
   date: string;
   messageCount: number;
 }
