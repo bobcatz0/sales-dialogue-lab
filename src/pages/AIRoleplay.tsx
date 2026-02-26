@@ -1,103 +1,55 @@
 import { motion } from "framer-motion";
-import { Bot, Copy, UserCheck, MessageSquare, ShieldCheck, Clock, PhoneCall } from "lucide-react";
+import { Copy, UserCheck, MessageSquare, ShieldCheck, Clock, PhoneCall } from "lucide-react";
 import { useState } from "react";
 import Navbar from "@/components/landing/Navbar";
 
 const prompts = [
   {
-    title: "Calm Hiring Manager (Sales Interview)",
+    title: "Roleplay: Calm Hiring Manager",
     icon: UserCheck,
-    whenToUse: "Use this to practice interview-style sales conversations with a calm, realistic hiring manager.",
     prompt: `You are a calm, professional hiring manager interviewing a sales candidate.
 
-Your tone is neutral, patient, and realistic.
+Ask realistic interview questions.
 
-Ask follow-up questions when answers are vague.
+Push gently when answers are vague.
 
-Do not coach or help the candidate.
-
-Start by saying:
-
-"Thanks for taking the time today. Before we dive in, can you walk me through your sales background?"
-
-Behavior Rules:
-- Keep responses short and conversational
-- Do not explain your reasoning
-- Push back naturally instead of agreeing
-- Do not give advice`,
+Stay neutral and composed throughout the conversation.`,
   },
   {
-    title: "Neutral B2B Prospect (Discovery Call)",
+    title: "Roleplay: Neutral B2B Prospect (Discovery Call)",
     icon: MessageSquare,
-    whenToUse: "Use this to practice discovery calls and questioning skills.",
-    prompt: `You are a neutral B2B prospect on a scheduled discovery call.
+    prompt: `You are a neutral B2B prospect.
 
-You are open but guarded.
+You are open to learning but skeptical of sales pitches.
 
-Do not volunteer details unless directly asked.
-
-Start the call by saying:
-
-"I've got about 20 minutes. What did you want to focus on today?"
-
-Behavior Rules:
-- Answer honestly but briefly
-- Push back if the rep pitches too early
-- Ask for clarification when things are vague`,
+Answer questions honestly, but do not volunteer information unless asked clearly.`,
   },
   {
-    title: "Busy Decision Maker",
+    title: "Roleplay: Busy Decision Maker",
     icon: Clock,
-    whenToUse: "Use this to practice concise communication under time pressure.",
-    prompt: `You are a busy decision maker.
+    prompt: `You are a senior decision maker with limited time.
 
-You are polite but short on time.
+You interrupt when explanations are too long.
 
-Interrupt if the rep rambles.
-
-Start by saying:
-
-"I have a few minutes. What's this regarding?"
-
-Behavior Rules:
-- Be direct
-- Do not tolerate long explanations
-- End the conversation if value is unclear`,
+You care about outcomes, not features.`,
   },
   {
-    title: "Skeptical Buyer (Objection Handling)",
+    title: "Roleplay: Skeptical Buyer",
     icon: ShieldCheck,
-    whenToUse: "Use this to practice handling objections calmly and confidently.",
-    prompt: `You are a skeptical buyer who has seen similar solutions before.
+    prompt: `You are skeptical due to past bad experiences.
 
-You challenge assumptions.
+Push back on price, timing, and credibility.
 
-Do not accept generic answers.
-
-Start by saying:
-
-"This sounds interesting, but I'm not convinced it's a priority right now."
-
-Behavior Rules:
-- Escalate skepticism if concerns aren't addressed
-- Do not soften objections easily`,
+Require clear reasoning to move forward.`,
   },
   {
-    title: "Follow-Up Prospect",
+    title: "Roleplay: Follow-Up Prospect",
     icon: PhoneCall,
-    whenToUse: "Use this to practice re-engaging prospects without pressure.",
-    prompt: `You are a prospect who had a previous sales conversation.
+    prompt: `You previously spoke with the rep but deprioritized the decision.
 
-You are mildly interested but distracted.
+You are not opposed — just busy and undecided.
 
-Start by saying:
-
-"Yeah, I remember the conversation. What's next?"
-
-Behavior Rules:
-- Respond neutrally
-- Lose interest if the rep says "just checking in"
-- Engage only if next steps are clear`,
+Respond realistically to follow-up attempts.`,
   },
 ];
 
@@ -114,28 +66,57 @@ const AIRoleplayPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-6 py-24">
-      <motion.div
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-2xl mb-16"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <Bot className="h-6 w-6 text-primary" />
-            <h1 className="font-heading text-3xl font-bold md:text-4xl text-foreground">
-              Free Sales Call Roleplay Scenarios
-            </h1>
+          <h1 className="font-heading text-3xl font-bold md:text-4xl text-foreground">
+            Free Sales Call Roleplay Scenarios
+          </h1>
+          <div className="mt-4 space-y-3 text-muted-foreground leading-relaxed">
+            <p>
+              Practice real sales conversations using structured roleplay
+              personalities.
+            </p>
+            <p>
+              These scenarios are designed to simulate realistic calls —
+              interviews, discovery conversations, objections, and follow-ups —
+              without scripts or memorization.
+            </p>
+            <p>
+              The goal is to help you think on your feet, stay calm, and
+              communicate clearly in real situations.
+            </p>
           </div>
-          <div className="space-y-3 text-muted-foreground leading-relaxed">
-            <p>
-              Five structured prospect personalities — each designed to sharpen a different part of your sales conversation. <span className="font-medium text-foreground">All free, no signup required.</span>
-            </p>
-            <p>
-              No scripts to memorize. Just realistic scenarios that force you to think on your feet and respond like you would on a real call.
-            </p>
-            <p>
-              For best results, <span className="font-medium text-foreground">respond out loud</span> as if you're on a live call. Speaking builds the muscle memory that typing can't.
-            </p>
-          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="max-w-2xl mb-16"
+        >
+          <h2 className="font-heading text-xl font-semibold text-foreground mb-4">
+            How to Practice
+          </h2>
+          <ul className="space-y-2 text-sm text-muted-foreground leading-relaxed list-disc pl-5">
+            <li>Choose a roleplay scenario below</li>
+            <li>Respond out loud as if you're on a real call</li>
+            <li>
+              Focus on clarity, tone, and direction — not perfect wording
+            </li>
+          </ul>
+          <p className="mt-4 text-sm text-muted-foreground">
+            You can practice:
+          </p>
+          <ul className="mt-2 space-y-2 text-sm text-muted-foreground leading-relaxed list-disc pl-5">
+            <li>Alone</li>
+            <li>With a partner</li>
+            <li>
+              Or using an AI tool to play the other side of the conversation
+            </li>
+          </ul>
         </motion.div>
 
         <div className="space-y-10">
@@ -147,21 +128,14 @@ const AIRoleplayPage = () => {
               transition={{ delay: i * 0.08 }}
               className="card-elevated p-8"
             >
-              <div className="flex items-center gap-3 mb-1">
+              <div className="flex items-center gap-3 mb-4">
                 <p.icon className="h-5 w-5 text-primary" />
                 <h2 className="font-heading text-xl font-semibold text-foreground">
                   {p.title}
                 </h2>
               </div>
-              <p className="text-sm text-muted-foreground mb-6 pl-8">
-                <span className="font-medium text-secondary-foreground">When to use:</span>{" "}
-                {p.whenToUse}
-              </p>
 
               <div className="relative rounded-lg bg-muted/40 p-5">
-                <p className="text-xs font-medium text-secondary-foreground uppercase tracking-wider mb-3">
-                  Copy This Prompt
-                </p>
                 <pre className="text-sm text-foreground whitespace-pre-wrap leading-relaxed font-sans">
                   {p.prompt}
                 </pre>
@@ -179,7 +153,8 @@ const AIRoleplayPage = () => {
 
         <div className="mt-16 max-w-xl text-sm text-muted-foreground/70 leading-relaxed">
           <p>
-            Tip: These prompts can also be pasted into AI chat tools for additional interactive practice.
+            These scenarios are free to use and designed to work with any
+            practice method.
           </p>
         </div>
       </div>

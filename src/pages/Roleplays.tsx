@@ -1,59 +1,44 @@
 import { motion } from "framer-motion";
-import { Users, PhoneCall, ShieldCheck } from "lucide-react";
+import { Users, PhoneCall, ShieldCheck, Clock, UserCheck } from "lucide-react";
+import Navbar from "@/components/landing/Navbar";
 
 const roleplays = [
   {
-    title: "Cold Call – First Contact",
-    icon: PhoneCall,
-    context:
-      "A sales rep cold calls a mid-sized B2B company to see if there's potential relevance.",
-    dialogue: [
-      { speaker: "Rep", text: "Hi [Name], this is [Your Name]. I'll be quick — did I catch you at a bad time?" },
-      { speaker: "Prospect", text: "I have a minute. What's this about?" },
-      { speaker: "Rep", text: "I work with teams like yours to help improve [specific outcome]. I wanted to see if it's relevant to you." },
-    ],
-    coachingNotes: [
-      "Ask permission early.",
-      "Keep the opener short.",
-      "Focus on outcomes, not features.",
-    ],
+    title: "Calm Hiring Manager (Sales Interview)",
+    icon: UserCheck,
+    description:
+      "Practice interview-style conversations focused on clarity, confidence, and structured answers. Ideal for sales roles, account executives, and SDR interviews.",
   },
   {
-    title: "Discovery Call – Understanding the Problem",
+    title: "Neutral B2B Prospect (Discovery Call)",
     icon: Users,
-    context:
-      "A scheduled discovery call to understand the prospect's current situation.",
-    dialogue: [
-      { speaker: "Rep", text: "Can you walk me through how you're currently handling this?" },
-      { speaker: "Prospect", text: "We're doing X, but it's inconsistent." },
-      { speaker: "Rep", text: "What part of that process causes the most friction?" },
-    ],
-    coachingNotes: [
-      "Let the prospect do most of the talking.",
-      "Ask follow-up questions.",
-      "Avoid pitching too early.",
-    ],
+    description:
+      "A balanced prospect who is open but guarded. Focus on discovery, qualification, and uncovering real pain without pitching too early.",
   },
   {
-    title: "Objection Handling – Budget Concern",
+    title: "Busy Decision Maker",
+    icon: Clock,
+    description:
+      "Short attention span, time pressure, and impatience. Practice getting to the point, earning permission, and respecting time constraints.",
+  },
+  {
+    title: "Skeptical Buyer (Objection Handling)",
     icon: ShieldCheck,
-    context:
-      "The prospect is interested but hesitant due to budget.",
-    dialogue: [
-      { speaker: "Prospect", text: "This sounds good, but budget is tight." },
-      { speaker: "Rep", text: "That makes sense. Is it more about timing, or the total cost?" },
-    ],
-    coachingNotes: [
-      "Acknowledge the concern.",
-      "Clarify the real objection.",
-      "Guide toward a next step.",
-    ],
+    description:
+      "Pushback on price, timing, and trust. Practice acknowledging concerns without getting defensive or sounding scripted.",
+  },
+  {
+    title: "Follow-Up Prospect",
+    icon: PhoneCall,
+    description:
+      'Someone who went quiet after a call. Practice re-engaging without pressure, guilt, or "just checking in" language.',
   },
 ];
 
 const RoleplaysPage = () => {
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
       <div className="container mx-auto px-6 py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -63,84 +48,54 @@ const RoleplaysPage = () => {
           <h1 className="font-heading text-3xl font-bold md:text-4xl text-foreground">
             Sales Call Roleplays
           </h1>
-          <p className="mt-4 text-muted-foreground">
-            Practice with realistic scenarios before you get on a real call.
-            Each roleplay includes context, sample dialogue, and coaching notes.
-          </p>
+          <div className="mt-4 space-y-3 text-muted-foreground leading-relaxed">
+            <p>
+              Practice realistic sales conversations without memorizing scripts.
+            </p>
+            <p>
+              These roleplays are designed to simulate real calls — the pauses,
+              objections, uncertainty, and pressure that happen in actual
+              conversations.
+            </p>
+            <p>
+              Use them to practice thinking clearly, asking better questions, and
+              staying calm under pressure.
+            </p>
+          </div>
         </motion.div>
 
-        <div className="space-y-12">
+        <h2 className="font-heading text-xl font-semibold text-foreground mb-8">
+          Available Roleplay Scenarios
+        </h2>
+
+        <div className="space-y-8">
           {roleplays.map((rp, i) => (
             <motion.div
               key={rp.title}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: i * 0.08 }}
               className="card-elevated p-8"
             >
-              <div className="flex items-center gap-3 mb-1">
+              <div className="flex items-center gap-3 mb-3">
                 <rp.icon className="h-5 w-5 text-primary" />
-                <h2 className="font-heading text-xl font-semibold text-foreground">
+                <h3 className="font-heading text-lg font-semibold text-foreground">
                   {rp.title}
-                </h2>
+                </h3>
               </div>
-              <p className="text-sm text-muted-foreground mb-6 pl-8 italic">
-                Use this to practice out loud.
+              <p className="text-sm text-muted-foreground leading-relaxed pl-8">
+                {rp.description}
               </p>
-
-              <div className="rounded-lg bg-muted/40 p-5 mb-6">
-                <p className="text-xs font-medium text-secondary-foreground uppercase tracking-wider mb-2">
-                  Scenario
-                </p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {rp.context}
-                </p>
-              </div>
-
-              <div className="rounded-lg bg-muted/40 p-5 mb-6">
-                <p className="text-xs font-medium text-secondary-foreground uppercase tracking-wider mb-4">
-                  Dialogue
-                </p>
-                <div className="space-y-3">
-                  {rp.dialogue.map((line, li) => (
-                    <div
-                      key={li}
-                      className={`flex gap-3 ${line.speaker === "Prospect" ? "pl-8" : ""}`}
-                    >
-                      <span
-                        className={`shrink-0 text-xs font-semibold mt-1 w-20 uppercase tracking-wider ${
-                          line.speaker === "Rep" ? "text-primary" : "text-muted-foreground"
-                        }`}
-                      >
-                        {line.speaker}
-                      </span>
-                      <p
-                        className={`text-sm leading-relaxed ${
-                          line.speaker === "Rep" ? "text-foreground" : "text-muted-foreground"
-                        }`}
-                      >
-                        "{line.text}"
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-lg bg-muted/40 p-5">
-                <p className="text-xs font-medium text-secondary-foreground mb-3 uppercase tracking-wider">
-                  Coaching Notes
-                </p>
-                <ul className="space-y-2">
-                  {rp.coachingNotes.map((note, ni) => (
-                    <li key={ni} className="text-sm text-muted-foreground flex gap-2">
-                      <span className="text-primary mt-0.5">•</span>
-                      {note}
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </motion.div>
           ))}
+        </div>
+
+        <div className="mt-16 max-w-xl space-y-2 text-sm text-muted-foreground/70 leading-relaxed">
+          <p>
+            These roleplays can be used solo, with a partner, or alongside an AI
+            tool for simulated practice.
+          </p>
+          <p>No pricing, no signup, no hype language.</p>
         </div>
       </div>
     </div>
