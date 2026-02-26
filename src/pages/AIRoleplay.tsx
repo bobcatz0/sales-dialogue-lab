@@ -1,13 +1,13 @@
 import { motion } from "framer-motion";
-import { Bot, Copy, MessageSquare, PhoneCall, ShieldCheck } from "lucide-react";
+import { Bot, Copy, PhoneCall, MessageSquare, ShieldCheck, UserCheck, Handshake } from "lucide-react";
 import { useState } from "react";
 import Navbar from "@/components/landing/Navbar";
 
 const prompts = [
   {
-    title: "Cold Call Practice",
+    title: "Cold Call — First Contact",
     icon: PhoneCall,
-    description: "Simulate a first-touch cold call with a skeptical prospect.",
+    whenToUse: "Use this when you want to practice earning attention in the first 30 seconds of a cold call.",
     prompt: `You are a mid-level marketing manager at a B2B SaaS company. I'm going to cold call you. Stay in character the entire time.
 
 Your behavior:
@@ -24,9 +24,9 @@ After the call, break character and give me coaching feedback on:
 Let's begin. I'll start the call.`,
   },
   {
-    title: "Discovery Call Practice",
+    title: "Discovery Call — Uncovering Pain",
     icon: MessageSquare,
-    description: "Run a discovery call where you need to uncover pain and priorities.",
+    whenToUse: "Use this when you want to practice asking better questions and going deeper on the prospect's real problem.",
     prompt: `You are the VP of Sales at a 200-person company. We have a scheduled discovery call.
 
 Your behavior:
@@ -43,9 +43,9 @@ After the conversation, break character and coach me on:
 I'll start the call.`,
   },
   {
-    title: "Objection Handling Practice",
+    title: "Objection Handling — Budget Pushback",
     icon: ShieldCheck,
-    description: "Practice responding to common objections like price, timing, or competition.",
+    whenToUse: "Use this when you want to practice staying calm and reframing when a prospect pushes back on price, timing, or competition.",
     prompt: `You are a prospect who just finished a demo of my product. You're interested but have concerns.
 
 Pick one of these objections and commit to it:
@@ -64,6 +64,44 @@ After the conversation, break character and give me feedback on:
 3. Did I move toward a next step?
 
 Let's begin. Start with your objection.`,
+  },
+  {
+    title: "Follow-Up Call — Re-Engaging a Prospect",
+    icon: UserCheck,
+    whenToUse: "Use this when you want to practice following up with a prospect who went quiet after an initial conversation.",
+    prompt: `You are a director of operations at a mid-market company. We spoke two weeks ago and you seemed interested, but you stopped responding to emails.
+
+Your behavior:
+- You're not upset — you just got busy and deprioritized this
+- You still have the problem we discussed, but it's not top-of-mind
+- If I give you a good reason to re-engage, you'll consider it
+- If I'm pushy or guilt-trip you, you'll shut down
+
+After the conversation, break character and give me feedback on:
+1. Did I re-establish context without being awkward?
+2. Did I give you a reason to care again?
+3. Did I secure a concrete next step?
+
+I'll start the call.`,
+  },
+  {
+    title: "Closing Call — Asking for the Decision",
+    icon: Handshake,
+    whenToUse: "Use this when you want to practice navigating the final conversation and confidently asking for a commitment.",
+    prompt: `You are the decision-maker at a company that has been evaluating my solution for three weeks. You've seen a demo, spoken with references, and have budget approval in principle.
+
+Your behavior:
+- You're 80% ready to move forward but need one more push
+- You have a lingering concern (you choose what it is)
+- If I address it well, you'll commit
+- If I'm vague or avoid it, you'll delay the decision
+
+After the conversation, break character and give me feedback on:
+1. Did I summarize the value clearly?
+2. Did I handle the final concern?
+3. Did I ask for the close confidently?
+
+I'll start the call.`,
   },
 ];
 
@@ -88,18 +126,18 @@ const AIRoleplayPage = () => {
           <div className="flex items-center gap-3 mb-4">
             <Bot className="h-6 w-6 text-primary" />
             <h1 className="font-heading text-3xl font-bold md:text-4xl text-foreground">
-              AI Roleplay Practice
+              Practice Sales Calls With AI
             </h1>
           </div>
-          <p className="text-muted-foreground leading-relaxed">
-            Use these prompts with any AI assistant — ChatGPT, Claude, or similar — to practice
-            realistic sales conversations. Copy a prompt, paste it in, and start practicing out loud.
-          </p>
-          <div className="mt-6 rounded-lg bg-muted/40 p-4">
-            <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-secondary-foreground">How it works:</span>{" "}
-              Each prompt sets up a realistic scenario where the AI plays the prospect.
-              After the conversation, the AI will break character and give you coaching feedback.
+          <div className="space-y-3 text-muted-foreground leading-relaxed">
+            <p>
+              Copy any of the prompts below into <span className="font-medium text-foreground">ChatGPT</span>, <span className="font-medium text-foreground">Claude</span>, or a similar AI tool. The AI will play the role of a prospect while you practice your side of the conversation.
+            </p>
+            <p>
+              The goal is realistic practice, not memorization. There are no scripts to follow — just scenarios that force you to think on your feet.
+            </p>
+            <p>
+              For best results, <span className="font-medium text-foreground">respond out loud</span> as if you're on a real call. Typing works, but speaking builds the muscle memory that matters.
             </p>
           </div>
         </motion.div>
@@ -110,7 +148,7 @@ const AIRoleplayPage = () => {
               key={p.title}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: i * 0.08 }}
               className="card-elevated p-8"
             >
               <div className="flex items-center gap-3 mb-1">
@@ -120,12 +158,13 @@ const AIRoleplayPage = () => {
                 </h2>
               </div>
               <p className="text-sm text-muted-foreground mb-6 pl-8">
-                {p.description}
+                <span className="font-medium text-secondary-foreground">When to use:</span>{" "}
+                {p.whenToUse}
               </p>
 
               <div className="relative rounded-lg bg-muted/40 p-5">
                 <p className="text-xs font-medium text-secondary-foreground uppercase tracking-wider mb-3">
-                  Prompt — copy and paste into ChatGPT or Claude
+                  Copy This Prompt
                 </p>
                 <pre className="text-sm text-foreground whitespace-pre-wrap leading-relaxed font-sans">
                   {p.prompt}
@@ -141,30 +180,6 @@ const AIRoleplayPage = () => {
             </motion.div>
           ))}
         </div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="mt-16 rounded-lg bg-muted/40 p-6 max-w-2xl"
-        >
-          <p className="text-xs font-medium text-secondary-foreground uppercase tracking-wider mb-2">
-            Tips for better practice
-          </p>
-          <ul className="space-y-2">
-            {[
-              "Speak your responses out loud — don't just type them.",
-              "Record yourself if possible and review after.",
-              "Run the same scenario multiple times with different approaches.",
-              "Focus on one skill per session: opening, discovery, or objection handling.",
-            ].map((tip, i) => (
-              <li key={i} className="text-sm text-muted-foreground flex gap-2">
-                <span className="text-primary mt-0.5">•</span>
-                {tip}
-              </li>
-            ))}
-          </ul>
-        </motion.div>
       </div>
     </div>
   );
