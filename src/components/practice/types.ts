@@ -6,6 +6,7 @@ export interface ChatMessage {
 export interface Feedback {
   score: number;
   rank: string;
+  peakDifficulty: number;
   strengths: string[];
   improvements: string[];
   nextDrill: string;
