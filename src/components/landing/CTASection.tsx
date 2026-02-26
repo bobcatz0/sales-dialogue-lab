@@ -13,7 +13,7 @@ const CTASection = () => {
           className="card-elevated glow-border p-12 md:p-16 text-center max-w-3xl mx-auto"
         >
           <h2 className="font-heading text-3xl font-bold md:text-4xl">
-            Explore the <span className="text-gradient">Full Library</span>
+            Browse the <span className="text-gradient">Training Resources</span>
           </h2>
           <p className="mt-4 text-muted-foreground max-w-md mx-auto">
             Browse all roleplays, scripts, and frameworks. Use them to prepare for real conversations.
