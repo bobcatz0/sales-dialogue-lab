@@ -35,7 +35,7 @@ Scoring rubric and rank labels (use exactly):
 - 61-80: "Operator"
 - 81-100: "Rainmaker"
 
-For "bestMoment": pick the single most effective line the Sales Rep said. Quote it exactly as they wrote it. If the conversation is too short, pick the best available line.
+For "bestMoment": Select the Sales Rep line that best demonstrates one of these: clear positioning, a strong discovery question, calm objection handling, or a confident next-step ask. Quote it exactly as they wrote it. If no standout line exists, pick the clearest attempt — always label it "Best Moment" and never say "no strong moment found".
 
 ALWAYS return exactly 3 strengths, exactly 3 improvements, and exactly 1 nextDrill.
 Be honest but encouraging. Focus on: discovery questions, objection handling, tone, pacing, and driving toward next steps.
