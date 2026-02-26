@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2, Volume2, VolumeX } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/landing/Navbar";
@@ -12,7 +12,7 @@ import { FeedbackPanel } from "@/components/practice/FeedbackPanel";
 import { SessionHistory } from "@/components/practice/SessionHistory";
 import { loadHistory, saveSession } from "@/components/practice/sessionStorage";
 import { VoiceInputButton } from "@/components/practice/VoiceInputButton";
-import { useProspectVoice } from "@/components/practice/useProspectVoice";
+
 
 // --- Streaming ---
 
@@ -103,7 +103,7 @@ const PracticePage = () => {
   const [isFeedbackLoading, setIsFeedbackLoading] = useState(false);
   const [history, setHistory] = useState<SessionRecord[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { isMuted, isPlaying, speak, toggleMute, cleanup: cleanupVoice } = useProspectVoice();
+  
 
   const activeRole = roles.find((r) => r.id === selectedRole);
 
@@ -167,10 +167,6 @@ const PracticePage = () => {
         },
         onDone: () => {
           setIsLoading(false);
-          // Speak the completed prospect response
-          if (prospectText.trim()) {
-            speak(prospectText.trim());
-          }
         },
       });
     } catch (e: any) {
@@ -187,7 +183,7 @@ const PracticePage = () => {
     setIsLoading(false);
     setFeedback(null);
     setIsFeedbackLoading(false);
-    cleanupVoice();
+    
     setMessages([
       { role: "prospect", text: `[${activeRole.title}] — Ready. Begin when you are.` },
     ]);
@@ -342,19 +338,6 @@ const PracticePage = () => {
                       </span>
                     </span>
                   )}
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7"
-                    onClick={toggleMute}
-                    title={isMuted ? "Unmute AI voice" : "Mute AI voice"}
-                  >
-                    {isMuted ? (
-                      <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
-                    ) : (
-                      <Volume2 className={`h-3.5 w-3.5 ${isPlaying ? "text-primary" : "text-muted-foreground"}`} />
-                    )}
-                  </Button>
                 </div>
               </div>
 
