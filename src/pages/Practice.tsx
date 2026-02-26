@@ -294,11 +294,24 @@ const PracticePage = () => {
               {messages.map((msg, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={
+                    msg.role === "user"
+                      ? { opacity: 0, scale: 0.9, x: 20 }
+                      : { opacity: 0, scale: 0.95, x: -12 }
+                  }
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 30,
+                    mass: 0.8,
+                  }}
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  <div
+                  <motion.div
+                    initial={{ scale: 1 }}
+                    animate={{ scale: [1, 1.02, 1] }}
+                    transition={{ duration: 0.2, delay: 0.15 }}
                     className={`max-w-[75%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${
                       msg.role === "user"
                         ? "bg-primary text-primary-foreground"
@@ -306,7 +319,7 @@ const PracticePage = () => {
                     }`}
                   >
                     {msg.text}
-                  </div>
+                  </motion.div>
                 </motion.div>
               ))}
               {isLoading && messages[messages.length - 1]?.role === "user" && (
