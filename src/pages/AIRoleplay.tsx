@@ -114,7 +114,7 @@ const AIRoleplayPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-6 py-24">
-        <motion.div
+      <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-2xl mb-16"
@@ -122,18 +122,18 @@ const AIRoleplayPage = () => {
           <div className="flex items-center gap-3 mb-4">
             <Bot className="h-6 w-6 text-primary" />
             <h1 className="font-heading text-3xl font-bold md:text-4xl text-foreground">
-              Practice Sales Calls With AI
+              Free Sales Call Roleplay Scenarios
             </h1>
           </div>
           <div className="space-y-3 text-muted-foreground leading-relaxed">
             <p>
-              Copy any of the prompts below into <span className="font-medium text-foreground">ChatGPT</span>, <span className="font-medium text-foreground">Claude</span>, or a similar AI tool. The AI will play the role of a prospect while you practice your side of the conversation.
+              Practice against <span className="font-medium text-foreground">five structured prospect personalities</span> — each designed to sharpen a different part of your sales conversation.
             </p>
             <p>
-              The goal is realistic practice, not memorization. There are no scripts to follow — just scenarios that force you to think on your feet.
+              No scripts to memorize. Just realistic scenarios that force you to think on your feet and respond like you would on a real call.
             </p>
             <p>
-              For best results, <span className="font-medium text-foreground">respond out loud</span> as if you're on a real call. Typing works, but speaking builds the muscle memory that matters.
+              For best results, <span className="font-medium text-foreground">respond out loud</span> as if you're on a live call. Speaking builds the muscle memory that typing can't.
             </p>
           </div>
         </motion.div>
@@ -175,6 +175,12 @@ const AIRoleplayPage = () => {
               </div>
             </motion.div>
           ))}
+        </div>
+
+        <div className="mt-16 max-w-xl text-sm text-muted-foreground/70 leading-relaxed">
+          <p>
+            These prompts also work well when pasted into AI tools like ChatGPT or Claude for interactive practice sessions.
+          </p>
         </div>
       </div>
     </div>
