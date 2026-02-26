@@ -45,7 +45,7 @@ const HeroSection = () => {
 
           <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex flex-col items-center">
-              <span className="text-2xl font-bold text-foreground font-heading">10</span>
+              <span className="text-2xl font-bold text-foreground font-heading">3</span>
               <span>Roleplay Scenarios</span>
             </div>
             <div className="h-8 w-px bg-border" />
