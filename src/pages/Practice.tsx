@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { UserCheck, MessageSquare, Clock, ShieldCheck, PhoneCall, Send, RotateCcw, ArrowLeftRight, Loader2 } from "lucide-react";
+import { UserCheck, MessageSquare, Clock, ShieldCheck, PhoneCall, Send, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/landing/Navbar";
@@ -311,9 +311,20 @@ const PracticePage = () => {
               ))}
               {isLoading && messages[messages.length - 1]?.role === "user" && (
                 <div className="flex justify-start">
-                  <div className="bg-muted text-muted-foreground rounded-xl px-4 py-2.5 text-sm flex items-center gap-2">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Thinking…
+                  <div className="bg-muted rounded-xl px-4 py-3 flex items-center gap-1.5">
+                    {[0, 1, 2].map((i) => (
+                      <motion.span
+                        key={i}
+                        className="block h-2 w-2 rounded-full bg-muted-foreground/60"
+                        animate={{ y: [0, -6, 0] }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          delay: i * 0.15,
+                          ease: "easeInOut",
+                        }}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
