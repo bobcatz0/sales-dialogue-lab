@@ -127,7 +127,7 @@ const AIRoleplayPage = () => {
           </div>
           <div className="space-y-3 text-muted-foreground leading-relaxed">
             <p>
-              Practice against <span className="font-medium text-foreground">five structured prospect personalities</span> — each designed to sharpen a different part of your sales conversation.
+              Five structured prospect personalities — each designed to sharpen a different part of your sales conversation. <span className="font-medium text-foreground">All free, no signup required.</span>
             </p>
             <p>
               No scripts to memorize. Just realistic scenarios that force you to think on your feet and respond like you would on a real call.
@@ -179,7 +179,7 @@ const AIRoleplayPage = () => {
 
         <div className="mt-16 max-w-xl text-sm text-muted-foreground/70 leading-relaxed">
           <p>
-            These prompts also work well when pasted into AI tools like ChatGPT or Claude for interactive practice sessions.
+            Tip: These prompts can also be pasted into AI chat tools for additional interactive practice.
           </p>
         </div>
       </div>
