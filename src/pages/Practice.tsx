@@ -1,10 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
-import { UserCheck, MessageSquare, Clock, ShieldCheck, PhoneCall, Send, RotateCcw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  UserCheck, MessageSquare, Clock, ShieldCheck, PhoneCall,
+  Send, RotateCcw, Star, TrendingUp, Lightbulb, Quote, X, Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/landing/Navbar";
 import { toast } from "sonner";
+
+// --- Role data ---
 
 const roles = [
   {
@@ -49,12 +54,26 @@ const roles = [
   },
 ];
 
+// --- Types ---
+
 interface ChatMessage {
   role: "user" | "prospect";
   text: string;
 }
 
+interface Feedback {
+  overall: string;
+  score: number;
+  strengths: string[];
+  improvements: string[];
+  keyMoment: string;
+  tip: string;
+}
+
+// --- Streaming helper ---
+
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-chat`;
+const FEEDBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-feedback`;
 
 async function streamChat({
   messages,
@@ -111,7 +130,6 @@ async function streamChat({
     }
   }
 
-  // flush
   if (buffer.trim()) {
     for (let raw of buffer.split("\n")) {
       if (!raw) continue;
@@ -130,11 +148,111 @@ async function streamChat({
   onDone();
 }
 
+// --- Feedback Panel Component ---
+
+function FeedbackPanel({ feedback, onClose }: { feedback: Feedback; onClose: () => void }) {
+  const scoreColor =
+    feedback.score >= 7 ? "text-primary" : feedback.score >= 4 ? "text-yellow-400" : "text-destructive";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 10, scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+      className="card-elevated p-6 space-y-5"
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="font-heading text-lg font-bold text-foreground">Session Feedback</h3>
+          <p className="text-sm text-muted-foreground mt-0.5">{feedback.overall}</p>
+        </div>
+        <Button variant="ghost" size="icon" className="shrink-0 -mt-1 -mr-2" onClick={onClose}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Score */}
+      <div className="flex items-center gap-3">
+        <div className={`text-3xl font-bold font-heading ${scoreColor}`}>{feedback.score}/10</div>
+        <div className="flex gap-0.5">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-2 w-5 rounded-full transition-colors ${
+                i < feedback.score ? "bg-primary" : "bg-muted"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Strengths & Improvements */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {feedback.strengths.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+              <Star className="h-3.5 w-3.5 text-primary" />
+              Strengths
+            </div>
+            <ul className="space-y-1">
+              {feedback.strengths.map((s, i) => (
+                <li key={i} className="text-xs text-muted-foreground leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-1.5 before:text-primary">
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {feedback.improvements.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+              <TrendingUp className="h-3.5 w-3.5 text-yellow-400" />
+              Areas to Improve
+            </div>
+            <ul className="space-y-1">
+              {feedback.improvements.map((s, i) => (
+                <li key={i} className="text-xs text-muted-foreground leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-1.5 before:text-yellow-400">
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* Key Moment */}
+      {feedback.keyMoment && (
+        <div className="bg-muted/50 rounded-lg p-3.5 border border-border">
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1.5">
+            <Quote className="h-3.5 w-3.5 text-primary" />
+            Key Moment
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed italic">"{feedback.keyMoment}"</p>
+        </div>
+      )}
+
+      {/* Tip */}
+      {feedback.tip && (
+        <div className="flex items-start gap-2 bg-primary/5 rounded-lg p-3.5 border border-primary/10">
+          <Lightbulb className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <p className="text-xs text-foreground leading-relaxed">{feedback.tip}</p>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// --- Main Page ---
+
 const PracticePage = () => {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [isFeedbackLoading, setIsFeedbackLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeRole = roles.find((r) => r.id === selectedRole);
@@ -150,6 +268,8 @@ const PracticePage = () => {
     setMessages([]);
     setInput("");
     setIsLoading(false);
+    setFeedback(null);
+    setIsFeedbackLoading(false);
     const role = roles.find((r) => r.id === id);
     if (role) {
       setMessages([
@@ -167,7 +287,6 @@ const PracticePage = () => {
     setMessages(newMessages);
     setIsLoading(true);
 
-    // Build history for the AI
     const aiMessages = newMessages.map((m) => ({
       role: m.role === "user" ? "user" : "assistant",
       content: m.text,
@@ -200,8 +319,52 @@ const PracticePage = () => {
     }
   };
 
+  const fetchFeedback = async (conversationMessages: ChatMessage[], roleTitle: string) => {
+    // Need at least 2 user messages for meaningful feedback
+    const userMsgCount = conversationMessages.filter((m) => m.role === "user").length;
+    if (userMsgCount < 2) return;
+
+    setIsFeedbackLoading(true);
+    try {
+      const resp = await fetch(FEEDBACK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ messages: conversationMessages, roleTitle }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Feedback failed" }));
+        throw new Error(err.error || "Failed to get feedback");
+      }
+
+      const data: Feedback = await resp.json();
+      setFeedback(data);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Could not generate feedback");
+    } finally {
+      setIsFeedbackLoading(false);
+    }
+  };
+
   const handleReset = () => {
-    if (selectedRole) handleStart(selectedRole);
+    if (!selectedRole || !activeRole) return;
+    // Trigger feedback before resetting
+    const conversationMessages = [...messages];
+    fetchFeedback(conversationMessages, activeRole.title);
+    // Reset chat
+    setMessages([]);
+    setInput("");
+    setIsLoading(false);
+    const role = roles.find((r) => r.id === selectedRole);
+    if (role) {
+      setMessages([
+        { role: "prospect", text: `[${role.title}] — Ready. Begin when you are.` },
+      ]);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -265,107 +428,127 @@ const PracticePage = () => {
           </motion.aside>
 
           {/* RIGHT COLUMN */}
-          <motion.main
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex flex-col card-elevated overflow-hidden"
-          >
-            {/* Chat Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <h2 className="font-heading text-lg font-bold text-foreground">
-                Roleplay Chat
-              </h2>
-              {activeRole && (
-                <span className="text-xs text-muted-foreground">
-                  Practicing with: <span className="text-foreground font-medium">{activeRole.title}</span>
-                </span>
-              )}
-            </div>
+          <div className="flex flex-col gap-5">
+            <motion.main
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex flex-col card-elevated overflow-hidden flex-1"
+            >
+              {/* Chat Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                <h2 className="font-heading text-lg font-bold text-foreground">
+                  Roleplay Chat
+                </h2>
+                {activeRole && (
+                  <span className="text-xs text-muted-foreground">
+                    Practicing with: <span className="text-foreground font-medium">{activeRole.title}</span>
+                  </span>
+                )}
+              </div>
 
-            {/* Messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 min-h-[300px]">
-              {!selectedRole && (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-sm text-muted-foreground text-center max-w-xs">
-                    Select a roleplay character to begin practicing.
-                  </p>
-                </div>
-              )}
-              {messages.map((msg, i) => (
-                <motion.div
-                  key={i}
-                  initial={
-                    msg.role === "user"
-                      ? { opacity: 0, scale: 0.9, x: 20 }
-                      : { opacity: 0, scale: 0.95, x: -12 }
-                  }
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30,
-                    mass: 0.8,
-                  }}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <motion.div
-                    initial={{ scale: 1 }}
-                    animate={{ scale: [1, 1.02, 1] }}
-                    transition={{ duration: 0.2, delay: 0.15 }}
-                    className={`max-w-[75%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground"
-                    }`}
-                  >
-                    {msg.text}
-                  </motion.div>
-                </motion.div>
-              ))}
-              {isLoading && messages[messages.length - 1]?.role === "user" && (
-                <div className="flex justify-start">
-                  <div className="bg-muted rounded-xl px-4 py-3 flex items-center gap-1.5">
-                    {[0, 1, 2].map((i) => (
-                      <motion.span
-                        key={i}
-                        className="block h-2 w-2 rounded-full bg-muted-foreground/60"
-                        animate={{ y: [0, -6, 0] }}
-                        transition={{
-                          duration: 0.6,
-                          repeat: Infinity,
-                          delay: i * 0.15,
-                          ease: "easeInOut",
-                        }}
-                      />
-                    ))}
+              {/* Messages */}
+              <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 min-h-[300px]">
+                {!selectedRole && (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-sm text-muted-foreground text-center max-w-xs">
+                      Select a roleplay character to begin practicing.
+                    </p>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+                {messages.map((msg, i) => (
+                  <motion.div
+                    key={i}
+                    initial={
+                      msg.role === "user"
+                        ? { opacity: 0, scale: 0.9, x: 20 }
+                        : { opacity: 0, scale: 0.95, x: -12 }
+                    }
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 30,
+                      mass: 0.8,
+                    }}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <motion.div
+                      initial={{ scale: 1 }}
+                      animate={{ scale: [1, 1.02, 1] }}
+                      transition={{ duration: 0.2, delay: 0.15 }}
+                      className={`max-w-[75%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${
+                        msg.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-foreground"
+                      }`}
+                    >
+                      {msg.text}
+                    </motion.div>
+                  </motion.div>
+                ))}
+                {isLoading && messages[messages.length - 1]?.role === "user" && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted rounded-xl px-4 py-3 flex items-center gap-1.5">
+                      {[0, 1, 2].map((i) => (
+                        <motion.span
+                          key={i}
+                          className="block h-2 w-2 rounded-full bg-muted-foreground/60"
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{
+                            duration: 0.6,
+                            repeat: Infinity,
+                            delay: i * 0.15,
+                            ease: "easeInOut",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            {/* Input Area */}
-            <div className="border-t border-border p-4">
-              <div className="flex gap-2">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Type your response…"
-                  disabled={!selectedRole || isLoading}
-                  className="flex-1"
-                />
-                <Button onClick={handleSend} disabled={!selectedRole || !input.trim() || isLoading} size="icon">
-                  <Send className="h-4 w-4" />
-                </Button>
+              {/* Input Area */}
+              <div className="border-t border-border p-4">
+                <div className="flex gap-2">
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type your response…"
+                    disabled={!selectedRole || isLoading}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleSend} disabled={!selectedRole || !input.trim() || isLoading} size="icon">
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <Button variant="outline" size="sm" onClick={handleReset} disabled={!selectedRole || isLoading}>
+                    <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                    Reset & Get Feedback
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2 mt-3">
-                <Button variant="outline" size="sm" onClick={handleReset} disabled={!selectedRole}>
-                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                  Reset
-                </Button>
-              </div>
-            </div>
-          </motion.main>
+            </motion.main>
+
+            {/* Feedback Section */}
+            <AnimatePresence>
+              {isFeedbackLoading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="card-elevated p-6 flex items-center justify-center gap-3"
+                >
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">Analyzing your session…</span>
+                </motion.div>
+              )}
+              {feedback && !isFeedbackLoading && (
+                <FeedbackPanel feedback={feedback} onClose={() => setFeedback(null)} />
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Bottom Helper */}

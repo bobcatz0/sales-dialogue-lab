@@ -2,3 +2,6 @@ project_id = "jtttcgbvtwvszbrkeohl"
 
 [functions.roleplay-chat]
 verify_jwt = false
+
+[functions.roleplay-feedback]
+verify_jwt = false
