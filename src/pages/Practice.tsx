@@ -222,8 +222,7 @@ const PracticePage = () => {
         roleId: activeRole.id,
         roleTitle: activeRole.title,
         score: data.score,
-        overall: data.overall,
-        tip: data.tip,
+        rank: data.rank,
         date: new Date().toISOString(),
         messageCount: conversationMessages.length,
       };
@@ -459,7 +458,16 @@ const PracticePage = () => {
               {feedback && !isFeedbackLoading && (
                 <FeedbackPanel
                   feedback={feedback}
-                  onClose={() => setFeedback(null)}
+                  onStartNew={() => {
+                    setFeedback(null);
+                    setSelectedRole(null);
+                    setMessages([]);
+                    setInput("");
+                  }}
+                  onTrySameRole={() => {
+                    setFeedback(null);
+                    if (selectedRole) handleStart(selectedRole);
+                  }}
                 />
               )}
             </AnimatePresence>

@@ -18,17 +18,33 @@ serve(async (req) => {
 
     const systemPrompt = `You are a sales coaching expert reviewing a practice roleplay conversation. The user was practicing with a "${roleTitle}" persona.
 
-Analyze the conversation and return a JSON object with this exact structure:
+Analyze the conversation and return a JSON object with this EXACT structure:
 {
-  "overall": "A 1-2 sentence overall assessment of performance",
-  "score": <number 1-10>,
-  "strengths": ["strength 1", "strength 2"],
-  "improvements": ["area 1", "area 2"],
-  "keyMoment": "Quote or describe the single most impactful moment in the conversation",
-  "tip": "One specific, actionable tip for next time"
+  "score": <number 0-100>,
+  "rank": "<rank string>",
+  "strengths": ["strength 1", "strength 2", "strength 3"],
+  "improvements": ["improvement 1", "improvement 2", "improvement 3"],
+  "nextDrill": "One specific drill or exercise the user should practice next"
 }
 
-Be honest but encouraging. Focus on sales technique: discovery questions, objection handling, tone, pacing, and driving toward next steps. If the conversation was very short (1-2 exchanges), note that and still provide useful feedback. Return ONLY the JSON object, no markdown fences.`;
+Scoring rubric:
+- 0-20: Beginner — struggles with basics, no structure
+- 21-40: Developing — shows awareness but inconsistent execution
+- 41-60: Competent — solid fundamentals, some gaps under pressure
+- 61-80: Skilled — strong technique, handles objections well
+- 81-100: Expert — exceptional control, natural flow, closes effectively
+
+Rank labels (use exactly):
+- 0-20: "Beginner"
+- 21-40: "Developing"
+- 41-60: "Competent"
+- 61-80: "Skilled"
+- 81-100: "Expert"
+
+ALWAYS return exactly 3 strengths, exactly 3 improvements, and exactly 1 nextDrill.
+Be honest but encouraging. Focus on: discovery questions, objection handling, tone, pacing, and driving toward next steps.
+If the conversation was very short, note that and still provide useful feedback.
+Return ONLY the JSON object, no markdown fences.`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -85,12 +101,11 @@ Be honest but encouraging. Focus on sales technique: discovery questions, object
       feedback = JSON.parse(content.replace(/```json?\n?/g, "").replace(/```/g, "").trim());
     } catch {
       feedback = {
-        overall: content,
-        score: 5,
-        strengths: [],
-        improvements: [],
-        keyMoment: "",
-        tip: "",
+        score: 50,
+        rank: "Competent",
+        strengths: ["Unable to parse detailed feedback"],
+        improvements: ["Try a longer conversation for better analysis"],
+        nextDrill: "Practice a full discovery call from start to finish",
       };
     }
 

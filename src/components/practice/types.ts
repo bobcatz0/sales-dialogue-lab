@@ -4,12 +4,11 @@ export interface ChatMessage {
 }
 
 export interface Feedback {
-  overall: string;
   score: number;
+  rank: string;
   strengths: string[];
   improvements: string[];
-  keyMoment: string;
-  tip: string;
+  nextDrill: string;
 }
 
 export interface SessionRecord {
@@ -17,8 +16,7 @@ export interface SessionRecord {
   roleId: string;
   roleTitle: string;
   score: number;
-  overall: string;
-  tip: string;
-  date: string; // ISO string
+  rank: string;
+  date: string;
   messageCount: number;
 }

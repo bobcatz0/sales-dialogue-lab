@@ -6,6 +6,18 @@ import type { SessionRecord } from "./types";
 import { roles } from "./roleData";
 import { clearHistory } from "./sessionStorage";
 
+function getRankColor(rank: string) {
+  switch (rank) {
+    case "Expert":
+    case "Skilled":
+      return "text-primary";
+    case "Competent":
+      return "text-accent-foreground";
+    default:
+      return "text-muted-foreground";
+  }
+}
+
 export function SessionHistory({
   sessions,
   onClear,
@@ -17,10 +29,8 @@ export function SessionHistory({
 
   if (sessions.length === 0) return null;
 
-  // Compute average score
   const avg = sessions.reduce((sum, s) => sum + s.score, 0) / sessions.length;
 
-  // Compute trend (last 5 vs previous 5)
   const recent = sessions.slice(0, 5);
   const older = sessions.slice(5, 10);
   const recentAvg =
@@ -44,7 +54,6 @@ export function SessionHistory({
       animate={{ opacity: 1, y: 0 }}
       className="card-elevated overflow-hidden"
     >
-      {/* Header */}
       <button
         onClick={() => setExpanded((p) => !p)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors"
@@ -55,14 +64,13 @@ export function SessionHistory({
             Session History
           </h3>
           <span className="text-xs text-muted-foreground">
-            ({sessions.length} session{sessions.length !== 1 ? "s" : ""})
+            ({sessions.length})
           </span>
         </div>
         <div className="flex items-center gap-3">
-          {/* Stats chips */}
           <div className="hidden sm:flex items-center gap-2">
             <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-foreground font-medium">
-              Avg: {avg.toFixed(1)}/10
+              Avg: {Math.round(avg)}/100
             </span>
             {trend !== 0 && (
               <span
@@ -76,7 +84,7 @@ export function SessionHistory({
                   className={`h-3 w-3 ${trend < 0 ? "rotate-180" : ""}`}
                 />
                 {trend > 0 ? "+" : ""}
-                {trend.toFixed(1)}
+                {Math.round(trend)}
               </span>
             )}
           </div>
@@ -88,7 +96,6 @@ export function SessionHistory({
         </div>
       </button>
 
-      {/* Content */}
       <AnimatePresence>
         {expanded && (
           <motion.div
@@ -99,10 +106,9 @@ export function SessionHistory({
             className="overflow-hidden"
           >
             <div className="px-5 pb-4 space-y-2">
-              {/* Mobile stats */}
               <div className="flex sm:hidden items-center gap-2 mb-3">
                 <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-foreground font-medium">
-                  Avg: {avg.toFixed(1)}/10
+                  Avg: {Math.round(avg)}/100
                 </span>
                 {trend !== 0 && (
                   <span
@@ -116,12 +122,11 @@ export function SessionHistory({
                       className={`h-3 w-3 ${trend < 0 ? "rotate-180" : ""}`}
                     />
                     {trend > 0 ? "+" : ""}
-                    {trend.toFixed(1)}
+                    {Math.round(trend)}
                   </span>
                 )}
               </div>
 
-              {/* Session rows */}
               {sessions.slice(0, 10).map((session) => {
                 const role = roles.find((r) => r.id === session.roleId);
                 const Icon = role?.icon;
@@ -138,16 +143,13 @@ export function SessionHistory({
                 return (
                   <div
                     key={session.id}
-                    className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-muted/30 transition-colors group"
+                    className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-muted/30 transition-colors"
                   >
-                    {/* Icon */}
                     <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0">
                       {Icon && (
                         <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
                     </div>
-
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold text-foreground truncate">
@@ -158,19 +160,11 @@ export function SessionHistory({
                         </span>
                       </div>
                       <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                        {session.overall}
+                        {session.rank}
                       </p>
                     </div>
-
-                    {/* Score */}
                     <div
-                      className={`text-sm font-bold font-heading shrink-0 ${
-                        session.score >= 7
-                          ? "text-primary"
-                          : session.score >= 4
-                            ? "text-accent-foreground"
-                            : "text-destructive"
-                      }`}
+                      className={`text-sm font-bold font-heading shrink-0 ${getRankColor(session.rank)}`}
                     >
                       {session.score}
                     </div>
