@@ -223,6 +223,7 @@ const PracticePage = () => {
         roleTitle: activeRole.title,
         score: data.score,
         rank: data.rank,
+        peakDifficulty: data.peakDifficulty ?? 1,
         date: new Date().toISOString(),
         messageCount: conversationMessages.length,
       };
