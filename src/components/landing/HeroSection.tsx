@@ -34,6 +34,10 @@ const HeroSection = () => {
             designed to make every sales call count.
           </p>
 
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground/70">
+            Includes AI roleplay prompts for realistic practice using tools like ChatGPT or Claude.
+          </p>
+
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button variant="hero" size="lg" className="gap-2" asChild>
               <a href="#scripts">View Scripts <ArrowRight className="h-4 w-4" /></a>
