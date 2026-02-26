@@ -123,6 +123,7 @@ const AIRoleplayPage = () => {
           {prompts.map((p, i) => (
             <motion.div
               key={p.title}
+              id={`roleplay-${i}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
@@ -150,6 +151,51 @@ const AIRoleplayPage = () => {
             </motion.div>
           ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mt-20"
+        >
+          <h2 className="font-heading text-2xl font-bold text-foreground mb-3">
+            Choose a Sales Roleplay
+          </h2>
+          <p className="text-sm text-muted-foreground mb-8">
+            Pick a personality and start practicing immediately.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {prompts.map((p, i) => (
+              <motion.div
+                key={p.title}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 + i * 0.06 }}
+                className="group card-elevated p-6 flex flex-col items-center text-center hover:border-primary/40 transition-all duration-300 cursor-pointer"
+              >
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <p.icon className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-heading text-base font-semibold text-foreground mb-2">
+                  {p.title.replace("Roleplay: ", "")}
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-5 line-clamp-2">
+                  {p.prompt.split("\n\n")[0]}
+                </p>
+                <button
+                  onClick={() => {
+                    const el = document.getElementById(`roleplay-${i}`);
+                    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }}
+                  className="mt-auto inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-5 py-2 text-sm font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  Start Practice
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
         <div className="mt-16 max-w-xl text-sm text-muted-foreground/70 leading-relaxed">
           <p>
