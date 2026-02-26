@@ -1,73 +1,18 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  UserCheck, MessageSquare, Clock, ShieldCheck, PhoneCall,
-  Send, RotateCcw, Star, TrendingUp, Lightbulb, Quote, X, Loader2,
-} from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/landing/Navbar";
 import { toast } from "sonner";
 
-// --- Role data ---
+import { roles } from "@/components/practice/roleData";
+import type { ChatMessage, Feedback, SessionRecord } from "@/components/practice/types";
+import { FeedbackPanel } from "@/components/practice/FeedbackPanel";
+import { SessionHistory } from "@/components/practice/SessionHistory";
+import { loadHistory, saveSession } from "@/components/practice/sessionStorage";
 
-const CHAR_RULES = "Never break character. Never provide coaching, explanations, or meta-commentary. Respond only as your character would in a real conversation. Limit responses to 1–4 sentences unless the user explicitly asks for more.";
-
-const roles = [
-  {
-    id: "hiring-manager",
-    title: "Calm Hiring Manager",
-    description: "Professional interviewer focused on clarity and structured answers.",
-    icon: UserCheck,
-    systemPrompt: `You are a calm, professional hiring manager interviewing a candidate for a sales role. Ask realistic interview questions. Push gently when answers are vague. Stay neutral and composed. ${CHAR_RULES}`,
-  },
-  {
-    id: "b2b-prospect",
-    title: "Neutral B2B Prospect",
-    description: "Open but guarded — won't volunteer information unless asked.",
-    icon: MessageSquare,
-    systemPrompt: `You are a neutral B2B prospect on a discovery call. You are open to learning but skeptical of pitches. Answer questions honestly but do not volunteer information unless asked clearly. ${CHAR_RULES}`,
-  },
-  {
-    id: "decision-maker",
-    title: "Busy Decision Maker",
-    description: "Short on time, impatient, cares only about outcomes.",
-    icon: Clock,
-    systemPrompt: `You are a senior decision maker with very limited time. You interrupt when explanations run long. You care about outcomes, not features. Be impatient. ${CHAR_RULES}`,
-  },
-  {
-    id: "skeptical-buyer",
-    title: "Skeptical Buyer",
-    description: "Pushes back on price, timing, and credibility.",
-    icon: ShieldCheck,
-    systemPrompt: `You are a skeptical buyer who has been burned by vendors before. Push back on price, timing, and credibility. Require clear reasoning before agreeing to anything. ${CHAR_RULES}`,
-  },
-  {
-    id: "follow-up",
-    title: "Follow-Up Prospect",
-    description: "Went quiet after a previous call — busy, not opposed.",
-    icon: PhoneCall,
-    systemPrompt: `You previously spoke with the sales rep but deprioritized the decision. You are not opposed — just busy and undecided. Respond realistically to follow-up attempts. ${CHAR_RULES}`,
-  },
-];
-
-// --- Types ---
-
-interface ChatMessage {
-  role: "user" | "prospect";
-  text: string;
-}
-
-interface Feedback {
-  overall: string;
-  score: number;
-  strengths: string[];
-  improvements: string[];
-  keyMoment: string;
-  tip: string;
-}
-
-// --- Streaming helper ---
+// --- Streaming ---
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-chat`;
 const FEEDBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-feedback`;
@@ -145,103 +90,7 @@ async function streamChat({
   onDone();
 }
 
-// --- Feedback Panel Component ---
-
-function FeedbackPanel({ feedback, onClose }: { feedback: Feedback; onClose: () => void }) {
-  const scoreColor =
-    feedback.score >= 7 ? "text-primary" : feedback.score >= 4 ? "text-yellow-400" : "text-destructive";
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 10, scale: 0.97 }}
-      transition={{ type: "spring", stiffness: 400, damping: 28 }}
-      className="card-elevated p-6 space-y-5"
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="font-heading text-lg font-bold text-foreground">Session Feedback</h3>
-          <p className="text-sm text-muted-foreground mt-0.5">{feedback.overall}</p>
-        </div>
-        <Button variant="ghost" size="icon" className="shrink-0 -mt-1 -mr-2" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {/* Score */}
-      <div className="flex items-center gap-3">
-        <div className={`text-3xl font-bold font-heading ${scoreColor}`}>{feedback.score}/10</div>
-        <div className="flex gap-0.5">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-2 w-5 rounded-full transition-colors ${
-                i < feedback.score ? "bg-primary" : "bg-muted"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Strengths & Improvements */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {feedback.strengths.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-              <Star className="h-3.5 w-3.5 text-primary" />
-              Strengths
-            </div>
-            <ul className="space-y-1">
-              {feedback.strengths.map((s, i) => (
-                <li key={i} className="text-xs text-muted-foreground leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-1.5 before:text-primary">
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {feedback.improvements.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-              <TrendingUp className="h-3.5 w-3.5 text-yellow-400" />
-              Areas to Improve
-            </div>
-            <ul className="space-y-1">
-              {feedback.improvements.map((s, i) => (
-                <li key={i} className="text-xs text-muted-foreground leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-1.5 before:text-yellow-400">
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-
-      {/* Key Moment */}
-      {feedback.keyMoment && (
-        <div className="bg-muted/50 rounded-lg p-3.5 border border-border">
-          <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1.5">
-            <Quote className="h-3.5 w-3.5 text-primary" />
-            Key Moment
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed italic">"{feedback.keyMoment}"</p>
-        </div>
-      )}
-
-      {/* Tip */}
-      {feedback.tip && (
-        <div className="flex items-start gap-2 bg-primary/5 rounded-lg p-3.5 border border-primary/10">
-          <Lightbulb className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <p className="text-xs text-foreground leading-relaxed">{feedback.tip}</p>
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-// --- Main Page ---
+// --- Page ---
 
 const PracticePage = () => {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
@@ -250,9 +99,15 @@ const PracticePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [isFeedbackLoading, setIsFeedbackLoading] = useState(false);
+  const [history, setHistory] = useState<SessionRecord[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeRole = roles.find((r) => r.id === selectedRole);
+
+  // Load history on mount
+  useEffect(() => {
+    setHistory(loadHistory());
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -316,37 +171,6 @@ const PracticePage = () => {
     }
   };
 
-  const fetchFeedback = async (conversationMessages: ChatMessage[], roleTitle: string) => {
-    // Need at least 2 user messages for meaningful feedback
-    const userMsgCount = conversationMessages.filter((m) => m.role === "user").length;
-    if (userMsgCount < 2) return;
-
-    setIsFeedbackLoading(true);
-    try {
-      const resp = await fetch(FEEDBACK_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ messages: conversationMessages, roleTitle }),
-      });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Feedback failed" }));
-        throw new Error(err.error || "Failed to get feedback");
-      }
-
-      const data: Feedback = await resp.json();
-      setFeedback(data);
-    } catch (e: any) {
-      console.error(e);
-      toast.error(e.message || "Could not generate feedback");
-    } finally {
-      setIsFeedbackLoading(false);
-    }
-  };
-
   const handleReset = () => {
     if (!selectedRole || !activeRole) return;
     setMessages([]);
@@ -359,12 +183,68 @@ const PracticePage = () => {
     ]);
   };
 
+  const handleEndSession = useCallback(async () => {
+    if (!activeRole) return;
+    const conversationMessages = [...messages];
+    const userMsgCount = conversationMessages.filter((m) => m.role === "user").length;
+
+    if (userMsgCount < 2) {
+      toast.error("Have at least 2 exchanges before ending the session.");
+      return;
+    }
+
+    setIsFeedbackLoading(true);
+
+    try {
+      const resp = await fetch(FEEDBACK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: conversationMessages,
+          roleTitle: activeRole.title,
+        }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Feedback failed" }));
+        throw new Error(err.error || "Failed to get feedback");
+      }
+
+      const data: Feedback = await resp.json();
+      setFeedback(data);
+
+      // Save to history
+      const session: SessionRecord = {
+        id: crypto.randomUUID(),
+        roleId: activeRole.id,
+        roleTitle: activeRole.title,
+        score: data.score,
+        overall: data.overall,
+        tip: data.tip,
+        date: new Date().toISOString(),
+        messageCount: conversationMessages.length,
+      };
+      const updated = saveSession(session);
+      setHistory(updated);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Could not generate feedback");
+    } finally {
+      setIsFeedbackLoading(false);
+    }
+  }, [activeRole, messages]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
+
+  const hasEnoughMessages = messages.filter((m) => m.role === "user").length >= 2;
 
   return (
     <div className="min-h-screen bg-background">
@@ -375,48 +255,60 @@ const PracticePage = () => {
           <motion.aside
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex flex-col"
+            className="flex flex-col gap-5"
           >
-            <h2 className="font-heading text-xl font-bold text-foreground mb-5">
-              Choose a Roleplay
-            </h2>
-            <div className="space-y-3">
-              {roles.map((role) => {
-                const isActive = selectedRole === role.id;
-                return (
-                  <div
-                    key={role.id}
-                    className={`card-elevated p-4 flex items-start gap-3 transition-all duration-200 ${
-                      isActive ? "border-primary/60 shadow-[0_0_20px_hsl(145_72%_50%/0.1)]" : ""
-                    }`}
-                  >
+            <div>
+              <h2 className="font-heading text-xl font-bold text-foreground mb-5">
+                Choose a Roleplay
+              </h2>
+              <div className="space-y-3">
+                {roles.map((role) => {
+                  const isActive = selectedRole === role.id;
+                  return (
                     <div
-                      className={`mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center transition-colors ${
-                        isActive ? "bg-primary/20" : "bg-muted"
+                      key={role.id}
+                      className={`card-elevated p-4 flex items-start gap-3 transition-all duration-200 ${
+                        isActive
+                          ? "border-primary/60 shadow-[0_0_20px_hsl(145_72%_50%/0.1)]"
+                          : ""
                       }`}
                     >
-                      <role.icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                      <div
+                        className={`mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center transition-colors ${
+                          isActive ? "bg-primary/20" : "bg-muted"
+                        }`}
+                      >
+                        <role.icon
+                          className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
+                          {role.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                          {role.description}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={isActive ? "default" : "outline"}
+                        className="shrink-0 text-xs h-8"
+                        onClick={() => handleStart(role.id)}
+                      >
+                        {isActive ? "Active" : "Start"}
+                      </Button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
-                        {role.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                        {role.description}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant={isActive ? "default" : "outline"}
-                      className="shrink-0 text-xs h-8"
-                      onClick={() => handleStart(role.id)}
-                    >
-                      {isActive ? "Active" : "Start"}
-                    </Button>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Session History — below roles on left column */}
+            <SessionHistory
+              sessions={history}
+              onClear={() => setHistory([])}
+            />
           </motion.aside>
 
           {/* RIGHT COLUMN */}
@@ -433,13 +325,19 @@ const PracticePage = () => {
                 </h2>
                 {activeRole && (
                   <span className="text-xs text-muted-foreground">
-                    Practicing with: <span className="text-foreground font-medium">{activeRole.title}</span>
+                    Practicing with:{" "}
+                    <span className="text-foreground font-medium">
+                      {activeRole.title}
+                    </span>
                   </span>
                 )}
               </div>
 
               {/* Messages */}
-              <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 min-h-[300px]">
+              <div
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto p-5 space-y-4 min-h-[300px]"
+              >
                 {!selectedRole && (
                   <div className="flex items-center justify-center h-full">
                     <p className="text-sm text-muted-foreground text-center max-w-xs">
@@ -510,14 +408,34 @@ const PracticePage = () => {
                     disabled={!selectedRole || isLoading}
                     className="flex-1"
                   />
-                  <Button onClick={handleSend} disabled={!selectedRole || !input.trim() || isLoading} size="icon">
+                  <Button
+                    onClick={handleSend}
+                    disabled={!selectedRole || !input.trim() || isLoading}
+                    size="icon"
+                  >
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <Button variant="outline" size="sm" onClick={handleReset} disabled={!selectedRole || isLoading}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleReset}
+                    disabled={!selectedRole || isLoading}
+                  >
                     <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
                     Reset Conversation
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEndSession}
+                    disabled={
+                      !selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages
+                    }
+                  >
+                    <StopCircle className="h-3.5 w-3.5 mr-1.5" />
+                    End Session
                   </Button>
                 </div>
               </div>
@@ -533,11 +451,16 @@ const PracticePage = () => {
                   className="card-elevated p-6 flex items-center justify-center gap-3"
                 >
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Analyzing your session…</span>
+                  <span className="text-sm text-muted-foreground">
+                    Analyzing your session…
+                  </span>
                 </motion.div>
               )}
               {feedback && !isFeedbackLoading && (
-                <FeedbackPanel feedback={feedback} onClose={() => setFeedback(null)} />
+                <FeedbackPanel
+                  feedback={feedback}
+                  onClose={() => setFeedback(null)}
+                />
               )}
             </AnimatePresence>
           </div>
