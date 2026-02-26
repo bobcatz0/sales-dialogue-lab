@@ -1,29 +1,24 @@
 import { motion } from "framer-motion";
-import { PhoneCall, FileText, Shield, LayoutGrid } from "lucide-react";
+import { PhoneCall, FileText, LayoutGrid } from "lucide-react";
 
 const features = [
   {
     icon: PhoneCall,
-    title: "Realistic Roleplays",
+    title: "Roleplays",
     description:
-      "Practice cold calls, discovery calls, and closing conversations with realistic scenario context and dialogue.",
+      "Practice cold calls, discovery calls, and objection handling with realistic scenario context and dialogue.",
   },
   {
     icon: FileText,
-    title: "Sales Call Scripts",
+    title: "Scripts",
     description:
-      "Practical call structures you can use immediately. These are frameworks to guide your conversations — not word-for-word templates.",
-  },
-  {
-    icon: Shield,
-    title: "Objection Handling",
-    description: "Specific talk tracks for every common objection — pricing, timing, competition, and authority.",
+      "Practical call structures with built-in objection responses. Frameworks to guide your conversations — not word-for-word templates.",
   },
   {
     icon: LayoutGrid,
-    title: "Sales Frameworks",
+    title: "Frameworks",
     description:
-      "Simple, repeatable frameworks that give structure to any sales conversation without sounding robotic.",
+      "Simple, repeatable frameworks that give structure to any sales conversation, including how to handle common pushback.",
   },
 ];
 
