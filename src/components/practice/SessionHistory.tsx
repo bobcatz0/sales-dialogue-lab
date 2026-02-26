@@ -8,10 +8,10 @@ import { clearHistory } from "./sessionStorage";
 
 function getRankColor(rank: string) {
   switch (rank) {
-    case "Expert":
-    case "Skilled":
+    case "Rainmaker":
+    case "Operator":
       return "text-primary";
-    case "Competent":
+    case "Closer":
       return "text-accent-foreground";
     default:
       return "text-muted-foreground";

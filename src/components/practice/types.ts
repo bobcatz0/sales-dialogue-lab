@@ -9,6 +9,7 @@ export interface Feedback {
   strengths: string[];
   improvements: string[];
   nextDrill: string;
+  bestMoment: string;
 }
 
 export interface SessionRecord {

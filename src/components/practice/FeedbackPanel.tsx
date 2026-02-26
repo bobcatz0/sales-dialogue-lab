@@ -1,17 +1,17 @@
 import { motion } from "framer-motion";
-import { Star, TrendingUp, Target, RotateCcw, Play } from "lucide-react";
+import { Star, TrendingUp, Target, RotateCcw, Play, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Feedback } from "./types";
 
 function getRankColor(rank: string) {
   switch (rank) {
-    case "Expert":
+    case "Rainmaker":
       return "text-primary";
-    case "Skilled":
+    case "Operator":
       return "text-primary";
-    case "Competent":
+    case "Closer":
       return "text-accent-foreground";
-    case "Developing":
+    case "Starter":
       return "text-muted-foreground";
     default:
       return "text-destructive";
@@ -85,6 +85,24 @@ export function FeedbackPanel({
           />
         </div>
       </div>
+
+      {/* Best Moment */}
+      {feedback.bestMoment && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="bg-muted/50 rounded-lg p-4 border border-border"
+        >
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground mb-2">
+            <Quote className="h-3.5 w-3.5 text-primary" />
+            Best Moment
+          </div>
+          <p className="text-sm text-foreground italic leading-relaxed">
+            "{feedback.bestMoment}"
+          </p>
+        </motion.div>
+      )}
 
       {/* Strengths & Improvements */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
