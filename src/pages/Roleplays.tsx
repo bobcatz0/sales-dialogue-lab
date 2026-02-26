@@ -78,44 +78,55 @@ const RoleplaysPage = () => {
               transition={{ delay: i * 0.1 }}
               className="card-elevated p-8"
             >
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-3 mb-1">
                 <rp.icon className="h-5 w-5 text-primary" />
                 <h2 className="font-heading text-xl font-semibold text-foreground">
                   {rp.title}
                 </h2>
               </div>
-              <p className="text-sm text-muted-foreground mb-6 max-w-2xl">
-                <span className="font-medium text-secondary-foreground">Scenario:</span> {rp.context}
+              <p className="text-sm text-muted-foreground mb-6 pl-8 italic">
+                Use this to practice out loud.
               </p>
 
-              <div className="space-y-4 mb-8">
-                <p className="text-xs font-medium text-secondary-foreground uppercase tracking-wider">
-                  Dialogue
+              <div className="rounded-lg bg-muted/40 p-5 mb-6">
+                <p className="text-xs font-medium text-secondary-foreground uppercase tracking-wider mb-2">
+                  Scenario
                 </p>
-                {rp.dialogue.map((line, li) => (
-                  <div
-                    key={li}
-                    className={`flex gap-3 ${line.speaker === "Prospect" ? "pl-8" : ""}`}
-                  >
-                    <span
-                      className={`shrink-0 text-xs font-semibold mt-1 w-20 uppercase tracking-wider ${
-                        line.speaker === "Rep" ? "text-primary" : "text-muted-foreground"
-                      }`}
-                    >
-                      {line.speaker}
-                    </span>
-                    <p
-                      className={`text-sm leading-relaxed ${
-                        line.speaker === "Rep" ? "text-foreground" : "text-muted-foreground"
-                      }`}
-                    >
-                      "{line.text}"
-                    </p>
-                  </div>
-                ))}
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {rp.context}
+                </p>
               </div>
 
-              <div className="border-t border-border pt-5">
+              <div className="rounded-lg bg-muted/40 p-5 mb-6">
+                <p className="text-xs font-medium text-secondary-foreground uppercase tracking-wider mb-4">
+                  Dialogue
+                </p>
+                <div className="space-y-3">
+                  {rp.dialogue.map((line, li) => (
+                    <div
+                      key={li}
+                      className={`flex gap-3 ${line.speaker === "Prospect" ? "pl-8" : ""}`}
+                    >
+                      <span
+                        className={`shrink-0 text-xs font-semibold mt-1 w-20 uppercase tracking-wider ${
+                          line.speaker === "Rep" ? "text-primary" : "text-muted-foreground"
+                        }`}
+                      >
+                        {line.speaker}
+                      </span>
+                      <p
+                        className={`text-sm leading-relaxed ${
+                          line.speaker === "Rep" ? "text-foreground" : "text-muted-foreground"
+                        }`}
+                      >
+                        "{line.text}"
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-lg bg-muted/40 p-5">
                 <p className="text-xs font-medium text-secondary-foreground mb-3 uppercase tracking-wider">
                   Coaching Notes
                 </p>
