@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Star, TrendingUp, Target, RotateCcw, Play, Quote } from "lucide-react";
+import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Feedback } from "./types";
 
@@ -72,6 +72,20 @@ export function FeedbackPanel({
             className={`inline-block text-sm font-bold px-3 py-1 rounded-full border ${getRankColor(feedback.rank)} border-current/20 bg-current/5`}
           >
             {feedback.rank}
+          </span>
+        </motion.div>
+
+        {/* Peak Difficulty */}
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground"
+        >
+          <Gauge className="h-3.5 w-3.5" />
+          Peak Difficulty:{" "}
+          <span className="font-bold text-foreground">
+            Level {feedback.peakDifficulty ?? 1}
           </span>
         </motion.div>
 

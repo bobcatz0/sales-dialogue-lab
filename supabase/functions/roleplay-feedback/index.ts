@@ -22,6 +22,7 @@ Analyze the conversation and return a JSON object with this EXACT structure:
 {
   "score": <number 0-100>,
   "rank": "<rank string>",
+  "peakDifficulty": <1 | 2 | 3>,
   "bestMoment": "The single strongest line spoken by the Sales Rep during the session, quoted exactly",
   "strengths": ["strength 1", "strength 2", "strength 3"],
   "improvements": ["improvement 1", "improvement 2", "improvement 3"],
@@ -34,6 +35,13 @@ Scoring rubric and rank labels (use exactly):
 - 41-60: "Closer"
 - 61-80: "Operator"
 - 81-100: "Rainmaker"
+
+For "peakDifficulty": Evaluate the conversation to determine the highest difficulty level the prospect character reached.
+- Level 1 (Easy): Prospect was cooperative, answered clearly, offered info willingly, objections were mild.
+- Level 2 (Normal): Prospect was more guarded, required better questions, had realistic/specific objections, needed clearer next-step asks.
+- Level 3 (Hard): Prospect showed time pressure/skepticism, gave short answers with pushback, raised strong objections (timing, budget, competitors, authority), required structured control and confident asks.
+Assess based on the prospect's actual behavior. If the user performed well enough that the prospect became more challenging, that indicates higher difficulty was reached.
+If the user reached Level 3, add a slight bonus (5-10 points) to the score for performing well under pressure.
 
 For "bestMoment": Select the Sales Rep line that best demonstrates one of these: clear positioning, a strong discovery question, calm objection handling, or a confident next-step ask. Quote it exactly as they wrote it. If no standout line exists, pick the clearest attempt — always label it "Best Moment" and never say "no strong moment found".
 
@@ -98,6 +106,7 @@ Return ONLY the JSON object, no markdown fences.`;
       feedback = {
         score: 50,
         rank: "Closer",
+        peakDifficulty: 1,
         bestMoment: "Unable to extract a quote from this session.",
         strengths: ["Unable to parse detailed feedback"],
         improvements: ["Try a longer conversation for better analysis"],
