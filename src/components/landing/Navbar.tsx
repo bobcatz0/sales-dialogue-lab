@@ -12,10 +12,9 @@ const Navbar = () => {
           </span>
         </div>
         <div className="hidden md:flex items-center gap-8">
-          <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
           <a href="#scripts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Scripts</a>
-          <a href="#frameworks" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Frameworks</a>
-          <a href="#resources" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Resources</a>
+          <a href="/frameworks" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Frameworks</a>
+          <a href="/roleplays" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Roleplays</a>
         </div>
         <Button variant="hero" size="sm" asChild>
           <a href="#scripts">View Scripts</a>
