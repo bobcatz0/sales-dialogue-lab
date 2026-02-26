@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Frameworks from "./pages/Frameworks";
 import Roleplays from "./pages/Roleplays";
+import AIRoleplay from "./pages/AIRoleplay";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/frameworks" element={<Frameworks />} />
           <Route path="/roleplays" element={<Roleplays />} />
+          <Route path="/ai-roleplay" element={<AIRoleplay />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
