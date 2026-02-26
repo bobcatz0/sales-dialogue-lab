@@ -35,11 +35,11 @@ const HeroSection = () => {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button variant="hero" size="lg" className="gap-2">
-              Start Practicing <ArrowRight className="h-4 w-4" />
+            <Button variant="hero" size="lg" className="gap-2" asChild>
+              <a href="#scripts">View Scripts <ArrowRight className="h-4 w-4" /></a>
             </Button>
-            <Button variant="heroOutline" size="lg">
-              View Scripts
+            <Button variant="heroOutline" size="lg" asChild>
+              <a href="/frameworks">Explore Frameworks</a>
             </Button>
           </div>
 

@@ -17,8 +17,8 @@ const Navbar = () => {
           <a href="#frameworks" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Frameworks</a>
           <a href="#resources" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Resources</a>
         </div>
-        <Button variant="hero" size="sm">
-          Get Started Free
+        <Button variant="hero" size="sm" asChild>
+          <a href="#scripts">View Scripts</a>
         </Button>
       </div>
     </nav>
