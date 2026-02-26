@@ -11,46 +11,43 @@ import { toast } from "sonner";
 
 // --- Role data ---
 
+const CHAR_RULES = "Never break character. Never provide coaching, explanations, or meta-commentary. Respond only as your character would in a real conversation. Limit responses to 1–4 sentences unless the user explicitly asks for more.";
+
 const roles = [
   {
     id: "hiring-manager",
     title: "Calm Hiring Manager",
     description: "Professional interviewer focused on clarity and structured answers.",
     icon: UserCheck,
-    systemPrompt:
-      "You are a calm, professional hiring manager interviewing a sales candidate. Ask realistic interview questions. Push gently when answers are vague. Stay neutral and composed throughout the conversation. Keep responses concise (2-4 sentences). Stay in character at all times.",
+    systemPrompt: `You are a calm, professional hiring manager interviewing a candidate for a sales role. Ask realistic interview questions. Push gently when answers are vague. Stay neutral and composed. ${CHAR_RULES}`,
   },
   {
     id: "b2b-prospect",
     title: "Neutral B2B Prospect",
     description: "Open but guarded — won't volunteer information unless asked.",
     icon: MessageSquare,
-    systemPrompt:
-      "You are a neutral B2B prospect. You are open to learning but skeptical of sales pitches. Answer questions honestly, but do not volunteer information unless asked clearly. Keep responses concise (2-4 sentences). Stay in character at all times.",
+    systemPrompt: `You are a neutral B2B prospect on a discovery call. You are open to learning but skeptical of pitches. Answer questions honestly but do not volunteer information unless asked clearly. ${CHAR_RULES}`,
   },
   {
     id: "decision-maker",
     title: "Busy Decision Maker",
     description: "Short on time, impatient, cares only about outcomes.",
     icon: Clock,
-    systemPrompt:
-      "You are a senior decision maker with limited time. You interrupt when explanations are too long. You care about outcomes, not features. Keep responses very short (1-2 sentences). Be impatient. Stay in character at all times.",
+    systemPrompt: `You are a senior decision maker with very limited time. You interrupt when explanations run long. You care about outcomes, not features. Be impatient. ${CHAR_RULES}`,
   },
   {
     id: "skeptical-buyer",
     title: "Skeptical Buyer",
     description: "Pushes back on price, timing, and credibility.",
     icon: ShieldCheck,
-    systemPrompt:
-      "You are skeptical due to past bad experiences. Push back on price, timing, and credibility. Require clear reasoning to move forward. Keep responses concise (2-4 sentences). Stay in character at all times.",
+    systemPrompt: `You are a skeptical buyer who has been burned by vendors before. Push back on price, timing, and credibility. Require clear reasoning before agreeing to anything. ${CHAR_RULES}`,
   },
   {
     id: "follow-up",
     title: "Follow-Up Prospect",
     description: "Went quiet after a previous call — busy, not opposed.",
     icon: PhoneCall,
-    systemPrompt:
-      "You previously spoke with the rep but deprioritized the decision. You are not opposed — just busy and undecided. Respond realistically to follow-up attempts. Keep responses concise (2-4 sentences). Stay in character at all times.",
+    systemPrompt: `You previously spoke with the sales rep but deprioritized the decision. You are not opposed — just busy and undecided. Respond realistically to follow-up attempts. ${CHAR_RULES}`,
   },
 ];
 
@@ -352,19 +349,14 @@ const PracticePage = () => {
 
   const handleReset = () => {
     if (!selectedRole || !activeRole) return;
-    // Trigger feedback before resetting
-    const conversationMessages = [...messages];
-    fetchFeedback(conversationMessages, activeRole.title);
-    // Reset chat
     setMessages([]);
     setInput("");
     setIsLoading(false);
-    const role = roles.find((r) => r.id === selectedRole);
-    if (role) {
-      setMessages([
-        { role: "prospect", text: `[${role.title}] — Ready. Begin when you are.` },
-      ]);
-    }
+    setFeedback(null);
+    setIsFeedbackLoading(false);
+    setMessages([
+      { role: "prospect", text: `[${activeRole.title}] — Ready. Begin when you are.` },
+    ]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -525,7 +517,7 @@ const PracticePage = () => {
                 <div className="flex gap-2 mt-3">
                   <Button variant="outline" size="sm" onClick={handleReset} disabled={!selectedRole || isLoading}>
                     <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                    Reset & Get Feedback
+                    Reset Conversation
                   </Button>
                 </div>
               </div>
