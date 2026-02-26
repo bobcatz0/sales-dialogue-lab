@@ -13,17 +13,17 @@ const CTASection = () => {
           className="card-elevated glow-border p-12 md:p-16 text-center max-w-3xl mx-auto"
         >
           <h2 className="font-heading text-3xl font-bold md:text-4xl">
-            Ready to Sound Like a <span className="text-gradient">Pro</span>?
+            Explore the <span className="text-gradient">Full Library</span>
           </h2>
           <p className="mt-4 text-muted-foreground max-w-md mx-auto">
-            Get instant access to all roleplays, scripts, objection handlers, and frameworks. Start practicing today.
+            Browse all roleplays, scripts, and frameworks. Use them to prepare for real conversations.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button variant="hero" size="lg" className="gap-2">
-              Get Started Free <ArrowRight className="h-4 w-4" />
+            <Button variant="hero" size="lg" className="gap-2" asChild>
+              <a href="#scripts">View Scripts <ArrowRight className="h-4 w-4" /></a>
             </Button>
-            <Button variant="heroOutline" size="lg" className="gap-2">
-              <Download className="h-4 w-4" /> Download Templates
+            <Button variant="heroOutline" size="lg" asChild>
+              <a href="/roleplays">Browse Roleplays</a>
             </Button>
           </div>
         </motion.div>
