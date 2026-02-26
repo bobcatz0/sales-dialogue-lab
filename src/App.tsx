@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Frameworks from "./pages/Frameworks";
 import Roleplays from "./pages/Roleplays";
 import AIRoleplay from "./pages/AIRoleplay";
+import Practice from "./pages/Practice";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/frameworks" element={<Frameworks />} />
           <Route path="/roleplays" element={<Roleplays />} />
           <Route path="/ai-roleplay" element={<AIRoleplay />} />
+          <Route path="/practice" element={<Practice />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

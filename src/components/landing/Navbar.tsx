@@ -17,6 +17,7 @@ const Navbar = () => {
           <a href="/frameworks" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Frameworks</a>
           <a href="/roleplays" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Roleplays</a>
           <a href="/ai-roleplay" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Roleplay Scenarios</a>
+          <a href="/practice" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Practice</a>
         </div>
         <Button variant="hero" size="sm" asChild>
           <a href="#scripts">View Scripts</a>
