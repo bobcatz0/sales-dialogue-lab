@@ -22,6 +22,15 @@ import {
 } from "@/components/practice/progression";
 import { UnlockModal } from "@/components/practice/UnlockModal";
 import { Badge } from "@/components/ui/badge";
+import {
+  loadAlias,
+  loadEarnedBadges,
+  evaluateBadges,
+  BADGE_DEFINITIONS,
+} from "@/components/practice/achievements";
+import { AliasPrompt } from "@/components/practice/AliasPrompt";
+import { BadgeUnlockModal } from "@/components/practice/BadgeUnlockModal";
+import { ProfilePanel } from "@/components/practice/ProfilePanel";
 
 
 // --- Streaming ---
@@ -115,6 +124,9 @@ const PracticePage = () => {
   const [lastPoints, setLastPoints] = useState<number | null>(null);
   const [progression, setProgression] = useState(() => loadProgression());
   const [unlockQueue, setUnlockQueue] = useState<{ id: string; label: string; description: string }[]>([]);
+  const [alias, setAlias] = useState<string | null>(() => loadAlias());
+  const [showAliasPrompt, setShowAliasPrompt] = useState(false);
+  const [badgeQueue, setBadgeQueue] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
 
@@ -276,6 +288,25 @@ const PracticePage = () => {
       if (newUnlocks.length > 0) {
         setUnlockQueue(newUnlocks);
       }
+
+      // Evaluate badges
+      const updatedConsistency = loadConsistency();
+      const newBadges = evaluateBadges({
+        roleId: activeRole.id,
+        sessionScore: data.score,
+        peakDifficulty: data.peakDifficulty ?? 1,
+        currentStreak: updatedConsistency.currentStreak,
+        totalValidSessions: updatedConsistency.totalSessions,
+        isValidSession,
+      });
+      if (newBadges.length > 0) {
+        setBadgeQueue(newBadges);
+      }
+
+      // Prompt alias on first valid session completion
+      if (isValidSession && !loadAlias()) {
+        setShowAliasPrompt(true);
+      }
     } catch (e: any) {
       console.error(e);
       toast.error(e.message || "Could not generate feedback");
@@ -364,6 +395,11 @@ const PracticePage = () => {
                 })}
               </div>
             </div>
+
+            {/* Profile Panel */}
+            {alias && (
+              <ProfilePanel alias={alias} consistency={loadConsistency()} />
+            )}
 
             {/* Session History — below roles on left column */}
             <SessionHistory
@@ -578,6 +614,22 @@ const PracticePage = () => {
         personaName={unlockQueue[0]?.label ?? ""}
         personaDescription={unlockQueue[0]?.description ?? ""}
         onClose={() => setUnlockQueue((q) => q.slice(1))}
+      />
+
+      {/* Badge Unlock Modal */}
+      <BadgeUnlockModal
+        open={badgeQueue.length > 0}
+        badge={BADGE_DEFINITIONS.find((b) => b.id === badgeQueue[0]) ?? null}
+        onClose={() => setBadgeQueue((q) => q.slice(1))}
+      />
+
+      {/* Alias Prompt */}
+      <AliasPrompt
+        open={showAliasPrompt}
+        onComplete={(a) => {
+          setAlias(a);
+          setShowAliasPrompt(false);
+        }}
       />
     </div>
   );

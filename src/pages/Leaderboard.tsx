@@ -1,26 +1,33 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Flame, TrendingUp, TrendingDown, Target, User, Minus, Award, Zap } from "lucide-react";
+import { Trophy, Flame, TrendingUp, TrendingDown, Target, Minus, Award, Zap, User } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { loadConsistency, computeProfileStats, type ConsistencyData } from "@/components/practice/consistencyScoring";
 import { loadHistory } from "@/components/practice/sessionStorage";
 import { roles } from "@/components/practice/roleData";
+import { getRank } from "@/components/practice/progression";
+import { loadAlias, loadEarnedBadges } from "@/components/practice/achievements";
 import type { SessionRecord } from "@/components/practice/types";
 
 const LeaderboardPage = () => {
   const [consistency, setConsistency] = useState<ConsistencyData | null>(null);
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
+  const [alias, setAlias] = useState<string | null>(null);
+  const [badgeCount, setBadgeCount] = useState(0);
 
   useEffect(() => {
     setConsistency(loadConsistency());
     setSessions(loadHistory());
+    setAlias(loadAlias());
+    setBadgeCount(loadEarnedBadges().length);
   }, []);
 
   if (!consistency) return null;
 
   const stats = computeProfileStats(sessions);
   const mostPracticedRole = roles.find((r) => r.id === stats.mostPracticed);
+  const rank = getRank(consistency.score);
 
   const trendIcon =
     stats.trend === "up" ? <TrendingUp className="h-4 w-4 text-primary" /> :
@@ -46,6 +53,34 @@ const LeaderboardPage = () => {
               Consistency beats talent. Show up, improve, repeat.
             </p>
           </div>
+
+          {/* Identity card */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.05 }}
+            className="card-elevated p-5 flex items-center gap-4"
+          >
+            <div className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+              <User className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-lg font-heading font-bold text-foreground truncate">
+                {alias ?? "Anonymous"}
+              </p>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <Badge variant="outline" className="text-[10px] font-semibold border-primary/40 text-primary">
+                  {rank}
+                </Badge>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Flame className="h-3 w-3" /> {consistency.currentStreak} day streak
+                </span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Award className="h-3 w-3" /> {badgeCount} badge{badgeCount !== 1 ? "s" : ""}
+                </span>
+              </div>
+            </div>
+          </motion.div>
 
           {/* Consistency Score Hero */}
           <motion.div
@@ -79,7 +114,7 @@ const LeaderboardPage = () => {
             {/* Sign up banner */}
             <div className="bg-muted/50 rounded-lg p-3 border border-border mt-4">
               <p className="text-xs text-muted-foreground">
-                🔒 Sign up coming soon to sync across devices.
+                🔒 Accounts coming soon to sync across devices.
               </p>
             </div>
           </motion.div>
