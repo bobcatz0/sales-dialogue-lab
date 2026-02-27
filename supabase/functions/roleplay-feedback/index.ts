@@ -16,7 +16,8 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const isInterview = environmentId === "interview";
+    const isInterview = environmentId === "interview" || environmentId === "final-round";
+    const isFinalRound = environmentId === "final-round";
 
     const interviewScoringBlock = `
 INTERVIEW-SPECIFIC SCORING CRITERIA (use these weights):
@@ -84,6 +85,12 @@ Return a JSON object with this EXACT structure — nothing else:
     "credibilityImpact": "<1 sentence: why this weakened credibility — e.g. 'In a real interview, this may signal lack of ownership or inflated performance.'>",
     "recoveryFailure": "<1 sentence: how the follow-up pressure was not addressed — e.g. 'Under follow-up pressure, clarity did not improve.'>",
     "correctiveExample": "<1 sentence: a concrete corrective answer the candidate could have given — e.g. 'At that time, I was averaging 95 calls per week, which increased to 120 after restructuring my call blocks.'>"
+  }` : ""}${isFinalRound ? `,
+  "finalRoundMetrics": {
+    "pressureResilience": <0-100: how well the candidate maintained performance quality when challenged or pressured>,
+    "recoveryStrength": <0-100: how effectively the candidate improved answers after being challenged on weak spots>,
+    "composure": <0-100: how professional and steady the candidate remained throughout — no defensiveness, no rambling under stress>,
+    "performanceDeclined": <true if the candidate's answer quality noticeably dropped in the second half of the session compared to the first half>
   }` : ""}
 }
 
@@ -93,6 +100,18 @@ EVALUATOR STYLE SCORING VARIANCE:
 This session used the "${evaluatorStyle}" evaluator profile. Apply subtle scoring adjustments (max 10-15% variance):
 ${evaluatorStyle === "analytical" ? "- Increase weight on Clarity (+10%) and Structure (+5%). Reduce weight on Conversational Control (-5%). Penalize vague claims more heavily. Reward quantified results with specific methodology." : ""}${evaluatorStyle === "results-oriented" ? "- Increase weight on Conciseness (+10%) and Conversational Control (+5%). Reduce weight on Structure (-5%). Penalize long explanations without stated outcomes. Reward direct, outcome-driven answers." : ""}${evaluatorStyle === "behavioral" ? "- Increase weight on Objection Handling (+5%) and Structure (+5%). Evaluate ownership language — penalize 'we' without specifying individual contribution. Reward reflection, learning insights, and accountability." : ""}
 This variance must feel realistic, not arbitrary. Do not override core scoring fairness.` : ""}
+${isFinalRound ? `
+FINAL ROUND EVALUATION RULES:
+This is an elevated-pressure final round. Apply stricter standards:
+- Scoring weights shift: Conciseness (25%), Ownership (25%), Structure (25%), Next-Step Framing (15%), Composure (10%).
+- Be 10-15% stricter on scoring than standard interview mode across all dimensions.
+- "pressureResilience": 80+ = stayed sharp under pressure. Below 50 = crumbled.
+- "recoveryStrength": 80+ = clear improvement after challenge. Below 40 = no adaptation.
+- "composure": Defensiveness, rambling, or visible frustration reduce this score.
+- "performanceDeclined": true ONLY if second-half answer quality was noticeably weaker than first half.
+- If performanceDeclined is true, add to improvements: "Performance declined under elevated pressure."
+- Do NOT shield the score. Final round standards are higher.
+` : ""}
 
 SKILL BREAKDOWN SCORING:
 Evaluate each skill dimension independently based on the conversation:

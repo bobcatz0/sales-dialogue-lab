@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness } from "./types";
+import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
@@ -149,6 +149,7 @@ export function FeedbackPanel({
   onStartDrill,
   alias,
   isValidSession,
+  isFinalRound,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
@@ -156,9 +157,11 @@ export function FeedbackPanel({
   onStartDrill?: () => void;
   alias?: string | null;
   isValidSession?: boolean;
+  isFinalRound?: boolean;
 }) {
   const interview = isInterviewRank(feedback.rank);
   const skills = feedback.skillBreakdown || [];
+  const frm = feedback.finalRoundMetrics;
 
   const handleDownload = useCallback(() => {
     downloadPDF(feedback, alias ?? null);
@@ -175,7 +178,7 @@ export function FeedbackPanel({
       {/* Header */}
       <div className="px-5 py-3 border-b border-border">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Performance Report
+          {isFinalRound ? "Final Round Evaluation" : "Performance Report"}
         </h3>
       </div>
 
@@ -405,11 +408,41 @@ export function FeedbackPanel({
           </div>
         )}
 
-        {/* Final Round Readiness */}
-        {interview && feedback.score >= 75 && (
+        {/* Final Round Metrics */}
+        {isFinalRound && frm && (
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+              Final Round Assessment
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Pressure Resilience", value: frm.pressureResilience },
+                { label: "Recovery Strength", value: frm.recoveryStrength },
+                { label: "Composure", value: frm.composure },
+              ].map((metric) => (
+                <div key={metric.label} className="text-center p-2 rounded-lg bg-muted/40 border border-border">
+                  <p className={`text-lg font-bold font-heading ${getScoreBarColor(metric.value).replace("bg-", "text-")}`}>
+                    {metric.value}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">{metric.label}</p>
+                </div>
+              ))}
+            </div>
+            {frm.performanceDeclined && (
+              <div className="rounded-lg p-2.5 bg-destructive/8 border border-destructive/20">
+                <p className="text-[11px] font-medium text-destructive">
+                  Performance declined under elevated pressure.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Final Round Readiness — standard interview only */}
+        {!isFinalRound && interview && feedback.score >= 85 && (
           <div className="flex items-center justify-center gap-2 py-2">
             <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
-              Ready for Final Round Simulation
+              Final Round Simulation Unlocked
             </span>
           </div>
         )}

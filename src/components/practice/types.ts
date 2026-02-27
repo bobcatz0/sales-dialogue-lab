@@ -29,6 +29,14 @@ export interface Feedback {
   exposureMoments?: ExposureMoment[];
   recoveryAssessment?: RecoveryAssessment;
   criticalWeakness?: CriticalWeakness;
+  finalRoundMetrics?: FinalRoundMetrics;
+}
+
+export interface FinalRoundMetrics {
+  pressureResilience: number; // 0-100
+  recoveryStrength: number; // 0-100
+  composure: number; // 0-100
+  performanceDeclined?: boolean;
 }
 
 export interface ExposureMoment {
