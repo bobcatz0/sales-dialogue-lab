@@ -3,10 +3,10 @@
  * Each environment filters available personas and tunes pressure/scoring.
  */
 
-import { Briefcase, PhoneOutgoing, Building2 } from "lucide-react";
+import { Briefcase, PhoneOutgoing, Building2, Shield } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export type EnvironmentId = "interview" | "cold-call" | "enterprise";
+export type EnvironmentId = "interview" | "cold-call" | "enterprise" | "final-round";
 
 export interface Environment {
   id: EnvironmentId;
@@ -67,6 +67,38 @@ This is an unsolicited outreach call. The prospect did NOT ask for this call. Be
 This is a mid-to-late stage enterprise evaluation. Multiple stakeholders are involved. The conversation requires strategic framing, not just feature pitching. Evaluate the caller on: objection handling depth, strategic positioning (business case, not just product), and executive-level clarity. Difficulty should escalate faster than normal — raise multi-layer objections (technical + budget + timeline) starting from exchange 3.`,
     timePressureThresholdS: 240,
     callEndingEnabled: true,
+    difficultyEscalationRate: "fast",
+  },
+  {
+    id: "final-round",
+    title: "Final Round",
+    subtitle: "Elevated pressure evaluation",
+    description: "Late-stage interview simulation with heightened scrutiny, faster interruptions, and zero tolerance for vague or unstructured answers.",
+    icon: Shield,
+    personaIds: ["hiring-manager"],
+    promptAddendum: `ENVIRONMENT CONTEXT — Final Round Simulation:
+This is a FINAL ROUND interview. The candidate has passed earlier stages. Standards are significantly higher.
+
+BEHAVIORAL RULES:
+- Interrupt after 2 sentences if no substance has been delivered. Say: "Get to the point." or "What specifically happened?"
+- Show visible skepticism toward all metrics. Ask: "How was that measured?", "What was the baseline?", "Who validated that number?"
+- If the candidate uses "we" or "the team" even once without clarifying their role, immediately push: "What was YOUR contribution?"
+- If an answer runs past 4 sentences, interrupt: "Condense that to one sentence."
+- Do NOT volunteer follow-up topics. Force the candidate to drive structure.
+- After any weak answer, apply immediate recovery pressure — shorter responses, sharper tone, more direct challenges.
+- If performance drops noticeably mid-session, note it internally for the performance report.
+
+EVALUATION WEIGHTS (Final Round):
+- Conciseness (25%): Answers must be tight and outcome-driven.
+- Ownership (25%): Clear individual contribution, no deflection.
+- Structured Thinking (25%): Logical frameworks, clear sequencing.
+- Direct Next-Step Framing (15%): Proactive, specific proposals.
+- Composure Under Pressure (10%): Maintains professionalism when challenged.
+
+TONE: Serious. Evaluative. Professional. No warmth. No encouragement. No small talk.
+This is not a conversation — it is an evaluation.`,
+    timePressureThresholdS: 480,
+    callEndingEnabled: false,
     difficultyEscalationRate: "fast",
   },
 ];
