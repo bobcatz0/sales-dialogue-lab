@@ -92,7 +92,7 @@ Return a JSON object with this EXACT structure — nothing else:
     "composure": <0-100: how professional and steady the candidate remained throughout — no defensiveness, no rambling under stress>,
     "performanceDeclined": <true if the candidate's answer quality noticeably dropped in the second half of the session compared to the first half>
   }` : ""}${isInterview ? `,
-  "pacingNote": <if any user responses were excessively long or rambling (would take 45+ seconds to speak), set to "Pacing Adjustment Needed: Responses exceeded optimal interview length." Otherwise set to null>` : ""}
+  "pacingNote": <if any user responses were excessively long or rambling (would take ${isFinalRound ? "35+" : "45+"} seconds to speak), set to "Pacing Adjustment Needed: Responses exceeded optimal interview length." Otherwise set to null>` : ""}
 }
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
@@ -115,17 +115,20 @@ This is an elevated-pressure final round. Apply stricter standards:
 ` : ""}
 
 SKILL BREAKDOWN SCORING:
-Evaluate each skill dimension independently based on the conversation:
-- Clarity: How clear and specific were the user's statements? Did they avoid vague language?
+Evaluate each skill dimension independently based on the conversation. Apply strict standards — do not inflate scores:
+- Clarity: How clear and specific were the user's statements? Any vague claim without a metric should reduce this score. Over-polished answers that sound smooth but lack substance should ALSO reduce this score.
 - Structure: Did responses follow logical flow? Were frameworks or patterns used?
 - Objection Handling: ${isInterview ? "How well did the candidate handle tough follow-up questions and challenges?" : "How effectively were objections acknowledged and addressed?"}
 - Conversational Control: Did the user drive the conversation forward, or were they reactive?
-- Conciseness: Were responses appropriately scoped, not too long or too short?
+- Conciseness: Were responses appropriately scoped? Any response that would take 45+ seconds to speak aloud should significantly reduce this score. In Final Round, the threshold is 35 seconds.
+
+OVER-SMOOTHING PENALTY:
+If answers sounded polished but lacked real substance — specific numbers, concrete examples, or authentic details — reduce the Clarity score by 5-10 points even if Structure is strong. Smooth delivery without evidence is a red flag, not a strength.
 
 TRAINING RECOMMENDATION:
 Based on the weakest skill area, suggest a specific next training session. Format: "<Environment> mode with <Persona> — focus on <specific skill>." Example: "Cold Call mode with Gatekeeper — focus on opening clarity under pressure."
 
-ANTI-GAMING SCORE ADJUSTMENT:
+
 Before scoring, check for these patterns and REDUCE the score accordingly:
 - Repetitive lines: If the user repeated similar phrases 3+ times, reduce score by 10-15 points.
 - Extremely short answers: If 50%+ of user messages are under 10 words, reduce by 10 points.
