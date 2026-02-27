@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, roleTitle, environmentId, resumeHighlights } = await req.json();
+    const { messages, roleTitle, environmentId, resumeHighlights, evaluatorStyle } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -66,10 +66,16 @@ Return a JSON object with this EXACT structure — nothing else:
     "claimsMatched": <true if answers substantiated resume claims with specifics>,
     "metricsDefended": <true if numbers/metrics were backed with methodology or context>,
     "consistencyNote": "<1-2 sentence assessment of alignment between resume and answers>"
-  }` : ""}
+  }` : ""}${evaluatorStyle ? `,
+  "evaluatorStyle": "${evaluatorStyle}"` : ""}
 }
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
+${evaluatorStyle && isInterview ? `
+EVALUATOR STYLE SCORING VARIANCE:
+This session used the "${evaluatorStyle}" evaluator profile. Apply subtle scoring adjustments (max 10-15% variance):
+${evaluatorStyle === "analytical" ? "- Increase weight on Clarity (+10%) and Structure (+5%). Reduce weight on Conversational Control (-5%). Penalize vague claims more heavily. Reward quantified results with specific methodology." : ""}${evaluatorStyle === "results-oriented" ? "- Increase weight on Conciseness (+10%) and Conversational Control (+5%). Reduce weight on Structure (-5%). Penalize long explanations without stated outcomes. Reward direct, outcome-driven answers." : ""}${evaluatorStyle === "behavioral" ? "- Increase weight on Objection Handling (+5%) and Structure (+5%). Evaluate ownership language — penalize 'we' without specifying individual contribution. Reward reflection, learning insights, and accountability." : ""}
+This variance must feel realistic, not arbitrary. Do not override core scoring fairness.` : ""}
 
 SKILL BREAKDOWN SCORING:
 Evaluate each skill dimension independently based on the conversation:

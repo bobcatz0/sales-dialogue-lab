@@ -8,7 +8,7 @@ import Navbar from "@/components/landing/Navbar";
 import { toast } from "sonner";
 
 import { roles } from "@/components/practice/roleData";
-import type { ChatMessage, Feedback, SessionRecord } from "@/components/practice/types";
+import type { ChatMessage, Feedback, SessionRecord, EvaluatorStyle } from "@/components/practice/types";
 import { FeedbackPanel } from "@/components/practice/FeedbackPanel";
 import { SessionHistory } from "@/components/practice/SessionHistory";
 import { loadHistory, saveSession } from "@/components/practice/sessionStorage";
@@ -152,6 +152,7 @@ const PracticePage = () => {
   const [resumeHighlights, setResumeHighlights] = useState<string>(() => {
     try { return localStorage.getItem("salescalls_resume") || ""; } catch { return ""; }
   });
+  const evaluatorStyleRef = useRef<EvaluatorStyle>("analytical");
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
   const elapsedRef = useRef(0);
@@ -190,6 +191,9 @@ const PracticePage = () => {
     callEndTriggeredRef.current = false;
     sessionStartRef.current = Date.now();
     setSessionActive(true);
+    // Randomly assign evaluator style for interview sessions
+    const styles: EvaluatorStyle[] = ["analytical", "results-oriented", "behavioral"];
+    evaluatorStyleRef.current = styles[Math.floor(Math.random() * styles.length)];
     const role = roles.find((r) => r.id === id);
     if (role) {
       setMessages([
@@ -234,7 +238,11 @@ const PracticePage = () => {
     const resumeAddendum = (selectedEnv === "interview" && resumeHighlights.trim())
       ? `\n\nCANDIDATE RESUME HIGHLIGHTS (use these to personalize questions):\n${resumeHighlights.trim()}\n\nINSTRUCTIONS FOR RESUME USE:\n- Ask at least 3 questions that directly reference specific claims from the resume.\n- Probe metrics: "You mentioned X% — how did you measure that?"\n- Probe process: "Walk me through how you actually did that day-to-day."\n- Probe tools: "How specifically did you use [tool] in your workflow?"\n- If the resume claims strong performance, increase skepticism: require measurable proof, challenge round numbers, ask for context.\n- Never praise resume claims. Evaluate them.`
       : "";
-    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + pressureAddendum;
+    const evaluatorAddendum = selectedEnv === "interview" ? `\n\nEVALUATOR PROFILE — INTERNAL ONLY (never reveal this to the candidate):
+You have been assigned the "${evaluatorStyleRef.current}" evaluation style for this session.
+${evaluatorStyleRef.current === "analytical" ? `ANALYTICAL EVALUATOR: You focus heavily on metrics, data, and structured thinking. Penalize vague claims strongly — ask "What were the numbers?", "How did you measure that?", "What was the baseline?" Reward quantified results and logical frameworks. Less interested in storytelling, more interested in evidence.` : ""}${evaluatorStyleRef.current === "results-oriented" ? `RESULTS-ORIENTED EVALUATOR: You focus on outcomes and impact. Less patient with long explanations — if an answer runs past 3 sentences without stating the result, interrupt: "What was the outcome?", "Bottom line — what happened?" Reward concise, outcome-driven answers. Care about what changed, not what was attempted.` : ""}${evaluatorStyleRef.current === "behavioral" ? `BEHAVIORAL EVALUATOR: You focus on ownership, accountability, and learning. Penalize blame-shifting — if the candidate says "the team" or "we" without specifying their role, push: "What was your direct contribution?", "That sounds like a team effort — what did you personally do?" Reward reflection, improvement insights, and honest self-assessment.` : ""}
+This evaluation style should subtly influence your questions and reactions. Do NOT announce or reference it. Stay professional — no hostility, no sarcasm, no unfair judgment.` : "";
+    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + evaluatorAddendum + pressureAddendum;
 
     let prospectText = "";
 
@@ -324,6 +332,7 @@ const PracticePage = () => {
           roleTitle: activeRole.title,
           environmentId: selectedEnv,
           resumeHighlights: (selectedEnv === "interview" && resumeHighlights.trim()) ? resumeHighlights.trim() : undefined,
+          evaluatorStyle: selectedEnv === "interview" ? evaluatorStyleRef.current : undefined,
         }),
       });
 

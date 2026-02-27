@@ -311,6 +311,23 @@ export function FeedbackPanel({
           </div>
         )}
 
+        {/* G. Evaluator Style — interview only */}
+        {interview && feedback.evaluatorStyle && (
+          <div className="rounded-md p-2.5 bg-muted/30 border border-border">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+              Evaluation Style
+            </p>
+            <p className="text-[11px] text-foreground font-medium capitalize">
+              {feedback.evaluatorStyle.replace("-", " ")}
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
+              {feedback.evaluatorStyle === "analytical" && "This session emphasized metrics, data specificity, and structured reasoning."}
+              {feedback.evaluatorStyle === "results-oriented" && "This session emphasized outcomes, impact, and concise delivery."}
+              {feedback.evaluatorStyle === "behavioral" && "This session emphasized ownership, accountability, and learning from experience."}
+            </p>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-2 pt-1">
           <Button variant="default" size="sm" className="flex-1 h-9" onClick={onStartNew}>
