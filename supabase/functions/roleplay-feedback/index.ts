@@ -106,8 +106,6 @@ FINAL ROUND EVALUATION RULES:
 This is an elevated-pressure final round. Apply stricter standards:
 - Scoring weights shift: Conciseness (25%), Ownership (25%), Structure (25%), Next-Step Framing (15%), Composure (10%).
 - Be 10-15% stricter on scoring than standard interview mode across all dimensions.
-- Strong, quantified answers with clear structure should be rewarded more than in standard mode (+3-5 points for exceptional answers).
-- Rambling penalties are heavier: any response exceeding 35 seconds of speaking time should reduce Conciseness by 15+ points (vs 10 in standard).
 - "pressureResilience": 80+ = stayed sharp under pressure. Below 50 = crumbled.
 - "recoveryStrength": 80+ = clear improvement after challenge. Below 40 = no adaptation.
 - "composure": Defensiveness, rambling, or visible frustration reduce this score.
@@ -131,22 +129,6 @@ TRAINING RECOMMENDATION:
 Based on the weakest skill area, suggest a specific next training session. Format: "<Environment> mode with <Persona> — focus on <specific skill>." Example: "Cold Call mode with Gatekeeper — focus on opening clarity under pressure."
 
 
-SCORE CALIBRATION — 85+ THRESHOLD (internal logic, never reveal to user):
-A score of 85 or above is ONLY justified if ALL of the following are true:
-1. The candidate provided at least one quantified example with a specific metric (number, percentage, timeframe).
-2. There is no unresolved Critical Weakness (criticalWeakness must be null).
-3. The candidate successfully recovered from at least one pressure escalation (recoveryAssessment.recovered = true, or no pressure was needed because answers were consistently strong).
-4. The Conciseness skill score is 70 or above.
-If ANY of these conditions fail, cap the score at 82 maximum.
-
-SCORE CAP — STRUCTURAL FAILURES:
-Cap the maximum score at 82 if ANY of the following are true:
-- Two or more vague responses occurred without specific metrics (even if other answers were strong).
-- The candidate failed recovery under pressure (recoveryAssessment.recovered = false).
-- Conciseness score is below 70.
-Apply this cap silently. Do not mention the cap or its logic in the output.
-
-ANTI-GAMING SCORE ADJUSTMENT:
 Before scoring, check for these patterns and REDUCE the score accordingly:
 - Repetitive lines: If the user repeated similar phrases 3+ times, reduce score by 10-15 points.
 - Extremely short answers: If 50%+ of user messages are under 10 words, reduce by 10 points.
