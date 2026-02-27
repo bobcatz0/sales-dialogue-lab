@@ -10,6 +10,7 @@ import AIRoleplay from "./pages/AIRoleplay";
 import Practice from "./pages/Practice";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
+import DrillLibrary from "./pages/DrillLibrary";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/ai-roleplay" element={<AIRoleplay />} />
           <Route path="/practice" element={<Practice />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/drills" element={<DrillLibrary />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
