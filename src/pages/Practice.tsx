@@ -46,7 +46,19 @@ import {
   type SDRTrackProgress,
 } from "@/components/practice/sdrTrack";
 import { CheckCircle2, Circle, Award } from "lucide-react";
-
+import {
+  hasSeenOnboarding,
+  setInterviewStatus,
+  trackEarlyReset,
+  trackSessionAbandon,
+  trackResumeSkip,
+  trackSessionCompleted,
+  trackHelpfulResponse,
+  trackWouldRunAgain,
+  getCompletedSessionCount,
+} from "@/components/practice/frictionTracking";
+import { OnboardingModal } from "@/components/practice/OnboardingModal";
+import { PostSessionPrompt } from "@/components/practice/PostSessionPrompt";
 
 // --- Streaming ---
 
@@ -157,6 +169,10 @@ const PracticePage = () => {
   const sessionStartRef = useRef<number>(Date.now());
   const elapsedRef = useRef(0);
   const callEndTriggeredRef = useRef(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => !hasSeenOnboarding());
+  const [showHelpfulPrompt, setShowHelpfulPrompt] = useState(false);
+  const [showRunAgainPrompt, setShowRunAgainPrompt] = useState(false);
+  const sessionStartedWithRole = useRef(false);
 
   const timer = useCallTimer(sessionActive);
 
@@ -180,6 +196,14 @@ const PracticePage = () => {
   }, [messages]);
 
   const handleStart = (id: string) => {
+    // Track resume skip for interview mode
+    if (selectedEnv === "interview" && !resumeHighlights.trim()) {
+      trackResumeSkip();
+    }
+    // Track abandon if previous session was active but never ended
+    if (sessionActive && sessionStartedWithRole.current) {
+      trackSessionAbandon();
+    }
     setSelectedRole(id);
     setMessages([]);
     setInput("");
@@ -188,9 +212,12 @@ const PracticePage = () => {
     setIsFeedbackLoading(false);
     setLastPoints(null);
     setHardCloseWin(false);
+    setShowHelpfulPrompt(false);
+    setShowRunAgainPrompt(false);
     callEndTriggeredRef.current = false;
     sessionStartRef.current = Date.now();
     setSessionActive(true);
+    sessionStartedWithRole.current = true;
     // Randomly assign evaluator style for interview sessions
     const styles: EvaluatorStyle[] = ["analytical", "results-oriented", "behavioral"];
     evaluatorStyleRef.current = styles[Math.floor(Math.random() * styles.length)];
@@ -294,6 +321,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
 
   const handleReset = () => {
     if (!selectedRole || !activeRole) return;
+    // Track early reset if user had fewer than 4 messages
+    const userMsgs = messages.filter((m) => m.role === "user").length;
+    if (userMsgs > 0 && userMsgs < 4) {
+      trackEarlyReset();
+    }
     setMessages([]);
     setInput("");
     setIsLoading(false);
@@ -437,6 +469,14 @@ This evaluation style should subtly influence your questions and reactions. Do N
             localStorage.setItem("salescalls_badges", JSON.stringify(badgesStorage));
           }
         }
+      }
+
+      // Track completion and show post-session prompts
+      const completedCount = trackSessionCompleted();
+      sessionStartedWithRole.current = false;
+      setShowHelpfulPrompt(true);
+      if (completedCount >= 2) {
+        setShowRunAgainPrompt(true);
       }
 
       // Prompt alias on first valid session completion
@@ -916,6 +956,25 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       if (selectedRole) handleStart(selectedRole);
                     }}
                   />
+                  {/* Post-session prompts */}
+                  {showHelpfulPrompt && (
+                    <PostSessionPrompt
+                      type="helpful"
+                      onResponse={(r) => {
+                        trackHelpfulResponse(r);
+                        setShowHelpfulPrompt(false);
+                      }}
+                    />
+                  )}
+                  {showRunAgainPrompt && (
+                    <PostSessionPrompt
+                      type="run-again"
+                      onResponse={(r) => {
+                        trackWouldRunAgain(r);
+                        setShowRunAgainPrompt(false);
+                      }}
+                    />
+                  )}
                 </>
               )}
             </AnimatePresence>
@@ -945,6 +1004,18 @@ This evaluation style should subtly influence your questions and reactions. Do N
         onComplete={(a) => {
           setAlias(a);
           setShowAliasPrompt(false);
+        }}
+      />
+
+      {/* Onboarding Modal — first visit only */}
+      <OnboardingModal
+        open={showOnboarding}
+        onSelect={(status) => {
+          setInterviewStatus(status);
+          setShowOnboarding(false);
+          if (status === "interviewing") {
+            setSelectedEnv("interview");
+          }
         }}
       />
     </div>
