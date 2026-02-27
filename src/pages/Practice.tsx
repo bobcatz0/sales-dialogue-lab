@@ -34,6 +34,8 @@ import { ProfilePanel } from "@/components/practice/ProfilePanel";
 import { buildPressurePrompt, detectCallEnd, detectHardCloseWin, cleanResponseText } from "@/components/practice/pressureEngine";
 import { useCallTimer } from "@/components/practice/CallTimer";
 import { ENVIRONMENTS, getEnvironment, type EnvironmentId } from "@/components/practice/environments";
+import { getTodayChallenge, checkChallengeCondition, markChallengeCompleted, CHALLENGE_BONUS_POINTS } from "@/components/practice/dailyChallenge";
+import { DailyChallengeCard } from "@/components/practice/DailyChallengeCard";
 
 
 // --- Streaming ---
@@ -132,6 +134,7 @@ const PracticePage = () => {
   const [showAliasPrompt, setShowAliasPrompt] = useState(false);
   const [badgeQueue, setBadgeQueue] = useState<string[]>([]);
   const [hardCloseWin, setHardCloseWin] = useState(false);
+  const [challengeCompleted, setChallengeCompleted] = useState(() => getTodayChallenge().completed);
   const [sessionActive, setSessionActive] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
@@ -177,6 +180,11 @@ const PracticePage = () => {
         { role: "prospect", text: `[${role.title}] — Ready. Begin when you are.` },
       ]);
     }
+  };
+
+  const handleStartChallenge = (envId: EnvironmentId, personaId: string) => {
+    setSelectedEnv(envId);
+    handleStart(personaId);
   };
 
   const handleSend = async () => {
@@ -355,6 +363,26 @@ const PracticePage = () => {
         setBadgeQueue(newBadges);
       }
 
+      // Daily Challenge completion check
+      if (isValidSession && !challengeCompleted && activeRole) {
+        const todayChallenge = getTodayChallenge();
+        if (
+          todayChallenge.challenge.environmentId === selectedEnv &&
+          todayChallenge.challenge.personaId === activeRole.id &&
+          checkChallengeCondition(todayChallenge.challenge.conditionKey, {
+            score: data.score,
+            peakDifficulty: data.peakDifficulty ?? 1,
+            userMessageCount: userMsgCount,
+            durationSeconds,
+            hardCloseWin,
+          })
+        ) {
+          markChallengeCompleted();
+          setChallengeCompleted(true);
+          toast.success(`Daily Challenge completed! +${CHALLENGE_BONUS_POINTS} bonus pts`, { duration: 4000 });
+        }
+      }
+
       // Prompt alias on first valid session completion
       if (isValidSession && !loadAlias()) {
         setShowAliasPrompt(true);
@@ -505,6 +533,9 @@ const PracticePage = () => {
                 </div>
               </div>
             )}
+
+            {/* Daily Challenge */}
+            <DailyChallengeCard onStart={handleStartChallenge} />
 
             {/* Profile Panel */}
             {alias && (
