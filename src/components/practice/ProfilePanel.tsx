@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { User, Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy } from "lucide-react";
+import { User, Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BADGE_DEFINITIONS, loadEarnedBadges } from "@/components/practice/achievements";
 import type { ConsistencyData } from "@/components/practice/consistencyScoring";
 import { getRank } from "@/components/practice/progression";
+import { getInterviewReadyStatus } from "@/components/practice/interviewReadyStatus";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
@@ -24,6 +25,7 @@ interface ProfilePanelProps {
 export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
   const rank = getRank(consistency.score);
   const earnedIds = loadEarnedBadges();
+  const interviewReady = getInterviewReadyStatus();
 
   return (
     <motion.div
@@ -90,6 +92,19 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Interview Ready Status */}
+      {interviewReady && (
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/15">
+          <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-semibold text-foreground">Interview Ready</p>
+            <p className="text-[9px] text-muted-foreground">
+              Score {interviewReady.score} · {new Date(interviewReady.grantedDate).toLocaleDateString()}
+            </p>
           </div>
         </div>
       )}
