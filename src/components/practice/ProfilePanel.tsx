@@ -42,7 +42,7 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
             {rank} · {consistency.currentStreak} day streak
           </p>
         </div>
-        <Badge variant="outline" className="text-[10px] font-semibold border-primary/40 text-primary shrink-0">
+        <Badge variant="outline" className="text-[10px] font-medium border-border text-muted-foreground shrink-0">
           {rank}
         </Badge>
       </div>
@@ -59,14 +59,14 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
         </div>
         <div>
           <div className="text-lg font-bold font-heading text-foreground">{earnedIds.length}</div>
-          <div className="text-[10px] text-muted-foreground">Badges</div>
+          <div className="text-[10px] text-muted-foreground">Milestones</div>
         </div>
       </div>
 
       {/* Badges grid */}
       {BADGE_DEFINITIONS.length > 0 && (
         <div>
-          <p className="text-[11px] text-muted-foreground mb-2 font-medium">Badges</p>
+          <p className="text-[11px] text-muted-foreground mb-2 font-medium">Milestones</p>
           <div className="grid grid-cols-4 gap-1.5">
             {BADGE_DEFINITIONS.map((b) => {
               const earned = earnedIds.includes(b.id);

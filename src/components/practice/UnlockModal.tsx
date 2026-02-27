@@ -34,7 +34,7 @@ export function UnlockModal({ open, personaName, personaDescription, onClose }: 
             )}
           </AnimatePresence>
           <DialogTitle className="text-lg font-heading">
-            Persona Unlocked
+            Scenario Unlocked
           </DialogTitle>
           <DialogDescription className="text-sm font-medium text-foreground mt-1">
             {personaName}

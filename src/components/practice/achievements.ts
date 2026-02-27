@@ -13,14 +13,14 @@ export interface BadgeDef {
 }
 
 export const BADGE_DEFINITIONS: BadgeDef[] = [
-  // Skill badges
-  { id: "gatekeeper-survivor", label: "Gatekeeper Survivor", description: "Completed a Gatekeeper session", icon: "shield" },
-  { id: "evaluator-passed", label: "Evaluator Passed", description: "Scored 70+ vs Technical Evaluator", icon: "cpu" },
-  { id: "champion-equipped", label: "Champion Equipped", description: "Completed a Champion session", icon: "trophy" },
-  { id: "level3-pressure", label: "Level 3 Pressure", description: "Reached Peak Difficulty Level 3", icon: "zap" },
-  // Consistency badges
-  { id: "streak-3", label: "3-Day Streak", description: "Practiced 3 days in a row", icon: "flame" },
-  { id: "streak-7", label: "7-Day Streak", description: "Practiced 7 days in a row", icon: "flame" },
+  // Skill milestones
+  { id: "gatekeeper-survivor", label: "Gatekeeper Cleared", description: "Completed a Gatekeeper scenario", icon: "shield" },
+  { id: "evaluator-passed", label: "Evaluator Passed", description: "Scored 70+ against Technical Evaluator", icon: "cpu" },
+  { id: "champion-equipped", label: "Champion Equipped", description: "Completed an Internal Champion session", icon: "trophy" },
+  { id: "level3-pressure", label: "High-Pressure Certified", description: "Reached high-pressure interaction level", icon: "zap" },
+  // Consistency milestones
+  { id: "streak-3", label: "3-Day Consistency", description: "Practiced 3 consecutive days", icon: "flame" },
+  { id: "streak-7", label: "7-Day Consistency", description: "Practiced 7 consecutive days", icon: "flame" },
   { id: "sessions-15", label: "15 Sessions", description: "Completed 15 valid sessions", icon: "target" },
   { id: "sessions-50", label: "50 Sessions", description: "Completed 50 valid sessions", icon: "star" },
 ];

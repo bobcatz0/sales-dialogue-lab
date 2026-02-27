@@ -33,7 +33,7 @@ export function BadgeUnlockModal({ open, badge, onClose }: BadgeUnlockModalProps
               </motion.div>
             )}
           </AnimatePresence>
-          <DialogTitle className="text-base font-heading">Badge Earned</DialogTitle>
+          <DialogTitle className="text-base font-heading">Milestone Reached</DialogTitle>
           <DialogDescription className="text-sm font-medium text-foreground mt-0.5">
             {badge?.label}
           </DialogDescription>
