@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
-import { User, Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2 } from "lucide-react";
+import { User, Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BADGE_DEFINITIONS, loadEarnedBadges } from "@/components/practice/achievements";
 import type { ConsistencyData } from "@/components/practice/consistencyScoring";
 import { getRank } from "@/components/practice/progression";
 import { getInterviewReadyStatus } from "@/components/practice/interviewReadyStatus";
+import { getDrillStats } from "@/components/practice/drillTracking";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
@@ -26,6 +27,7 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
   const rank = getRank(consistency.score);
   const earnedIds = loadEarnedBadges();
   const interviewReady = getInterviewReadyStatus();
+  const drillStats = getDrillStats();
 
   return (
     <motion.div
@@ -95,8 +97,43 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
           </div>
         </div>
       )}
+      {/* Drill Improvement Trends */}
+      {drillStats.totalDrills > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <TrendingUp className="h-3 w-3 text-muted-foreground" />
+            <p className="text-[11px] text-muted-foreground font-medium">Skill Drills</p>
+            <span className="text-[10px] text-muted-foreground/60 ml-auto">{drillStats.totalDrills} completed</span>
+          </div>
+          <div className="space-y-1.5">
+            {drillStats.byCategory.map((stat) => {
+              const maxCount = drillStats.byCategory[0]?.count || 1;
+              const pct = Math.round((stat.count / maxCount) * 100);
+              return (
+                <div key={stat.category} className="space-y-0.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">{stat.category}</span>
+                    <span className="text-[10px] text-foreground tabular-nums">{stat.count}</span>
+                  </div>
+                  <div className="h-1 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-primary/60 transition-all"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {drillStats.recentFocus && (
+            <p className="text-[10px] text-muted-foreground">
+              Recent focus: <span className="text-foreground font-medium">{drillStats.recentFocus}</span>
+            </p>
+          )}
+        </div>
+      )}
 
-      {/* Interview Ready Status */}
+
       {interviewReady && (
         <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/15">
           <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
