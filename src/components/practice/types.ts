@@ -27,12 +27,18 @@ export interface Feedback {
   };
   evaluatorStyle?: EvaluatorStyle;
   exposureMoments?: ExposureMoment[];
+  recoveryAssessment?: RecoveryAssessment;
 }
 
 export interface ExposureMoment {
   weakAnswer: string;
   reason: string;
   correction: string;
+}
+
+export interface RecoveryAssessment {
+  recovered: boolean;
+  note: string;
 }
 
 export interface SessionRecord {

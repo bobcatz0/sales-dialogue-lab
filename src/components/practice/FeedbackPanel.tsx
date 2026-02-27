@@ -351,6 +351,15 @@ export function FeedbackPanel({
           </div>
         )}
 
+        {/* Recovery Assessment — interview only */}
+        {interview && feedback.recoveryAssessment && (
+          <div className={`rounded-lg p-3 border ${feedback.recoveryAssessment.recovered ? "bg-primary/5 border-primary/20" : "bg-muted/40 border-border"}`}>
+            <p className={`text-[11px] font-medium leading-snug ${feedback.recoveryAssessment.recovered ? "text-primary" : "text-muted-foreground"}`}>
+              {feedback.recoveryAssessment.note}
+            </p>
+          </div>
+        )}
+
         {/* Confidence Reflection — interview only */}
         {interview && (
           <div className="bg-muted/30 rounded-lg p-3 border border-border">
