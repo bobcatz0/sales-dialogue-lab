@@ -37,29 +37,26 @@ const HeroSection = () => {
             Resume-personalized AI interview simulations with structured performance reports.
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button variant="hero" size="lg" className="gap-2" asChild>
-              <a href="/practice">Start Rehearsal <ArrowRight className="h-4 w-4" /></a>
-            </Button>
-            <Button variant="heroOutline" size="lg" asChild>
-              <a href="/frameworks">Explore Frameworks</a>
+          <div className="mt-10 flex items-center justify-center">
+            <Button variant="hero" size="lg" className="gap-2 text-base px-8 py-6" asChild>
+              <a href="/practice">Start Mock SDR Interview <ArrowRight className="h-4 w-4" /></a>
             </Button>
           </div>
 
           <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex flex-col items-center">
               <span className="text-2xl font-bold text-foreground font-heading">3</span>
-              <span>Roleplay Scenarios</span>
+              <span>Interview Scenarios</span>
             </div>
             <div className="h-8 w-px bg-border" />
             <div className="flex flex-col items-center">
-              <span className="text-2xl font-bold text-foreground font-heading">3</span>
-              <span>Call Scripts</span>
+              <span className="text-2xl font-bold text-foreground font-heading">AI</span>
+              <span>Resume Personalization</span>
             </div>
             <div className="h-8 w-px bg-border" />
             <div className="flex flex-col items-center">
-              <span className="text-2xl font-bold text-foreground font-heading">3</span>
-              <span>Frameworks</span>
+              <span className="text-2xl font-bold text-foreground font-heading">75+</span>
+              <span>Readiness Threshold</span>
             </div>
           </div>
         </motion.div>

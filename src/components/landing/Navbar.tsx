@@ -21,7 +21,7 @@ const Navbar = () => {
           <a href="/leaderboard" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">Leaderboard</a>
         </div>
         <Button variant="hero" size="sm" asChild>
-          <a href="/practice">Start Practicing</a>
+          <a href="/practice">Start Mock Interview</a>
         </Button>
       </div>
     </nav>
