@@ -96,25 +96,36 @@ BEST MOMENT:
 Quote the single strongest line from the ${isInterview ? "Candidate" : "Sales Rep"} — one that shows ${isInterview ? "clear thinking, a structured answer, or confident delivery" : "clear positioning, a sharp question, calm objection handling, or a confident next-step ask"}. Quote it exactly. If no line stands out, pick the clearest attempt. Never say "no strong moment found."
 
 STRENGTHS (exactly 2):
-Each MUST reference a specific moment or exchange from the conversation. Never use generic praise like "Good communication" or "Strong presence."
+Each MUST reference a specific moment or exchange from the conversation using precision language. Describe what the user did and why it was effective.
+TONE: Analytical, not praising. Write like a professional reviewer, not a coach.
 CORRECT examples:
-- "When asked about quota shortfall, cited specific recovery actions with measurable outcomes."
-- "After the budget objection, reframed cost as monthly per-seat — shifted the framing effectively."
+- "Clarity improved when specifying metrics during the quota performance question — shifted from abstract to concrete."
+- "Control increased when summarizing the objection before responding — demonstrated structured listening."
 WRONG examples (never do this):
-- "Good clarity." / "Strong objection handling." / "Communicated well."
+- "Good clarity." / "Strong objection handling." / "You did well." / "Great job on..."
 
-IMPROVEMENTS (exactly ${isInterview ? "1" : "2"}):
-Each MUST reference a specific conversational moment where the user fell short. Identify what happened and what was missing.
+IMPROVEMENTS (exactly 2):
+One MUST be a STRUCTURAL improvement (how the user organized their thoughts, sequenced their response, or framed the conversation).
+The other MUST be a LANGUAGE improvement (how the user phrased things — word choice, directness, specificity of language).
+Each MUST reference a specific conversational moment. Identify what happened and what was missing.
+If the user rambled, state: "Response lacked structure — [specific moment]."
+If the user was vague, state: "Language lacked specificity — [specific moment]."
 CORRECT examples:
-- "When discussing quota performance, no specific metrics were provided — the answer stayed abstract."
-- "The budget objection was addressed without first confirming decision-making authority."
+- "Structure: When discussing quota performance, the answer lacked logical sequencing — jumped between timeframes without connecting outcomes."
+- "Language: Next-step framing lacked directness — 'maybe we could chat again' should be a clear calendar ask."
 WRONG examples (never do this):
-- "Improve clarity." / "Work on objection handling." / "Be more concise."
+- "Improve clarity." / "Work on objection handling." / "Be more concise." / "Keep practicing."
 
 NEXT DRILL (exactly 1 sentence):
-${isInterview ? "One specific interview preparation exercise tailored to the identified development area." : "One specific exercise tailored to this persona type. Actionable and concrete."}
+Must be a specific micro-drill tied to the environment and persona used. Format: actionable instruction the user can practice immediately.
+CORRECT examples:
+- "Focus on giving quantified results within the first 30 seconds of any answer."
+- "Practice asking for the next step before explaining features."
+- "Drill: open with a one-sentence value hypothesis before any discovery question."
+WRONG examples:
+- "Practice more." / "Try again with this persona." / "Work on your skills."
 
-TONE: Neutral and direct. No motivational language. No "Great job!" or "Keep it up!" — just clear, specific analysis that references actual moments from the conversation.
+TONE: Professional review. No motivational language. No "Great job!", "Keep it up!", "Well done!", "You did well.", or any soft encouragement. Write like a performance analyst delivering a debrief — neutral, precise, referencing exact moments. Every sentence should make the user feel cognitively sharper.
 
 Return ONLY the JSON object. No markdown fences, no explanation.`;
 
