@@ -18,6 +18,11 @@ export interface Feedback {
   bestMoment: string;
   skillBreakdown?: SkillScore[];
   trainingRecommendation?: string;
+  resumeAlignment?: {
+    claimsMatched: boolean;
+    metricsDefended: boolean;
+    consistencyNote: string;
+  };
 }
 
 export interface SessionRecord {
