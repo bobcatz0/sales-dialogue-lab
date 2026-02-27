@@ -31,6 +31,8 @@ import {
 import { AliasPrompt } from "@/components/practice/AliasPrompt";
 import { BadgeUnlockModal } from "@/components/practice/BadgeUnlockModal";
 import { ProfilePanel } from "@/components/practice/ProfilePanel";
+import { buildPressurePrompt, detectCallEnd, detectHardCloseWin, cleanResponseText } from "@/components/practice/pressureEngine";
+import { useCallTimer } from "@/components/practice/CallTimer";
 
 
 // --- Streaming ---
@@ -127,8 +129,14 @@ const PracticePage = () => {
   const [alias, setAlias] = useState<string | null>(() => loadAlias());
   const [showAliasPrompt, setShowAliasPrompt] = useState(false);
   const [badgeQueue, setBadgeQueue] = useState<string[]>([]);
+  const [hardCloseWin, setHardCloseWin] = useState(false);
+  const [sessionActive, setSessionActive] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
+  const elapsedRef = useRef(0);
+  const callEndTriggeredRef = useRef(false);
+
+  const timer = useCallTimer(sessionActive);
 
   const activeRole = roles.find((r) => r.id === selectedRole);
   const consistencyData = loadConsistency();
@@ -153,7 +161,10 @@ const PracticePage = () => {
     setFeedback(null);
     setIsFeedbackLoading(false);
     setLastPoints(null);
+    setHardCloseWin(false);
+    callEndTriggeredRef.current = false;
     sessionStartRef.current = Date.now();
+    setSessionActive(true);
     const role = roles.find((r) => r.id === id);
     if (role) {
       setMessages([
@@ -163,7 +174,7 @@ const PracticePage = () => {
   };
 
   const handleSend = async () => {
-    if (!input.trim() || !activeRole || isLoading) return;
+    if (!input.trim() || !activeRole || isLoading || callEndTriggeredRef.current) return;
     const userText = input.trim();
     setInput("");
 
@@ -176,26 +187,52 @@ const PracticePage = () => {
       content: m.text,
     }));
 
+    // Build dynamic system prompt with pressure
+    const userMsgCount = newMessages.filter((m) => m.role === "user").length;
+    const pressureAddendum = buildPressurePrompt({
+      elapsedSeconds: timer.elapsed,
+      userMessageCount: userMsgCount,
+      totalValidSessions: loadProgression().completedValidSessions,
+    });
+    const fullSystemPrompt = activeRole.systemPrompt + pressureAddendum;
+
     let prospectText = "";
 
     try {
       await streamChat({
         messages: aiMessages,
-        systemPrompt: activeRole.systemPrompt,
+        systemPrompt: fullSystemPrompt,
         onDelta: (chunk) => {
           prospectText += chunk;
+          const displayText = cleanResponseText(prospectText);
           setMessages((prev) => {
             const last = prev[prev.length - 1];
             if (last?.role === "prospect" && prev.length === newMessages.length + 1) {
               return prev.map((m, i) =>
-                i === prev.length - 1 ? { ...m, text: prospectText } : m
+                i === prev.length - 1 ? { ...m, text: displayText } : m
               );
             }
-            return [...prev, { role: "prospect", text: prospectText }];
+            return [...prev, { role: "prospect", text: displayText }];
           });
         },
         onDone: () => {
           setIsLoading(false);
+
+          // Check for hard close win
+          if (detectHardCloseWin(prospectText)) {
+            setHardCloseWin(true);
+            toast.success("Hard close win! Bonus points earned.", { duration: 4000 });
+          }
+
+          // Check for persona-initiated call end
+          if (detectCallEnd(prospectText) && !callEndTriggeredRef.current) {
+            callEndTriggeredRef.current = true;
+            setSessionActive(false);
+            // Auto-trigger end session after a short delay
+            setTimeout(() => {
+              handleEndSession();
+            }, 1500);
+          }
         },
       });
     } catch (e: any) {
@@ -212,6 +249,9 @@ const PracticePage = () => {
     setIsLoading(false);
     setFeedback(null);
     setIsFeedbackLoading(false);
+    setHardCloseWin(false);
+    callEndTriggeredRef.current = false;
+    setSessionActive(true);
     
     setMessages([
       { role: "prospect", text: `[${activeRole.title}] — Ready. Begin when you are.` },
@@ -220,6 +260,7 @@ const PracticePage = () => {
 
   const handleEndSession = useCallback(async () => {
     if (!activeRole) return;
+    setSessionActive(false);
     const conversationMessages = [...messages];
     const userMsgCount = conversationMessages.filter((m) => m.role === "user").length;
 
@@ -276,7 +317,9 @@ const PracticePage = () => {
         durationSeconds,
         recentScores,
       });
-      setLastPoints(points);
+      // Hard close bonus
+      const finalPoints = hardCloseWin ? points + 20 : points;
+      setLastPoints(finalPoints);
 
       // Update progression & check unlocks
       const { newUnlocks, data: progData } = updateProgression({
@@ -421,6 +464,12 @@ const PracticePage = () => {
                   Roleplay Chat
                 </h2>
                 <div className="flex items-center gap-3">
+                  {sessionActive && (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums font-mono">
+                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                      {timer.display}
+                    </span>
+                  )}
                   {activeRole && (
                     <span className="text-xs text-muted-foreground">
                       Practicing with:{" "}
