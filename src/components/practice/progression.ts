@@ -15,7 +15,7 @@ export interface ProgressionData {
 }
 
 // Default unlocked personas
-const DEFAULT_UNLOCKED = ["hiring-manager", "b2b-prospect"];
+const DEFAULT_UNLOCKED = ["hiring-manager", "b2b-prospect", "sdr-behavioral", "sdr-coldcall", "sdr-objections"];
 
 // Persona unlock rules
 const UNLOCK_RULES: { id: string; label: string; description: string; check: (p: ProgressionData) => boolean }[] = [

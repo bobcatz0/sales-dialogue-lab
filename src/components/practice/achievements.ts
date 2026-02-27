@@ -18,6 +18,7 @@ export const BADGE_DEFINITIONS: BadgeDef[] = [
   { id: "evaluator-passed", label: "Evaluator Passed", description: "Scored 70+ against Technical Evaluator", icon: "cpu" },
   { id: "champion-equipped", label: "Champion Equipped", description: "Completed an Internal Champion session", icon: "trophy" },
   { id: "level3-pressure", label: "High-Pressure Certified", description: "Reached high-pressure interaction level", icon: "zap" },
+  { id: "sdr-interview-ready", label: "SDR Interview Ready", description: "Completed the SDR Interview Track", icon: "award" },
   // Consistency milestones
   { id: "streak-3", label: "3-Day Consistency", description: "Practiced 3 consecutive days", icon: "flame" },
   { id: "streak-7", label: "7-Day Consistency", description: "Practiced 7 consecutive days", icon: "flame" },
