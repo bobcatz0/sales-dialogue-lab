@@ -79,7 +79,7 @@ const LeaderboardPage = () => {
             {/* Sign up banner */}
             <div className="bg-muted/50 rounded-lg p-3 border border-border mt-4">
               <p className="text-xs text-muted-foreground">
-                🔒 Sign up to save progress across devices and compete on the global leaderboard.
+                🔒 Sign up coming soon to sync across devices.
               </p>
             </div>
           </motion.div>
