@@ -19,27 +19,27 @@ interface BadgeUnlockModalProps {
 export function BadgeUnlockModal({ open, badge, onClose }: BadgeUnlockModalProps) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-sm text-center">
+      <DialogContent className="sm:max-w-xs text-center">
         <DialogHeader className="items-center">
           <AnimatePresence>
             {open && (
               <motion.div
-                initial={{ scale: 0, rotate: -20 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                className="h-14 w-14 rounded-full bg-primary/15 flex items-center justify-center mb-2"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                className="h-11 w-11 rounded-full bg-primary/15 flex items-center justify-center mb-2"
               >
-                <Award className="h-7 w-7 text-primary" />
+                <Award className="h-5.5 w-5.5 text-primary" />
               </motion.div>
             )}
           </AnimatePresence>
-          <DialogTitle className="text-lg font-heading">Badge Earned!</DialogTitle>
-          <DialogDescription className="text-base font-medium text-foreground mt-1">
+          <DialogTitle className="text-base font-heading">Badge Earned</DialogTitle>
+          <DialogDescription className="text-sm font-medium text-foreground mt-0.5">
             {badge?.label}
           </DialogDescription>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground">{badge?.description}</p>
-        <Button onClick={onClose} className="mt-2 mx-auto">
+        <p className="text-xs text-muted-foreground">{badge?.description}</p>
+        <Button size="sm" onClick={onClose} className="mt-1 mx-auto">
           Continue
         </Button>
       </DialogContent>

@@ -187,8 +187,11 @@ const PracticePage = () => {
     handleStart(personaId);
   };
 
+  const sendingRef = useRef(false);
+
   const handleSend = async () => {
-    if (!input.trim() || !activeRole || isLoading || callEndTriggeredRef.current) return;
+    if (!input.trim() || !activeRole || isLoading || sendingRef.current || callEndTriggeredRef.current) return;
+    sendingRef.current = true;
     const userText = input.trim();
     setInput("");
 
@@ -234,18 +237,18 @@ const PracticePage = () => {
         },
         onDone: () => {
           setIsLoading(false);
+          sendingRef.current = false;
 
           // Check for hard close win
           if (detectHardCloseWin(prospectText)) {
             setHardCloseWin(true);
-            toast.success("Hard close win! Bonus points earned.", { duration: 4000 });
+            toast.success("Hard close win! Bonus points earned.", { duration: 3000 });
           }
 
           // Check for persona-initiated call end
           if (detectCallEnd(prospectText) && !callEndTriggeredRef.current) {
             callEndTriggeredRef.current = true;
             setSessionActive(false);
-            // Auto-trigger end session after a short delay
             setTimeout(() => {
               handleEndSession();
             }, 1500);
@@ -254,7 +257,8 @@ const PracticePage = () => {
       });
     } catch (e: any) {
       console.error(e);
-      toast.error(e.message || "Something went wrong");
+      sendingRef.current = false;
+      toast.error("Connection issue. Please try again.", { duration: 3000 });
       setIsLoading(false);
     }
   };
@@ -389,7 +393,7 @@ const PracticePage = () => {
       }
     } catch (e: any) {
       console.error(e);
-      toast.error(e.message || "Could not generate feedback");
+      toast.error("Connection issue. Please try again.", { duration: 3000 });
     } finally {
       setIsFeedbackLoading(false);
     }
@@ -408,12 +412,12 @@ const PracticePage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 md:px-6 pt-24 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 min-h-[calc(100vh-8rem)]">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 lg:gap-6 min-h-[calc(100vh-8rem)]">
           {/* LEFT COLUMN */}
           <motion.aside
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-4"
           >
             {/* Step 1: Environment Selection */}
             {!selectedEnv && (
@@ -550,98 +554,82 @@ const PracticePage = () => {
           </motion.aside>
 
           {/* RIGHT COLUMN */}
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4 min-w-0">
             <motion.main
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 12 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col card-elevated overflow-hidden flex-1"
             >
-              {/* Chat Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-heading text-lg font-bold text-foreground">
-                    Roleplay Chat
-                  </h2>
+              {/* Chat Header — compact */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                <div className="flex items-center gap-2 min-w-0">
                   {activeEnv && (
-                    <Badge variant="secondary" className="text-[10px] font-medium">
+                    <Badge variant="secondary" className="text-[10px] font-medium shrink-0">
                       {activeEnv.title}
                     </Badge>
                   )}
-                </div>
-                <div className="flex items-center gap-3">
-                  {sessionActive && (
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums font-mono">
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                      {timer.display}
-                    </span>
-                  )}
                   {activeRole && (
-                    <span className="text-xs text-muted-foreground">
-                      <span className="text-foreground font-medium">
-                        {activeRole.title}
-                      </span>
+                    <span className="text-xs font-medium text-foreground truncate">
+                      {activeRole.title}
                     </span>
                   )}
+                  {!activeRole && !activeEnv && (
+                    <span className="text-xs text-muted-foreground">Roleplay</span>
+                  )}
                 </div>
+                {sessionActive && (
+                  <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground tabular-nums font-mono shrink-0">
+                    <span className="inline-block h-1 w-1 rounded-full bg-primary/70" />
+                    {timer.display}
+                  </span>
+                )}
               </div>
 
               {/* Messages */}
               <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto p-5 space-y-4 min-h-[300px]"
+                className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-[250px] sm:min-h-[350px]"
               >
                 {!selectedRole && (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-sm text-muted-foreground text-center max-w-xs">
+                    <p className="text-xs text-muted-foreground text-center">
                       {!selectedEnv
-                        ? "Choose an environment to get started."
-                        : "Select a persona to begin practicing."}
+                        ? "Choose an environment to start."
+                        : "Select a persona to begin."}
                     </p>
                   </div>
                 )}
                 {messages.map((msg, i) => (
                   <motion.div
                     key={i}
-                    initial={
-                      msg.role === "user"
-                        ? { opacity: 0, scale: 0.9, x: 20 }
-                        : { opacity: 0, scale: 0.95, x: -12 }
-                    }
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 30,
-                      mass: 0.8,
-                    }}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15 }}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    <motion.div
-                      initial={{ scale: 1 }}
-                      animate={{ scale: [1, 1.02, 1] }}
-                      transition={{ duration: 0.2, delay: 0.15 }}
-                      className={`max-w-[75%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${
+                    <div
+                      className={`max-w-[80%] sm:max-w-[70%] rounded-xl px-3.5 py-2 text-sm leading-relaxed ${
                         msg.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-foreground"
                       }`}
                     >
                       {msg.text}
-                    </motion.div>
+                    </div>
                   </motion.div>
                 ))}
                 {isLoading && messages[messages.length - 1]?.role === "user" && (
                   <div className="flex justify-start">
-                    <div className="bg-muted rounded-xl px-4 py-3 flex items-center gap-1.5">
+                    <div className="bg-muted rounded-xl px-3.5 py-2.5 flex items-center gap-1">
                       {[0, 1, 2].map((i) => (
                         <motion.span
                           key={i}
-                          className="block h-2 w-2 rounded-full bg-muted-foreground/60"
-                          animate={{ y: [0, -6, 0] }}
+                          className="block h-1.5 w-1.5 rounded-full bg-muted-foreground/50"
+                          animate={{ opacity: [0.4, 1, 0.4] }}
                           transition={{
-                            duration: 0.6,
+                            duration: 1,
                             repeat: Infinity,
-                            delay: i * 0.15,
+                            delay: i * 0.2,
                             ease: "easeInOut",
                           }}
                         />
@@ -651,16 +639,16 @@ const PracticePage = () => {
                 )}
               </div>
 
-              {/* Input Area */}
-              <div className="border-t border-border p-4">
-                <div className="flex gap-2">
+              {/* Input Area — mobile-optimized */}
+              <div className="border-t border-border p-3 sm:p-4">
+                <div className="flex gap-1.5 sm:gap-2">
                   <Input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Type or use mic…"
+                    placeholder="Type…"
                     disabled={!selectedRole || isLoading}
-                    className="flex-1"
+                    className="flex-1 h-9 text-sm"
                   />
                   <VoiceInputButton
                     onTranscript={(text) => setInput((prev) => (prev ? prev + " " + text : text))}
@@ -670,29 +658,32 @@ const PracticePage = () => {
                     onClick={handleSend}
                     disabled={!selectedRole || !input.trim() || isLoading}
                     size="icon"
+                    className="h-9 w-9 shrink-0"
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-                <div className="flex gap-2 mt-3">
+                <div className="flex gap-1.5 sm:gap-2 mt-2">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
+                    className="text-xs h-8 text-muted-foreground"
                     onClick={handleReset}
                     disabled={!selectedRole || isLoading}
                   >
-                    <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                    Reset Conversation
+                    <RotateCcw className="h-3 w-3 mr-1" />
+                    Reset
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
+                    className="text-xs h-8"
                     onClick={handleEndSession}
                     disabled={
                       !selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages
                     }
                   >
-                    <StopCircle className="h-3.5 w-3.5 mr-1.5" />
+                    <StopCircle className="h-3 w-3 mr-1" />
                     End Session
                   </Button>
                 </div>
@@ -703,27 +694,25 @@ const PracticePage = () => {
             <AnimatePresence>
               {isFeedbackLoading && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="card-elevated p-6 flex items-center justify-center gap-3"
+                  exit={{ opacity: 0, y: 8 }}
+                  className="card-elevated p-5 flex items-center justify-center gap-2"
                 >
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">
-                    Analyzing your session…
-                  </span>
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-xs text-muted-foreground">Analyzing…</span>
                 </motion.div>
               )}
               {feedback && !isFeedbackLoading && (
                 <>
                   {lastPoints !== null && lastPoints > 0 && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="card-elevated p-3 flex items-center gap-2 text-sm"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="card-elevated px-4 py-2.5 flex items-center gap-2 text-xs"
                     >
-                      <Flame className="h-3.5 w-3.5 text-primary" />
-                      <span className="text-muted-foreground">Points:</span>
+                      <Flame className="h-3 w-3 text-primary" />
+                      <span className="text-muted-foreground">Points</span>
                       <span className="font-bold text-primary">+{lastPoints}</span>
                     </motion.div>
                   )}

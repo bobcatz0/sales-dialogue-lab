@@ -19,29 +19,29 @@ interface UnlockModalProps {
 export function UnlockModal({ open, personaName, personaDescription, onClose }: UnlockModalProps) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-md text-center">
+      <DialogContent className="sm:max-w-sm text-center">
         <DialogHeader className="items-center">
           <AnimatePresence>
             {open && (
               <motion.div
-                initial={{ scale: 0, rotate: -30 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                className="h-16 w-16 rounded-full bg-primary/15 flex items-center justify-center mb-2"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center mb-2"
               >
-                <Sparkles className="h-8 w-8 text-primary" />
+                <Sparkles className="h-6 w-6 text-primary" />
               </motion.div>
             )}
           </AnimatePresence>
-          <DialogTitle className="text-xl font-heading">
-            New Persona Unlocked
+          <DialogTitle className="text-lg font-heading">
+            Persona Unlocked
           </DialogTitle>
-          <DialogDescription className="text-base font-medium text-foreground mt-1">
+          <DialogDescription className="text-sm font-medium text-foreground mt-1">
             {personaName}
           </DialogDescription>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground">{personaDescription}</p>
-        <Button onClick={onClose} className="mt-2 mx-auto">
+        <p className="text-xs text-muted-foreground">{personaDescription}</p>
+        <Button size="sm" onClick={onClose} className="mt-1 mx-auto">
           Continue
         </Button>
       </DialogContent>
