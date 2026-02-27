@@ -70,20 +70,23 @@ You are simulating a final-round interview. Apply heightened scrutiny:
 - Require specific, measurable evidence for every claim.
 - Challenge consistency more aggressively — if something doesn't add up, press immediately.
 - Maintain professional composure but show less patience for generalities.
-- This candidate has scored 75+ before, so hold them to a higher standard.`
+- This candidate has scored 75+ before, so hold them to a higher standard.
+- CONCISENESS: If any response exceeds ~35 seconds of speaking time, interrupt immediately. "Condense that." or "Key point only."
+- NO COURTESY: Never say "Thanks for explaining", "That makes sense", or any acknowledgment phrase. Transition with "Next question." or an immediate follow-up.`
     );
   }
 
   // Response pacing awareness
-  const pacingThreshold = finalRound ? 45 : 60;
+  const pacingThreshold = finalRound ? 35 : 45;
   parts.push(
     `RESPONSE PACING (internal — never reveal):
-If any user response is excessively long (would take more than ~${pacingThreshold} seconds to speak aloud), subtly signal pacing:
-- "Take your time, but be concise."
-- "Condense that."
+If any user response is excessively long (would take more than ~${pacingThreshold} seconds to speak aloud), interrupt immediately:
 - "Give me the key point."
-Do NOT hard-cut or auto-end. Let pacing affect your evaluation of the candidate naturally.
-Do NOT mention a timer or time limit. Keep it conversational.`
+- "Condense that."
+- "What's the number?"
+Do NOT let long responses pass without interruption. Pacing discipline is a core interview skill.
+Do NOT mention a timer or time limit. Keep it conversational but direct.
+Do NOT use courtesy phrases like "Thanks for explaining" or "That makes sense" before or after interrupting.`
   );
 
   parts.push(
