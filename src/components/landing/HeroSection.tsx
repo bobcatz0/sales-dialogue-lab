@@ -21,25 +21,25 @@ const HeroSection = () => {
         >
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary">
             <Play className="h-3 w-3" />
-            Built for SDR / AE Candidates
+            Pre-Interview Rehearsal Tool
           </div>
 
           <h1 className="font-heading text-5xl font-bold leading-tight tracking-tight md:text-7xl">
-            Structured Mock Interviews{" "}
-            <span className="text-gradient">for Sales Roles.</span>
+            Your Final Rehearsal{" "}
+            <span className="text-gradient">Before the Interview.</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
-            Practice under pressure. Get evaluated. Improve clarity and control.
+            Simulate real SDR interviews under pressure. Get evaluated. Sharpen your structure.
           </p>
 
           <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground/70">
-            Realistic AI-powered interview simulations with structured performance reports.
+            Resume-personalized AI interview simulations with structured performance reports.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button variant="hero" size="lg" className="gap-2" asChild>
-              <a href="#scripts">View Scripts <ArrowRight className="h-4 w-4" /></a>
+              <a href="/practice">Start Rehearsal <ArrowRight className="h-4 w-4" /></a>
             </Button>
             <Button variant="heroOutline" size="lg" asChild>
               <a href="/frameworks">Explore Frameworks</a>

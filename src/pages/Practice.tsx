@@ -232,6 +232,7 @@ const PracticePage = () => {
       totalValidSessions: loadProgression().completedValidSessions,
       timePressureThresholdS: activeEnv?.timePressureThresholdS,
       callEndingEnabled: activeEnv?.callEndingEnabled,
+      finalRoundMode: selectedEnv === "interview" && loadProgression().highestSessionScore >= 75,
     });
     const envAddendum = activeEnv?.promptAddendum ? `\n\n${activeEnv.promptAddendum}` : "";
     const sdrAddendum = activeSDRRound?.promptAddendum ? `\n\n${activeSDRRound.promptAddendum}` : "";
@@ -475,12 +476,12 @@ This evaluation style should subtly influence your questions and reactions. Do N
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h2 className="font-heading text-base font-bold text-foreground">
-                    Mock Sales Interview Simulator
+                    Interview Rehearsal Simulator
                   </h2>
                 </div>
-                <p className="text-[10px] text-primary font-medium mb-3">Built for SDR / AE Candidates</p>
+                <p className="text-[10px] text-primary font-medium mb-3">Pre-Interview Preparation</p>
                 <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
-                  Professional interview simulation with structured evaluation. Select a mode to begin.
+                  Structured interview simulation with personalized evaluation. Your final rehearsal before the real thing.
                 </p>
                 <h3 className="font-heading text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Simulation Mode
@@ -772,8 +773,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   <div className="flex items-center justify-center h-full">
                     <p className="text-xs text-muted-foreground text-center">
                       {!selectedEnv
-                        ? "Select a simulation mode to begin."
-                        : "Select a persona or track round to begin."}
+                        ? "Select a simulation mode to begin your rehearsal."
+                        : "Select a persona or track round to begin your rehearsal."}
                     </p>
                   </div>
                 )}
