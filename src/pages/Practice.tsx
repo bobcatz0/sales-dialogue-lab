@@ -135,6 +135,7 @@ const PracticePage = () => {
   const [badgeQueue, setBadgeQueue] = useState<string[]>([]);
   const [hardCloseWin, setHardCloseWin] = useState(false);
   const [challengeCompleted, setChallengeCompleted] = useState(() => getTodayChallenge().completed);
+  const [lastSessionValid, setLastSessionValid] = useState(false);
   const [sessionActive, setSessionActive] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
@@ -332,6 +333,7 @@ const PracticePage = () => {
       const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
       const recentScores = updated.slice(1, 6).map((s) => s.score); // previous 5
       const isValidSession = durationSeconds >= 90 && userMsgCount >= 6;
+      setLastSessionValid(isValidSession);
       const { points } = processSession({
         roleId: activeRole.id,
         sessionScore: data.score,
@@ -730,6 +732,8 @@ const PracticePage = () => {
                   )}
                   <FeedbackPanel
                     feedback={feedback}
+                    alias={alias}
+                    isValidSession={lastSessionValid}
                     onStartNew={() => {
                       setFeedback(null);
                       setSelectedRole(null);
@@ -737,10 +741,12 @@ const PracticePage = () => {
                       setMessages([]);
                       setInput("");
                       setLastPoints(null);
+                      setLastSessionValid(false);
                     }}
                     onTrySameRole={() => {
                       setFeedback(null);
                       setLastPoints(null);
+                      setLastSessionValid(false);
                       if (selectedRole) handleStart(selectedRole);
                     }}
                   />
