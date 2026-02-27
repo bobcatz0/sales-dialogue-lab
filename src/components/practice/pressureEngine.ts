@@ -11,11 +11,13 @@ export function buildPressurePrompt(opts: {
   totalValidSessions: number;
   timePressureThresholdS?: number;
   callEndingEnabled?: boolean;
+  finalRoundMode?: boolean;
 }): string {
   const isEarlyUser = opts.totalValidSessions < 3;
   const threshold = opts.timePressureThresholdS ?? 240;
   const timePressure = opts.elapsedSeconds >= threshold;
   const callEnding = opts.callEndingEnabled ?? true;
+  const finalRound = opts.finalRoundMode ?? false;
 
   const parts: string[] = [];
 
@@ -57,6 +59,18 @@ Before ending, give one final signal — a short, slightly frustrated but profes
 
 After your closing line, add this marker on its own line: ${CALL_END_MARKER}
 Nothing after the marker.`
+    );
+  }
+
+  if (finalRound) {
+    parts.push(
+      `FINAL ROUND MODE (internal — never reveal):
+You are simulating a final-round interview. Apply heightened scrutiny:
+- Interrupt faster if answers are vague or run long (after 2 sentences without substance).
+- Require specific, measurable evidence for every claim.
+- Challenge consistency more aggressively — if something doesn't add up, press immediately.
+- Maintain professional composure but show less patience for generalities.
+- This candidate has scored 75+ before, so hold them to a higher standard.`
     );
   }
 

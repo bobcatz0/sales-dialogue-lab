@@ -328,11 +328,29 @@ export function FeedbackPanel({
           </div>
         )}
 
+        {/* Confidence Reflection — interview only */}
+        {interview && (
+          <div className="bg-muted/30 rounded-lg p-3 border border-border">
+            <p className="text-[11px] text-foreground leading-relaxed text-center">
+              Would you feel confident answering these questions in a live interview?
+            </p>
+          </div>
+        )}
+
+        {/* Final Round Readiness */}
+        {interview && feedback.score >= 75 && (
+          <div className="flex items-center justify-center gap-2 py-2">
+            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+              Ready for Final Round Simulation
+            </span>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-2 pt-1">
           <Button variant="default" size="sm" className="flex-1 h-9" onClick={onStartNew}>
             <Play className="h-3.5 w-3.5 mr-1.5" />
-            New Session
+            New Rehearsal
           </Button>
           <Button variant="outline" size="sm" className="flex-1 h-9" onClick={onTrySameRole}>
             <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
