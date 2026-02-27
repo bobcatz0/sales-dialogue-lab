@@ -187,6 +187,9 @@ export function FeedbackPanel({
         >
           {feedback.score}
         </motion.span>
+        <p className="text-[10px] text-muted-foreground mt-0.5">
+          {interview ? "Interview Readiness Score" : "Performance Score"}
+        </p>
         <div className="flex items-center gap-2 mt-1.5">
           <span
             className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${getRankColor(feedback.rank)} border-current/20`}
