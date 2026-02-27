@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2, Flame, Lock } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2, Flame, Lock, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/landing/Navbar";
@@ -33,6 +33,7 @@ import { BadgeUnlockModal } from "@/components/practice/BadgeUnlockModal";
 import { ProfilePanel } from "@/components/practice/ProfilePanel";
 import { buildPressurePrompt, detectCallEnd, detectHardCloseWin, cleanResponseText } from "@/components/practice/pressureEngine";
 import { useCallTimer } from "@/components/practice/CallTimer";
+import { ENVIRONMENTS, getEnvironment, type EnvironmentId } from "@/components/practice/environments";
 
 
 // --- Streaming ---
@@ -116,6 +117,7 @@ async function streamChat({
 // --- Page ---
 
 const PracticePage = () => {
+  const [selectedEnv, setSelectedEnv] = useState<EnvironmentId | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -138,9 +140,13 @@ const PracticePage = () => {
 
   const timer = useCallTimer(sessionActive);
 
+  const activeEnv = selectedEnv ? getEnvironment(selectedEnv) : undefined;
   const activeRole = roles.find((r) => r.id === selectedRole);
   const consistencyData = loadConsistency();
   const currentRank = getRank(consistencyData.score);
+  const filteredRoles = activeEnv
+    ? roles.filter((r) => activeEnv.personaIds.includes(r.id))
+    : [];
 
   // Load history on mount
   useEffect(() => {
@@ -187,14 +193,17 @@ const PracticePage = () => {
       content: m.text,
     }));
 
-    // Build dynamic system prompt with pressure
+    // Build dynamic system prompt with pressure + environment
     const userMsgCount = newMessages.filter((m) => m.role === "user").length;
     const pressureAddendum = buildPressurePrompt({
       elapsedSeconds: timer.elapsed,
       userMessageCount: userMsgCount,
       totalValidSessions: loadProgression().completedValidSessions,
+      timePressureThresholdS: activeEnv?.timePressureThresholdS,
+      callEndingEnabled: activeEnv?.callEndingEnabled,
     });
-    const fullSystemPrompt = activeRole.systemPrompt + pressureAddendum;
+    const envAddendum = activeEnv?.promptAddendum ? `\n\n${activeEnv.promptAddendum}` : "";
+    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + pressureAddendum;
 
     let prospectText = "";
 
@@ -378,66 +387,124 @@ const PracticePage = () => {
             animate={{ opacity: 1, x: 0 }}
             className="flex flex-col gap-5"
           >
-            <div>
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="font-heading text-xl font-bold text-foreground">
-                  Choose a Roleplay
-                </h2>
-                <Badge variant="outline" className="text-xs font-semibold border-primary/40 text-primary">
-                  {currentRank}
-                </Badge>
-              </div>
-              <div className="space-y-3">
-                {roles.map((role) => {
-                  const isActive = selectedRole === role.id;
-                  const unlocked = isPersonaUnlocked(role.id, progression);
-                  const hint = !unlocked ? getUnlockHint(role.id, progression) : null;
-                  return (
-                    <div
-                      key={role.id}
-                      className={`card-elevated p-4 flex items-start gap-3 transition-all duration-200 ${
-                        isActive
-                          ? "border-primary/60 shadow-[0_0_20px_hsl(145_72%_50%/0.1)]"
-                          : !unlocked
-                          ? "opacity-60"
-                          : ""
-                      }`}
+            {/* Step 1: Environment Selection */}
+            {!selectedEnv && (
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="font-heading text-xl font-bold text-foreground">
+                    Select Environment
+                  </h2>
+                  <Badge variant="outline" className="text-xs font-semibold border-primary/40 text-primary">
+                    {currentRank}
+                  </Badge>
+                </div>
+                <div className="space-y-3">
+                  {ENVIRONMENTS.map((env) => (
+                    <motion.div
+                      key={env.id}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => setSelectedEnv(env.id)}
+                      className="card-elevated p-4 flex items-start gap-3 cursor-pointer transition-all duration-200 hover:border-primary/40"
                     >
-                      <div
-                        className={`mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center transition-colors ${
-                          !unlocked ? "bg-muted" : isActive ? "bg-primary/20" : "bg-muted"
-                        }`}
-                      >
-                        {unlocked ? (
-                          <role.icon
-                            className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`}
-                          />
-                        ) : (
-                          <Lock className="h-4 w-4 text-muted-foreground" />
-                        )}
+                      <div className="mt-0.5 h-9 w-9 shrink-0 rounded-full bg-muted flex items-center justify-center">
+                        <env.icon className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
-                          {role.title}
+                          {env.title}
                         </h3>
-                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                          {unlocked ? role.description : hint}
+                        <p className="text-[11px] text-primary/80 font-medium">{env.subtitle}</p>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          {env.description}
                         </p>
                       </div>
-                      <Button
-                        size="sm"
-                        variant={isActive ? "default" : "outline"}
-                        className="shrink-0 text-xs h-8"
-                        onClick={() => unlocked && handleStart(role.id)}
-                        disabled={!unlocked}
-                      >
-                        {!unlocked ? "Locked" : isActive ? "Active" : "Start"}
-                      </Button>
-                    </div>
-                  );
-                })}
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Step 2: Persona Selection (after environment chosen) */}
+            {selectedEnv && (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0"
+                    onClick={() => {
+                      setSelectedEnv(null);
+                      setSelectedRole(null);
+                      setMessages([]);
+                      setFeedback(null);
+                      setSessionActive(false);
+                    }}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="font-heading text-sm font-bold text-foreground truncate">
+                      {activeEnv?.title}
+                    </h2>
+                    <p className="text-[10px] text-muted-foreground">{activeEnv?.subtitle}</p>
+                  </div>
+                  <Badge variant="outline" className="text-xs font-semibold border-primary/40 text-primary shrink-0">
+                    {currentRank}
+                  </Badge>
+                </div>
+                <div className="space-y-3">
+                  {filteredRoles.map((role) => {
+                    const isActive = selectedRole === role.id;
+                    const unlocked = isPersonaUnlocked(role.id, progression);
+                    const hint = !unlocked ? getUnlockHint(role.id, progression) : null;
+                    return (
+                      <div
+                        key={role.id}
+                        className={`card-elevated p-4 flex items-start gap-3 transition-all duration-200 ${
+                          isActive
+                            ? "border-primary/60 shadow-[0_0_20px_hsl(145_72%_50%/0.1)]"
+                            : !unlocked
+                            ? "opacity-60"
+                            : ""
+                        }`}
+                      >
+                        <div
+                          className={`mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center transition-colors ${
+                            !unlocked ? "bg-muted" : isActive ? "bg-primary/20" : "bg-muted"
+                          }`}
+                        >
+                          {unlocked ? (
+                            <role.icon
+                              className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`}
+                            />
+                          ) : (
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
+                            {role.title}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                            {unlocked ? role.description : hint}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant={isActive ? "default" : "outline"}
+                          className="shrink-0 text-xs h-8"
+                          onClick={() => unlocked && handleStart(role.id)}
+                          disabled={!unlocked}
+                        >
+                          {!unlocked ? "Locked" : isActive ? "Active" : "Start"}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Profile Panel */}
             {alias && (
@@ -460,9 +527,16 @@ const PracticePage = () => {
             >
               {/* Chat Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <h2 className="font-heading text-lg font-bold text-foreground">
-                  Roleplay Chat
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-heading text-lg font-bold text-foreground">
+                    Roleplay Chat
+                  </h2>
+                  {activeEnv && (
+                    <Badge variant="secondary" className="text-[10px] font-medium">
+                      {activeEnv.title}
+                    </Badge>
+                  )}
+                </div>
                 <div className="flex items-center gap-3">
                   {sessionActive && (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums font-mono">
@@ -472,7 +546,6 @@ const PracticePage = () => {
                   )}
                   {activeRole && (
                     <span className="text-xs text-muted-foreground">
-                      Practicing with:{" "}
                       <span className="text-foreground font-medium">
                         {activeRole.title}
                       </span>
@@ -489,7 +562,9 @@ const PracticePage = () => {
                 {!selectedRole && (
                   <div className="flex items-center justify-center h-full">
                     <p className="text-sm text-muted-foreground text-center max-w-xs">
-                      Select a roleplay character to begin practicing.
+                      {!selectedEnv
+                        ? "Choose an environment to get started."
+                        : "Select a persona to begin practicing."}
                     </p>
                   </div>
                 )}
@@ -635,6 +710,7 @@ const PracticePage = () => {
                     onStartNew={() => {
                       setFeedback(null);
                       setSelectedRole(null);
+                      setSelectedEnv(null);
                       setMessages([]);
                       setInput("");
                       setLastPoints(null);
