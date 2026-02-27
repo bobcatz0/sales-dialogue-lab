@@ -22,19 +22,19 @@ const UNLOCK_RULES: { id: string; label: string; description: string; check: (p:
   {
     id: "gatekeeper",
     label: "Gatekeeper",
-    description: "Executive assistant who filters aggressively. Earn permission or get cut.",
+    description: "Early-stage access control — filters aggressively on relevance and clarity.",
     check: (p) => p.completedValidSessions >= 3,
   },
   {
     id: "technical-evaluator",
     label: "Technical Evaluator",
-    description: "Asks how things actually work. Vague answers lose credibility fast.",
+    description: "Mid-funnel evaluation — requires specificity and technical credibility.",
     check: (p) => p.highestSessionScore >= 65,
   },
   {
     id: "champion",
     label: "Internal Champion",
-    description: "Friendly but needs help selling internally. Equip them or lose the deal.",
+    description: "Strategic enablement — needs clear positioning to sell internally.",
     check: (p) => p.reachedPeakDifficulty3,
   },
 ];
@@ -123,9 +123,9 @@ export function getUnlockHint(personaId: string, data: ProgressionData): string 
     case "gatekeeper":
       return `Complete ${Math.max(0, 3 - data.completedValidSessions)} more valid session(s) to unlock`;
     case "technical-evaluator":
-      return `Achieve a session score of 65+ to unlock (best: ${data.highestSessionScore})`;
+      return `Achieve a session score of 65+ to unlock (current best: ${data.highestSessionScore})`;
     case "champion":
-      return `Reach Peak Difficulty Level 3 in a session to unlock`;
+      return `Complete a high-pressure interaction session to unlock`;
     default:
       return null;
   }

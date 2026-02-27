@@ -25,16 +25,16 @@ export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Calendar className="h-3.5 w-3.5 text-primary" />
-          <span className="text-xs font-semibold text-foreground">Daily Challenge</span>
+          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-xs font-semibold text-foreground">Daily Objective</span>
         </div>
         {completed ? (
           <Badge variant="default" className="text-[10px] gap-1 bg-primary/15 text-primary border-0">
             <Check className="h-3 w-3" />
-            Done
+            Complete
           </Badge>
         ) : (
-          <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+          <Badge variant="outline" className="text-[10px] border-border text-muted-foreground">
             +25 pts
           </Badge>
         )}
@@ -54,14 +54,14 @@ export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
 
       {completed ? (
         <p className="text-[10px] text-muted-foreground/70 text-center pt-1">
-          New challenge tomorrow
+          Next objective available tomorrow
         </p>
       ) : (
         <button
           onClick={() => onStart?.(challenge.environmentId, challenge.personaId)}
           className="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors pt-1"
         >
-          Start Challenge
+          Begin Session
           <ArrowRight className="h-3 w-3" />
         </button>
       )}

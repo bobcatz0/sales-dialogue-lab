@@ -77,10 +77,10 @@ export function FeedbackPanel({
       <div className="p-5 space-y-4">
         {/* Best Moment */}
         {feedback.bestMoment && (
-          <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+          <div className="bg-muted/40 rounded-lg p-3 border border-border">
             <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground mb-1">
-              <Quote className="h-3 w-3 text-primary" />
-              Best Moment
+              <Quote className="h-3 w-3 text-muted-foreground" />
+              Strongest Moment
             </div>
             <p className="text-sm text-foreground italic leading-relaxed">
               "{feedback.bestMoment}"
@@ -117,9 +117,9 @@ export function FeedbackPanel({
         {/* Next Drill */}
         {feedback.nextDrill && (
           <div className="flex items-start gap-2 rounded-md p-2.5 bg-muted/50">
-            <Target className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+            <Target className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
             <p className="text-[11px] text-muted-foreground leading-snug">
-              <span className="font-semibold text-foreground">Next: </span>
+              <span className="font-semibold text-foreground">Recommended: </span>
               {feedback.nextDrill}
             </p>
           </div>

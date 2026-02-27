@@ -242,7 +242,7 @@ const PracticePage = () => {
           // Check for hard close win
           if (detectHardCloseWin(prospectText)) {
             setHardCloseWin(true);
-            toast.success("Hard close win! Bonus points earned.", { duration: 3000 });
+            toast("Successful next-step commitment detected.", { duration: 3000 });
           }
 
           // Check for persona-initiated call end
@@ -286,7 +286,7 @@ const PracticePage = () => {
     const userMsgCount = conversationMessages.filter((m) => m.role === "user").length;
 
     if (userMsgCount < 2) {
-      toast.error("Have at least 2 exchanges before ending the session.");
+      toast.error("Complete at least 2 exchanges before ending the session.");
       return;
     }
 
@@ -383,7 +383,7 @@ const PracticePage = () => {
         ) {
           markChallengeCompleted();
           setChallengeCompleted(true);
-          toast.success(`Daily Challenge completed! +${CHALLENGE_BONUS_POINTS} bonus pts`, { duration: 4000 });
+          toast("Daily training objective completed. +${CHALLENGE_BONUS_POINTS} pts", { duration: 3000 });
         }
       }
 
@@ -422,11 +422,15 @@ const PracticePage = () => {
             {/* Step 1: Environment Selection */}
             {!selectedEnv && (
               <div>
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="font-heading text-xl font-bold text-foreground">
-                    Select Environment
+                {/* Professional framing */}
+                <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
+                  Structured training simulator for clarity, objection handling, and conversational control in professional sales environments.
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-heading text-sm font-bold text-foreground">
+                    Training Mode
                   </h2>
-                  <Badge variant="outline" className="text-xs font-semibold border-primary/40 text-primary">
+                  <Badge variant="outline" className="text-[10px] font-medium border-border text-muted-foreground">
                     {currentRank}
                   </Badge>
                 </div>
@@ -481,7 +485,7 @@ const PracticePage = () => {
                     </h2>
                     <p className="text-[10px] text-muted-foreground">{activeEnv?.subtitle}</p>
                   </div>
-                  <Badge variant="outline" className="text-xs font-semibold border-primary/40 text-primary shrink-0">
+                  <Badge variant="outline" className="text-[10px] font-medium border-border text-muted-foreground shrink-0">
                     {currentRank}
                   </Badge>
                 </div>
