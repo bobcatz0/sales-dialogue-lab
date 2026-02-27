@@ -61,6 +61,7 @@ import { OnboardingModal } from "@/components/practice/OnboardingModal";
 import { PostSessionPrompt } from "@/components/practice/PostSessionPrompt";
 import { DrillMode } from "@/components/practice/DrillMode";
 import { getDrillForWeakness, type Drill } from "@/components/practice/drillData";
+import { qualifiesForInterviewReady, grantInterviewReady, checkStatusRevocation } from "@/components/practice/interviewReadyStatus";
 
 // --- Streaming ---
 
@@ -505,6 +506,19 @@ This evaluation style should subtly influence your questions and reactions. Do N
             localStorage.setItem("salescalls_badges", JSON.stringify(badgesStorage));
           }
         }
+      }
+
+      // Interview Ready status logic
+      const isFR = selectedEnv === "final-round";
+      if (qualifiesForInterviewReady({
+        isFinalRound: isFR,
+        score: data.score,
+        hasCriticalWeakness: !!data.criticalWeakness,
+      })) {
+        grantInterviewReady(data.score, alias);
+      } else {
+        // Check if this session revokes existing status
+        checkStatusRevocation(data.score);
       }
 
       // Track completion and show post-session prompts

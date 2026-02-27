@@ -448,6 +448,23 @@ export function FeedbackPanel({
           </div>
         )}
 
+        {/* Interview Ready Status — Final Round qualified */}
+        {isFinalRound && feedback.score >= 85 && !feedback.criticalWeakness && (
+          <div className="space-y-2 py-2">
+            <div className="text-center space-y-1.5">
+              <p className="text-sm font-semibold text-foreground">
+                Status: Interview Ready
+              </p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Performance met structured evaluation standards under elevated pressure.
+              </p>
+              <p className="text-[10px] text-muted-foreground/60">
+                Status reflects simulator evaluation only.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Final Round Readiness — standard interview only */}
         {!isFinalRound && interview && feedback.score >= 85 && (
           <div className="flex items-center justify-center gap-2 py-2">
