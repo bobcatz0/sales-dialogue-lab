@@ -74,7 +74,11 @@ Return a JSON object with this EXACT structure — nothing else:
       "reason": "<1 sentence: why this answer weakened their performance — be specific>",
       "correction": "<1 sentence: direct suggestion for how to fix it>"
     }
-  ]` : ""}
+  ],
+  "recoveryAssessment": {
+    "recovered": <true if the candidate improved clarity/specificity after being challenged on a weak answer>,
+    "note": "<one sentence: either 'Recovery Strength: Demonstrated improved clarity after pressure.' or 'Recovery Opportunity: Did not tighten response after follow-up pressure.'>"
+  }` : ""}
 }
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
@@ -153,6 +157,13 @@ Identify the single weakest answer from the candidate. Detect these patterns:
 Quote the exact weak answer. Explain precisely why it weakened the response. Provide one direct correction.
 If multiple weak moments exist, pick the most impactful one. If the candidate performed well throughout, still identify the relatively weakest moment.
 Tone: Direct. Precise. No emotional language. No praise padding.
+
+RECOVERY ASSESSMENT:
+After a weak-spot was exposed and the evaluator applied pressure, assess whether the candidate recovered:
+- "recovered": true if the candidate's follow-up answer showed specific metrics, clear ownership, or concise structure after being challenged.
+- "recovered": false if the candidate continued with vague, deflective, or rambling answers after pressure.
+- "note": If recovered: "Recovery Strength: Demonstrated improved clarity after pressure." If not: "Recovery Opportunity: Did not tighten response after follow-up pressure."
+If recovery occurred, apply a subtle +3-5 point bonus to the overall score. Do not mention the bonus in output.
 ` : ""}
 TONE: Professional review. No motivational language. No "Great job!", "Keep it up!", "Well done!", "You did well.", or any soft encouragement. Write like a performance analyst delivering a debrief — neutral, precise, referencing exact moments. Every sentence should make the user feel cognitively sharper.
 ${resumeHighlights ? `
