@@ -8,6 +8,7 @@ import Frameworks from "./pages/Frameworks";
 import Roleplays from "./pages/Roleplays";
 import AIRoleplay from "./pages/AIRoleplay";
 import Practice from "./pages/Practice";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/roleplays" element={<Roleplays />} />
           <Route path="/ai-roleplay" element={<AIRoleplay />} />
           <Route path="/practice" element={<Practice />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

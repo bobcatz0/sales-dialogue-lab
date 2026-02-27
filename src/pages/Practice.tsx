@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2 } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/landing/Navbar";
@@ -12,6 +12,7 @@ import { FeedbackPanel } from "@/components/practice/FeedbackPanel";
 import { SessionHistory } from "@/components/practice/SessionHistory";
 import { loadHistory, saveSession } from "@/components/practice/sessionStorage";
 import { VoiceInputButton } from "@/components/practice/VoiceInputButton";
+import { processSession, loadConsistency } from "@/components/practice/consistencyScoring";
 
 
 // --- Streaming ---
@@ -102,8 +103,9 @@ const PracticePage = () => {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [isFeedbackLoading, setIsFeedbackLoading] = useState(false);
   const [history, setHistory] = useState<SessionRecord[]>([]);
+  const [lastPoints, setLastPoints] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  
+  const sessionStartRef = useRef<number>(Date.now());
 
   const activeRole = roles.find((r) => r.id === selectedRole);
 
@@ -125,6 +127,8 @@ const PracticePage = () => {
     setIsLoading(false);
     setFeedback(null);
     setIsFeedbackLoading(false);
+    setLastPoints(null);
+    sessionStartRef.current = Date.now();
     const role = roles.find((r) => r.id === id);
     if (role) {
       setMessages([
@@ -235,6 +239,18 @@ const PracticePage = () => {
       };
       const updated = saveSession(session);
       setHistory(updated);
+
+      // Process consistency scoring
+      const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
+      const recentScores = updated.slice(1, 6).map((s) => s.score); // previous 5
+      const { points } = processSession({
+        roleId: activeRole.id,
+        sessionScore: data.score,
+        userMessageCount: userMsgCount,
+        durationSeconds,
+        recentScores,
+      });
+      setLastPoints(points);
     } catch (e: any) {
       console.error(e);
       toast.error(e.message || "Could not generate feedback");
@@ -469,19 +485,43 @@ const PracticePage = () => {
                 </motion.div>
               )}
               {feedback && !isFeedbackLoading && (
-                <FeedbackPanel
-                  feedback={feedback}
-                  onStartNew={() => {
-                    setFeedback(null);
-                    setSelectedRole(null);
-                    setMessages([]);
-                    setInput("");
-                  }}
-                  onTrySameRole={() => {
-                    setFeedback(null);
-                    if (selectedRole) handleStart(selectedRole);
-                  }}
-                />
+                <>
+                  {lastPoints !== null && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="card-elevated p-4 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2 text-sm">
+                        <Flame className="h-4 w-4 text-primary" />
+                        <span className="text-muted-foreground">Consistency Points Earned:</span>
+                        <span className="font-bold text-primary text-lg">
+                          {lastPoints > 0 ? `+${lastPoints}` : "0"}
+                        </span>
+                      </div>
+                      {lastPoints === 0 && (
+                        <span className="text-[11px] text-muted-foreground">
+                          Session too short — need 6+ messages &amp; 90s+
+                        </span>
+                      )}
+                    </motion.div>
+                  )}
+                  <FeedbackPanel
+                    feedback={feedback}
+                    onStartNew={() => {
+                      setFeedback(null);
+                      setSelectedRole(null);
+                      setMessages([]);
+                      setInput("");
+                      setLastPoints(null);
+                    }}
+                    onTrySameRole={() => {
+                      setFeedback(null);
+                      setLastPoints(null);
+                      if (selectedRole) handleStart(selectedRole);
+                    }}
+                  />
+                </>
               )}
             </AnimatePresence>
           </div>
