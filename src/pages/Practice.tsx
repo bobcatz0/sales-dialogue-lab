@@ -36,6 +36,15 @@ import { useCallTimer } from "@/components/practice/CallTimer";
 import { ENVIRONMENTS, getEnvironment, type EnvironmentId } from "@/components/practice/environments";
 import { getTodayChallenge, checkChallengeCondition, markChallengeCompleted, CHALLENGE_BONUS_POINTS } from "@/components/practice/dailyChallenge";
 import { DailyChallengeCard } from "@/components/practice/DailyChallengeCard";
+import {
+  SDR_ROUNDS,
+  loadSDRTrackProgress,
+  completeSDRRound,
+  getSDRTrackSummary,
+  type SDRRound,
+  type SDRTrackProgress,
+} from "@/components/practice/sdrTrack";
+import { CheckCircle2, Circle, Award } from "lucide-react";
 
 
 // --- Streaming ---
@@ -137,6 +146,8 @@ const PracticePage = () => {
   const [challengeCompleted, setChallengeCompleted] = useState(() => getTodayChallenge().completed);
   const [lastSessionValid, setLastSessionValid] = useState(false);
   const [sessionActive, setSessionActive] = useState(false);
+  const [activeSDRRound, setActiveSDRRound] = useState<SDRRound | null>(null);
+  const [sdrProgress, setSdrProgress] = useState<SDRTrackProgress>(() => loadSDRTrackProgress());
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
   const elapsedRef = useRef(0);
@@ -215,7 +226,8 @@ const PracticePage = () => {
       callEndingEnabled: activeEnv?.callEndingEnabled,
     });
     const envAddendum = activeEnv?.promptAddendum ? `\n\n${activeEnv.promptAddendum}` : "";
-    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + pressureAddendum;
+    const sdrAddendum = activeSDRRound?.promptAddendum ? `\n\n${activeSDRRound.promptAddendum}` : "";
+    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + pressureAddendum;
 
     let prospectText = "";
 
@@ -390,6 +402,25 @@ const PracticePage = () => {
         }
       }
 
+      // SDR Track round completion
+      if (activeSDRRound && isValidSession) {
+        const updatedTrack = completeSDRRound(
+          activeSDRRound.id,
+          data.score,
+          data.peakDifficulty ?? 1
+        );
+        setSdrProgress(updatedTrack);
+        if (updatedTrack.trackCompleted) {
+          // Award SDR badge
+          const earned = loadEarnedBadges();
+          if (!earned.includes("sdr-interview-ready")) {
+            setBadgeQueue((q) => [...q, "sdr-interview-ready"]);
+            const badgesStorage = [...earned, "sdr-interview-ready"];
+            localStorage.setItem("salescalls_badges", JSON.stringify(badgesStorage));
+          }
+        }
+      }
+
       // Prompt alias on first valid session completion
       if (isValidSession && !loadAlias()) {
         setShowAliasPrompt(true);
@@ -400,7 +431,7 @@ const PracticePage = () => {
     } finally {
       setIsFeedbackLoading(false);
     }
-  }, [activeRole, messages]);
+  }, [activeRole, messages, activeSDRRound]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -491,6 +522,7 @@ const PracticePage = () => {
                       setMessages([]);
                       setFeedback(null);
                       setSessionActive(false);
+                      setActiveSDRRound(null);
                     }}
                   >
                     <ArrowLeft className="h-4 w-4" />
@@ -555,6 +587,96 @@ const PracticePage = () => {
                     );
                   })}
                 </div>
+
+                {/* SDR Interview Track — only in interview env */}
+                {selectedEnv === "interview" && (
+                  <div className="mt-5 pt-4 border-t border-border">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-heading text-xs font-bold text-foreground uppercase tracking-wider">
+                        SDR Interview Track
+                      </h3>
+                      {sdrProgress.trackCompleted && (
+                        <span className="text-[9px] font-bold text-primary flex items-center gap-1">
+                          <Award className="h-3 w-3" /> Complete
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mb-3 leading-relaxed">
+                      Focused on outbound prospecting, objection handling, and pipeline generation.
+                    </p>
+                    <div className="space-y-2">
+                      {SDR_ROUNDS.map((round) => {
+                        const roundData = sdrProgress.rounds[round.id];
+                        const isCompleted = roundData?.completed;
+                        const isActiveRound = activeSDRRound?.id === round.id;
+                        return (
+                          <div
+                            key={round.id}
+                            className={`p-3 rounded-lg border transition-all duration-200 ${
+                              isActiveRound
+                                ? "border-primary/60 bg-primary/5"
+                                : isCompleted
+                                ? "border-border bg-muted/30"
+                                : "border-border hover:border-primary/30 cursor-pointer"
+                            }`}
+                          >
+                            <div className="flex items-start gap-2">
+                              <div className="mt-0.5 shrink-0">
+                                {isCompleted ? (
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                                ) : (
+                                  <Circle className="h-3.5 w-3.5 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[11px] font-semibold text-foreground leading-tight">
+                                  {round.title}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
+                                  {round.description}
+                                </p>
+                                {isCompleted && roundData && (
+                                  <p className="text-[9px] text-muted-foreground mt-1 tabular-nums">
+                                    Score: {roundData.score} · Level {roundData.peakDifficulty}
+                                  </p>
+                                )}
+                              </div>
+                              <Button
+                                size="sm"
+                                variant={isActiveRound ? "default" : "outline"}
+                                className="shrink-0 text-[10px] h-7 px-2.5"
+                                onClick={() => {
+                                  setActiveSDRRound(round);
+                                  handleStart(round.personaId);
+                                }}
+                              >
+                                {isActiveRound ? "Active" : isCompleted ? "Redo" : "Start"}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {/* Track completion requirements */}
+                    {!sdrProgress.trackCompleted && (
+                      <p className="text-[9px] text-muted-foreground mt-2 leading-relaxed">
+                        Complete all 3 rounds with avg. score 70+ and at least one Level 3 peak to earn SDR Interview Ready.
+                      </p>
+                    )}
+                    {/* Track summary after completion */}
+                    {sdrProgress.trackCompleted && (() => {
+                      const summary = getSDRTrackSummary(sdrProgress);
+                      return (
+                        <div className="mt-3 p-3 rounded-lg bg-muted/40 border border-border">
+                          <p className="text-[10px] font-semibold text-foreground mb-1">SDR Interview Assessment</p>
+                          <p className="text-[10px] text-muted-foreground">Average Score: {summary.averageScore}</p>
+                          <p className="text-[10px] text-muted-foreground">Peak Difficulty Reached: Level 3</p>
+                          <p className="text-[10px] text-muted-foreground mt-1">Track completed {sdrProgress.completedDate ? new Date(sdrProgress.completedDate).toLocaleDateString() : ""}</p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             )}
 
@@ -743,11 +865,13 @@ const PracticePage = () => {
                     onStartNew={() => {
                       setFeedback(null);
                       setSelectedRole(null);
-                      setSelectedEnv(null);
+                      setSelectedEnv("interview");
                       setMessages([]);
                       setInput("");
                       setLastPoints(null);
                       setLastSessionValid(false);
+                      setActiveSDRRound(null);
+                      setSdrProgress(loadSDRTrackProgress());
                     }}
                     onTrySameRole={() => {
                       setFeedback(null);
