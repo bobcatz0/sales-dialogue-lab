@@ -119,7 +119,7 @@ async function streamChat({
 // --- Page ---
 
 const PracticePage = () => {
-  const [selectedEnv, setSelectedEnv] = useState<EnvironmentId | null>(null);
+  const [selectedEnv, setSelectedEnv] = useState<EnvironmentId | null>("interview");
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -429,10 +429,16 @@ const PracticePage = () => {
                 <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
                   Structured training simulator for clarity, objection handling, and conversational control in professional sales environments.
                 </p>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-heading text-sm font-bold text-foreground">
-                    Training Mode
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="font-heading text-base font-bold text-foreground">
+                    Mock Sales Interview Simulator
                   </h2>
+                </div>
+                <p className="text-[10px] text-primary font-medium mb-4">Built for SDR / AE Candidates</p>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-heading text-sm font-semibold text-muted-foreground">
+                    Training Mode
+                  </h3>
                   <Badge variant="outline" className="text-[10px] font-medium border-border text-muted-foreground">
                     {currentRank}
                   </Badge>
@@ -455,8 +461,8 @@ const PracticePage = () => {
                             {env.title}
                           </h3>
                           {env.id === "interview" && (
-                            <span className="text-[9px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                              Recommended for job seekers
+                            <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                              PRIMARY
                             </span>
                           )}
                         </div>

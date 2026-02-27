@@ -21,21 +21,20 @@ const HeroSection = () => {
         >
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary">
             <Play className="h-3 w-3" />
-            Practice real sales conversations
+            Built for SDR / AE Candidates
           </div>
 
           <h1 className="font-heading text-5xl font-bold leading-tight tracking-tight md:text-7xl">
-            Close More Deals.{" "}
-            <span className="text-gradient">Sound Better.</span>
+            Structured Mock Interviews{" "}
+            <span className="text-gradient">for Sales Roles.</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
-            Realistic roleplays, proven scripts, and objection-handling talk tracks 
-            designed to make every sales call count.
+            Practice under pressure. Get evaluated. Improve clarity and control.
           </p>
 
           <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground/70">
-            Includes AI roleplay prompts for realistic practice using tools like ChatGPT or Claude.
+            Realistic AI-powered interview simulations with structured performance reports.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
