@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Feedback } from "./types";
+import { ShareableSummary } from "./ShareableSummary";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
 
@@ -39,11 +40,16 @@ export function FeedbackPanel({
   feedback,
   onStartNew,
   onTrySameRole,
+  alias,
+  isValidSession,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
   onTrySameRole: () => void;
+  alias?: string | null;
+  isValidSession?: boolean;
 }) {
+  const interview = isInterviewRank(feedback.rank);
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -146,6 +152,15 @@ export function FeedbackPanel({
             Retry
           </Button>
         </div>
+
+        {/* Shareable summary — interview only */}
+        {interview && (
+          <ShareableSummary
+            feedback={feedback}
+            alias={alias ?? null}
+            isValidSession={!!isValidSession}
+          />
+        )}
       </div>
     </motion.div>
   );
