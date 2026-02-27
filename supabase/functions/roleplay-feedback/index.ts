@@ -96,15 +96,25 @@ BEST MOMENT:
 Quote the single strongest line from the ${isInterview ? "Candidate" : "Sales Rep"} — one that shows ${isInterview ? "clear thinking, a structured answer, or confident delivery" : "clear positioning, a sharp question, calm objection handling, or a confident next-step ask"}. Quote it exactly. If no line stands out, pick the clearest attempt. Never say "no strong moment found."
 
 STRENGTHS (exactly 2):
-Each must reference a specific behavior pattern observed in the conversation. Not generic praise.
+Each MUST reference a specific moment or exchange from the conversation. Never use generic praise like "Good communication" or "Strong presence."
+CORRECT examples:
+- "When asked about quota shortfall, cited specific recovery actions with measurable outcomes."
+- "After the budget objection, reframed cost as monthly per-seat — shifted the framing effectively."
+WRONG examples (never do this):
+- "Good clarity." / "Strong objection handling." / "Communicated well."
 
 IMPROVEMENTS (exactly ${isInterview ? "1" : "2"}):
-Each must identify a specific missed opportunity or weak pattern. Be direct.
+Each MUST reference a specific conversational moment where the user fell short. Identify what happened and what was missing.
+CORRECT examples:
+- "When discussing quota performance, no specific metrics were provided — the answer stayed abstract."
+- "The budget objection was addressed without first confirming decision-making authority."
+WRONG examples (never do this):
+- "Improve clarity." / "Work on objection handling." / "Be more concise."
 
 NEXT DRILL (exactly 1 sentence):
 ${isInterview ? "One specific interview preparation exercise tailored to the identified development area." : "One specific exercise tailored to this persona type. Actionable and concrete."}
 
-TONE: Neutral and direct. No motivational language. No "Great job!" or "Keep it up!" — just clear analysis.
+TONE: Neutral and direct. No motivational language. No "Great job!" or "Keep it up!" — just clear, specific analysis that references actual moments from the conversation.
 
 Return ONLY the JSON object. No markdown fences, no explanation.`;
 
