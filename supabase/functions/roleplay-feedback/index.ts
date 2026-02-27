@@ -67,7 +67,14 @@ Return a JSON object with this EXACT structure — nothing else:
     "metricsDefended": <true if numbers/metrics were backed with methodology or context>,
     "consistencyNote": "<1-2 sentence assessment of alignment between resume and answers>"
   }` : ""}${evaluatorStyle ? `,
-  "evaluatorStyle": "${evaluatorStyle}"` : ""}
+  "evaluatorStyle": "${evaluatorStyle}"` : ""}${isInterview ? `,
+  "exposureMoments": [
+    {
+      "weakAnswer": "<exact quote of the candidate's weakest or most problematic answer>",
+      "reason": "<1 sentence: why this answer weakened their performance — be specific>",
+      "correction": "<1 sentence: direct suggestion for how to fix it>"
+    }
+  ]` : ""}
 }
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
@@ -136,6 +143,17 @@ CORRECT examples:
 WRONG examples:
 - "Practice more." / "Try again with this persona." / "Work on your skills."
 
+${isInterview ? `
+EXPOSURE MOMENT ANALYSIS:
+Identify the single weakest answer from the candidate. Detect these patterns:
+- VAGUE: Generic language, no metrics, broad summaries ("I improved results", "I worked hard")
+- BLAME-SHIFTING: Deflecting responsibility ("The team decided", "Marketing wasn't helping")
+- REHEARSED: Overly polished, formulaic answers that lack authentic detail
+- OVER-EXPLAINING: Rambling past the point without a clear takeaway
+Quote the exact weak answer. Explain precisely why it weakened the response. Provide one direct correction.
+If multiple weak moments exist, pick the most impactful one. If the candidate performed well throughout, still identify the relatively weakest moment.
+Tone: Direct. Precise. No emotional language. No praise padding.
+` : ""}
 TONE: Professional review. No motivational language. No "Great job!", "Keep it up!", "Well done!", "You did well.", or any soft encouragement. Write like a performance analyst delivering a debrief — neutral, precise, referencing exact moments. Every sentence should make the user feel cognitively sharper.
 ${resumeHighlights ? `
 RESUME ALIGNMENT ANALYSIS:
