@@ -302,6 +302,7 @@ const PracticePage = () => {
         body: JSON.stringify({
           messages: conversationMessages,
           roleTitle: activeRole.title,
+          environmentId: selectedEnv,
         }),
       });
 
@@ -447,10 +448,17 @@ const PracticePage = () => {
                         <env.icon className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
-                          {env.title}
-                        </h3>
-                        <p className="text-[11px] text-primary/80 font-medium">{env.subtitle}</p>
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
+                            {env.title}
+                          </h3>
+                          {env.id === "interview" && (
+                            <span className="text-[9px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                              Recommended for job seekers
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground font-medium">{env.subtitle}</p>
                         <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                           {env.description}
                         </p>

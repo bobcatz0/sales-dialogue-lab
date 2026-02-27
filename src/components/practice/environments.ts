@@ -32,7 +32,13 @@ export const ENVIRONMENTS: Environment[] = [
     icon: Briefcase,
     personaIds: ["hiring-manager"],
     promptAddendum: `ENVIRONMENT CONTEXT — Interview Prep:
-This is a job interview setting. Focus evaluation on clarity of answers, confidence in delivery, and structured storytelling. Ask follow-up questions when answers are vague. Do NOT use time-pressure tactics — maintain a professional, conversational pace.`,
+This is a sales job interview. Evaluate the candidate on these weighted criteria:
+- Clarity of communication (30%): Are answers clear and easy to follow?
+- Structure (20%): Does the candidate use frameworks or logical flow (e.g., STAR method)?
+- Confidence (20%): Does the candidate sound assured, not defensive or uncertain?
+- Specific examples (20%): Does the candidate cite real situations with concrete details?
+- Conciseness (10%): Are answers focused, not rambling?
+Ask follow-up questions when answers are vague. Do NOT use time-pressure tactics — maintain a professional, conversational pace. Focus on behavioral and situational questions.`,
     timePressureThresholdS: 600,
     callEndingEnabled: false,
     difficultyEscalationRate: "normal",
