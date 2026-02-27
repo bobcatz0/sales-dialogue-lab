@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2, Flame } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2, Flame, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/landing/Navbar";
@@ -13,6 +13,15 @@ import { SessionHistory } from "@/components/practice/SessionHistory";
 import { loadHistory, saveSession } from "@/components/practice/sessionStorage";
 import { VoiceInputButton } from "@/components/practice/VoiceInputButton";
 import { processSession, loadConsistency } from "@/components/practice/consistencyScoring";
+import {
+  loadProgression,
+  isPersonaUnlocked,
+  getRank,
+  updateProgression,
+  getUnlockHint,
+} from "@/components/practice/progression";
+import { UnlockModal } from "@/components/practice/UnlockModal";
+import { Badge } from "@/components/ui/badge";
 
 
 // --- Streaming ---
@@ -104,10 +113,14 @@ const PracticePage = () => {
   const [isFeedbackLoading, setIsFeedbackLoading] = useState(false);
   const [history, setHistory] = useState<SessionRecord[]>([]);
   const [lastPoints, setLastPoints] = useState<number | null>(null);
+  const [progression, setProgression] = useState(() => loadProgression());
+  const [unlockQueue, setUnlockQueue] = useState<{ id: string; label: string; description: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
 
   const activeRole = roles.find((r) => r.id === selectedRole);
+  const consistencyData = loadConsistency();
+  const currentRank = getRank(consistencyData.score);
 
   // Load history on mount
   useEffect(() => {
@@ -243,6 +256,7 @@ const PracticePage = () => {
       // Process consistency scoring
       const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
       const recentScores = updated.slice(1, 6).map((s) => s.score); // previous 5
+      const isValidSession = durationSeconds >= 90 && userMsgCount >= 6;
       const { points } = processSession({
         roleId: activeRole.id,
         sessionScore: data.score,
@@ -251,6 +265,17 @@ const PracticePage = () => {
         recentScores,
       });
       setLastPoints(points);
+
+      // Update progression & check unlocks
+      const { newUnlocks, data: progData } = updateProgression({
+        sessionScore: data.score,
+        peakDifficulty: data.peakDifficulty ?? 1,
+        isValidSession,
+      });
+      setProgression(progData);
+      if (newUnlocks.length > 0) {
+        setUnlockQueue(newUnlocks);
+      }
     } catch (e: any) {
       console.error(e);
       toast.error(e.message || "Could not generate feedback");
@@ -280,45 +305,59 @@ const PracticePage = () => {
             className="flex flex-col gap-5"
           >
             <div>
-              <h2 className="font-heading text-xl font-bold text-foreground mb-5">
-                Choose a Roleplay
-              </h2>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="font-heading text-xl font-bold text-foreground">
+                  Choose a Roleplay
+                </h2>
+                <Badge variant="outline" className="text-xs font-semibold border-primary/40 text-primary">
+                  {currentRank}
+                </Badge>
+              </div>
               <div className="space-y-3">
                 {roles.map((role) => {
                   const isActive = selectedRole === role.id;
+                  const unlocked = isPersonaUnlocked(role.id, progression);
+                  const hint = !unlocked ? getUnlockHint(role.id, progression) : null;
                   return (
                     <div
                       key={role.id}
                       className={`card-elevated p-4 flex items-start gap-3 transition-all duration-200 ${
                         isActive
                           ? "border-primary/60 shadow-[0_0_20px_hsl(145_72%_50%/0.1)]"
+                          : !unlocked
+                          ? "opacity-60"
                           : ""
                       }`}
                     >
                       <div
                         className={`mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center transition-colors ${
-                          isActive ? "bg-primary/20" : "bg-muted"
+                          !unlocked ? "bg-muted" : isActive ? "bg-primary/20" : "bg-muted"
                         }`}
                       >
-                        <role.icon
-                          className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`}
-                        />
+                        {unlocked ? (
+                          <role.icon
+                            className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`}
+                          />
+                        ) : (
+                          <Lock className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
                           {role.title}
                         </h3>
                         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                          {role.description}
+                          {unlocked ? role.description : hint}
                         </p>
                       </div>
                       <Button
                         size="sm"
                         variant={isActive ? "default" : "outline"}
                         className="shrink-0 text-xs h-8"
-                        onClick={() => handleStart(role.id)}
+                        onClick={() => unlocked && handleStart(role.id)}
+                        disabled={!unlocked}
                       >
-                        {isActive ? "Active" : "Start"}
+                        {!unlocked ? "Locked" : isActive ? "Active" : "Start"}
                       </Button>
                     </div>
                   );
@@ -532,6 +571,14 @@ const PracticePage = () => {
           Practice out loud. Keep it natural. Ask questions. Drive toward a next step.
         </p>
       </div>
+
+      {/* Unlock Modal */}
+      <UnlockModal
+        open={unlockQueue.length > 0}
+        personaName={unlockQueue[0]?.label ?? ""}
+        personaDescription={unlockQueue[0]?.description ?? ""}
+        onClose={() => setUnlockQueue((q) => q.slice(1))}
+      />
     </div>
   );
 };
