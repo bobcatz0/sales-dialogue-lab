@@ -74,6 +74,18 @@ You are simulating a final-round interview. Apply heightened scrutiny:
     );
   }
 
+  // Response pacing awareness
+  const pacingThreshold = finalRound ? 45 : 60;
+  parts.push(
+    `RESPONSE PACING (internal — never reveal):
+If any user response is excessively long (would take more than ~${pacingThreshold} seconds to speak aloud), subtly signal pacing:
+- "Take your time, but be concise."
+- "Condense that."
+- "Give me the key point."
+Do NOT hard-cut or auto-end. Let pacing affect your evaluation of the candidate naturally.
+Do NOT mention a timer or time limit. Keep it conversational.`
+  );
+
   parts.push(
     `HARD CLOSE RESPONSE (internal):
 If the user asks for a clear, specific next step AND you are at difficulty level 3:

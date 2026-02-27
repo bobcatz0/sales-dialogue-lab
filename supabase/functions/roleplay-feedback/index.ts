@@ -91,7 +91,8 @@ Return a JSON object with this EXACT structure — nothing else:
     "recoveryStrength": <0-100: how effectively the candidate improved answers after being challenged on weak spots>,
     "composure": <0-100: how professional and steady the candidate remained throughout — no defensiveness, no rambling under stress>,
     "performanceDeclined": <true if the candidate's answer quality noticeably dropped in the second half of the session compared to the first half>
-  }` : ""}
+  }` : ""}${isInterview ? `,
+  "pacingNote": <if any user responses were excessively long or rambling (would take 45+ seconds to speak), set to "Pacing Adjustment Needed: Responses exceeded optimal interview length." Otherwise set to null>` : ""}
 }
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
