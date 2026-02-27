@@ -62,6 +62,7 @@ import { PostSessionPrompt } from "@/components/practice/PostSessionPrompt";
 import { DrillMode } from "@/components/practice/DrillMode";
 import { getDrillForWeakness, type Drill } from "@/components/practice/drillData";
 import { qualifiesForInterviewReady, grantInterviewReady, checkStatusRevocation } from "@/components/practice/interviewReadyStatus";
+import { trackDrillCompletion } from "@/components/practice/drillTracking";
 
 // --- Streaming ---
 
@@ -1000,6 +1001,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     <DrillMode
                       drill={activeDrill}
                       onComplete={() => {
+                        trackDrillCompletion(activeDrill.category);
                         setActiveDrill(null);
                         setFeedback(null);
                         setLastPoints(null);
