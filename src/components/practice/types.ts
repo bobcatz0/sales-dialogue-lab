@@ -26,6 +26,13 @@ export interface Feedback {
     consistencyNote: string;
   };
   evaluatorStyle?: EvaluatorStyle;
+  exposureMoments?: ExposureMoment[];
+}
+
+export interface ExposureMoment {
+  weakAnswer: string;
+  reason: string;
+  correction: string;
 }
 
 export interface SessionRecord {

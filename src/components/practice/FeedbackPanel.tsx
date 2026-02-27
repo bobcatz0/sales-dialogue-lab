@@ -1,9 +1,9 @@
 import { useCallback } from "react";
 import { motion } from "framer-motion";
-import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle } from "lucide-react";
+import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import type { Feedback, SkillScore } from "./types";
+import type { Feedback, SkillScore, ExposureMoment } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
@@ -325,6 +325,29 @@ export function FeedbackPanel({
               {feedback.evaluatorStyle === "results-oriented" && "This session emphasized outcomes, impact, and concise delivery."}
               {feedback.evaluatorStyle === "behavioral" && "This session emphasized ownership, accountability, and learning from experience."}
             </p>
+          </div>
+        )}
+
+        {/* Exposure Moment — interview only */}
+        {interview && feedback.exposureMoments && feedback.exposureMoments.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <AlertTriangle className="h-3 w-3 text-destructive" />
+              Exposure Moment
+            </div>
+            {feedback.exposureMoments.map((moment, i) => (
+              <div key={i} className="bg-destructive/5 rounded-lg p-3 border border-destructive/20 space-y-2">
+                <p className="text-[11px] text-foreground italic leading-snug">
+                  "{moment.weakAnswer}"
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  {moment.reason}
+                </p>
+                <p className="text-[11px] text-foreground font-medium leading-snug">
+                  → {moment.correction}
+                </p>
+              </div>
+            ))}
           </div>
         )}
 
