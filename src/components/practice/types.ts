@@ -30,6 +30,7 @@ export interface Feedback {
   recoveryAssessment?: RecoveryAssessment;
   criticalWeakness?: CriticalWeakness;
   finalRoundMetrics?: FinalRoundMetrics;
+  pacingNote?: string;
 }
 
 export interface FinalRoundMetrics {

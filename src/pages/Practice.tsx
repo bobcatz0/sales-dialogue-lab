@@ -846,8 +846,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   )}
                 </div>
                 {sessionActive && (
-                  <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground tabular-nums font-mono shrink-0">
-                    <span className="inline-block h-1 w-1 rounded-full bg-primary/70" />
+                  <span className="text-[10px] text-muted-foreground/60 tabular-nums shrink-0">
                     {timer.display}
                   </span>
                 )}

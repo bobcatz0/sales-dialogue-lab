@@ -315,7 +315,17 @@ export function FeedbackPanel({
           </div>
         )}
 
-        {/* F. Resume Alignment — interview only, when resume was provided */}
+        {/* Pacing Note */}
+        {interview && feedback.pacingNote && (
+          <div className="flex items-start gap-2 rounded-md p-2.5 bg-muted/30 border border-border">
+            <Gauge className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              {feedback.pacingNote}
+            </p>
+          </div>
+        )}
+
+
         {interview && feedback.resumeAlignment && (
           <div className="space-y-1.5">
             <div className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
