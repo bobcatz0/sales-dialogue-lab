@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -622,6 +623,28 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     </motion.div>
                   ))}
                 </div>
+
+                {/* Drill Library link */}
+                <Link to="/drills" className="block mt-2">
+                  <div className="card-elevated p-4 flex items-start gap-3 cursor-pointer transition-all duration-200 hover:border-primary/40 opacity-90">
+                    <div className="mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center bg-muted">
+                      <Target className="h-4 w-4 text-destructive" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
+                          Skill Drills
+                        </h3>
+                        <span className="text-[9px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border">
+                          QUICK
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        Targeted 3-minute drills. Sharpen specific skills before your interview.
+                      </p>
+                    </div>
+                  </div>
+                </Link>
               </div>
             )}
 
