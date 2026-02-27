@@ -16,38 +16,56 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are a sales coaching expert reviewing a practice roleplay conversation. The user was practicing with a "${roleTitle}" persona.
+    const systemPrompt = `You are a direct, no-nonsense sales performance analyst. Review this practice conversation where the user played a sales rep against a "${roleTitle}" persona.
 
-Analyze the conversation and return a JSON object with this EXACT structure:
+Return a JSON object with this EXACT structure — nothing else:
 {
   "score": <number 0-100>,
   "rank": "<rank string>",
   "peakDifficulty": <1 | 2 | 3>,
-  "bestMoment": "The single strongest line spoken by the Sales Rep during the session, quoted exactly",
-  "strengths": ["strength 1", "strength 2", "strength 3"],
-  "improvements": ["improvement 1", "improvement 2", "improvement 3"],
-  "nextDrill": "One specific drill or exercise the user should practice next, tailored to the ${roleTitle} role"
+  "bestMoment": "<exact quote>",
+  "strengths": ["<strength>", "<strength>"],
+  "improvements": ["<improvement>", "<improvement>"],
+  "nextDrill": "<one sentence>"
 }
 
-Scoring rubric and rank labels (use exactly):
-- 0-20: "Rookie"
-- 21-40: "Starter"
-- 41-60: "Closer"
-- 61-80: "Operator"
-- 81-100: "Rainmaker"
+SCORING RULES:
+- 0-20: "Rookie" — Cannot hold a conversation, no questions asked, no direction.
+- 21-40: "Starter" — Some effort but vague, no objection handling, no next step.
+- 41-60: "Closer" — Decent structure, some good questions, but gaps in objection handling or next-step clarity.
+- 61-80: "Operator" — Strong conversation control, good questions, handles objections, drives toward outcome.
+- 81-100: "Rainmaker" — Exceptional across all dimensions. Rare.
 
-For "peakDifficulty": Evaluate the conversation to determine the highest difficulty level the prospect character reached.
-- Level 1 (Easy): Prospect was cooperative, answered clearly, offered info willingly, objections were mild.
-- Level 2 (Normal): Prospect was more guarded, required better questions, had realistic/specific objections, needed clearer next-step asks.
-- Level 3 (Hard): Prospect showed time pressure/skepticism, gave short answers with pushback, raised strong objections (timing, budget, competitors, authority), required structured control and confident asks.
-Assess based on the prospect's actual behavior. If the user performed well enough that the prospect became more challenging, that indicates higher difficulty was reached.
-If the user reached Level 3, add a slight bonus (5-10 points) to the score for performing well under pressure.
+ANTI-GAMING SCORE ADJUSTMENT:
+Before scoring, check for these patterns and REDUCE the score accordingly:
+- Repetitive lines: If the user repeated similar phrases 3+ times, reduce score by 10-15 points.
+- Extremely short answers: If 50%+ of user messages are under 10 words, reduce by 10 points.
+- No questions asked: If the user never asked a single question, cap score at 35.
+- No next-step attempt: If the user never tried to schedule, propose, or advance, cap score at 50.
+Apply reductions silently — do not mention anti-gaming in the output.
 
-For "bestMoment": Select the Sales Rep line that best demonstrates one of these: clear positioning, a strong discovery question, calm objection handling, or a confident next-step ask. Quote it exactly as they wrote it. If no standout line exists, pick the clearest attempt — always label it "Best Moment" and never say "no strong moment found".
+PEAK DIFFICULTY:
+Assess the highest difficulty the prospect reached based on their behavior:
+- Level 1: Cooperative, mild objections, volunteered information.
+- Level 2: Guarded, realistic objections, required effort to open up.
+- Level 3: Skeptical, short answers, strong pushback, required structured control.
+If Level 3 reached and user performed well, add 5-10 point bonus.
 
-ALWAYS return exactly 3 strengths, exactly 3 improvements, and exactly 1 nextDrill.
-Be honest but encouraging. Focus on: discovery questions, objection handling, tone, pacing, and driving toward next steps.
-Return ONLY the JSON object, no markdown fences.`;
+BEST MOMENT:
+Quote the single strongest line from the Sales Rep — one that shows clear positioning, a sharp question, calm objection handling, or a confident next-step ask. Quote it exactly. If no line stands out, pick the clearest attempt. Never say "no strong moment found."
+
+STRENGTHS (exactly 2):
+Each must reference a specific behavior pattern observed in the conversation. Not generic praise. Example: "Asked a targeted budget question after the prospect raised pricing concerns" — not "Good at asking questions."
+
+IMPROVEMENTS (exactly 2):
+Each must identify a specific missed opportunity or weak pattern. Be direct. Example: "Failed to acknowledge the timing objection before pivoting — came across as dismissive" — not "Could improve objection handling."
+
+NEXT DRILL (exactly 1 sentence):
+One specific exercise tailored to this persona type. Actionable and concrete.
+
+TONE: Neutral and direct. No motivational language. No "Great job!" or "Keep it up!" — just clear analysis.
+
+Return ONLY the JSON object. No markdown fences, no explanation.`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -63,7 +81,7 @@ Return ONLY the JSON object, no markdown fences.`;
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `Here is the conversation to review:\n\n${messages
+              content: `Conversation transcript:\n\n${messages
                 .map((m: { role: string; text: string }) =>
                   `${m.role === "user" ? "Sales Rep" : roleTitle}: ${m.text}`
                 )
@@ -98,7 +116,6 @@ Return ONLY the JSON object, no markdown fences.`;
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
 
-    // Parse the JSON from the AI response
     let feedback;
     try {
       feedback = JSON.parse(content.replace(/```json?\n?/g, "").replace(/```/g, "").trim());
@@ -108,9 +125,9 @@ Return ONLY the JSON object, no markdown fences.`;
         rank: "Closer",
         peakDifficulty: 1,
         bestMoment: "Unable to extract a quote from this session.",
-        strengths: ["Unable to parse detailed feedback"],
-        improvements: ["Try a longer conversation for better analysis"],
-        nextDrill: "Practice a full discovery call from start to finish",
+        strengths: ["Engaged with the persona", "Attempted to drive the conversation"],
+        improvements: ["Try a longer conversation for more detailed analysis", "Focus on asking more discovery questions"],
+        nextDrill: "Practice a full discovery call from opening to next-step ask",
       };
     }
 

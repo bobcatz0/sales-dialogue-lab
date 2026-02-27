@@ -685,24 +685,15 @@ const PracticePage = () => {
               )}
               {feedback && !isFeedbackLoading && (
                 <>
-                  {lastPoints !== null && (
+                  {lastPoints !== null && lastPoints > 0 && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="card-elevated p-4 flex items-center justify-between"
+                      className="card-elevated p-3 flex items-center gap-2 text-sm"
                     >
-                      <div className="flex items-center gap-2 text-sm">
-                        <Flame className="h-4 w-4 text-primary" />
-                        <span className="text-muted-foreground">Consistency Points Earned:</span>
-                        <span className="font-bold text-primary text-lg">
-                          {lastPoints > 0 ? `+${lastPoints}` : "0"}
-                        </span>
-                      </div>
-                      {lastPoints === 0 && (
-                        <span className="text-[11px] text-muted-foreground">
-                          Session too short — need 6+ messages &amp; 90s+
-                        </span>
-                      )}
+                      <Flame className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-muted-foreground">Points:</span>
+                      <span className="font-bold text-primary">+{lastPoints}</span>
                     </motion.div>
                   )}
                   <FeedbackPanel
@@ -727,10 +718,6 @@ const PracticePage = () => {
           </div>
         </div>
 
-        {/* Bottom Helper */}
-        <p className="mt-8 text-center text-sm text-muted-foreground/70">
-          Practice out loud. Keep it natural. Ask questions. Drive toward a next step.
-        </p>
       </div>
 
       {/* Unlock Modal */}
