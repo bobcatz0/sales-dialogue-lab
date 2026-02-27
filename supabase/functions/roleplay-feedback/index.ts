@@ -78,6 +78,12 @@ Return a JSON object with this EXACT structure — nothing else:
   "recoveryAssessment": {
     "recovered": <true if the candidate improved clarity/specificity after being challenged on a weak answer>,
     "note": "<one sentence: either 'Recovery Strength: Demonstrated improved clarity after pressure.' or 'Recovery Opportunity: Did not tighten response after follow-up pressure.'>"
+  },
+  "criticalWeakness": <if recoveryAssessment.recovered is false, provide this object; if recovered is true, set to null>{
+    "weakResponse": "<exact quote of the weak answer that was not recovered>",
+    "credibilityImpact": "<1 sentence: why this weakened credibility — e.g. 'In a real interview, this may signal lack of ownership or inflated performance.'>",
+    "recoveryFailure": "<1 sentence: how the follow-up pressure was not addressed — e.g. 'Under follow-up pressure, clarity did not improve.'>",
+    "correctiveExample": "<1 sentence: a concrete corrective answer the candidate could have given — e.g. 'At that time, I was averaging 95 calls per week, which increased to 120 after restructuring my call blocks.'>"
   }` : ""}
 }
 
@@ -164,6 +170,15 @@ After a weak-spot was exposed and the evaluator applied pressure, assess whether
 - "recovered": false if the candidate continued with vague, deflective, or rambling answers after pressure.
 - "note": If recovered: "Recovery Strength: Demonstrated improved clarity after pressure." If not: "Recovery Opportunity: Did not tighten response after follow-up pressure."
 If recovery occurred, apply a subtle +3-5 point bonus to the overall score. Do not mention the bonus in output.
+If recovery FAILED, apply a -5-10 point penalty to the overall score. Do NOT shield the score. Reflect the failure honestly.
+
+CRITICAL WEAKNESS (only when recovery failed):
+When recoveryAssessment.recovered is false, populate "criticalWeakness" with:
+- "weakResponse": The exact quote that remained weak after pressure.
+- "credibilityImpact": Why this damages interview credibility. Be direct — e.g. "This may signal lack of ownership or inflated performance."
+- "recoveryFailure": How the follow-up failed — e.g. "Under follow-up pressure, clarity did not improve."
+- "correctiveExample": A concrete, realistic example answer the candidate should have given. Make it specific to their context.
+When recovery succeeded, set "criticalWeakness" to null.
 ` : ""}
 TONE: Professional review. No motivational language. No "Great job!", "Keep it up!", "Well done!", "You did well.", or any soft encouragement. Write like a performance analyst delivering a debrief — neutral, precise, referencing exact moments. Every sentence should make the user feel cognitively sharper.
 ${resumeHighlights ? `
