@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2, Flame, Lock, ArrowLeft } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -473,24 +473,18 @@ This evaluation style should subtly influence your questions and reactions. Do N
             {/* Step 1: Environment Selection */}
             {!selectedEnv && (
               <div>
-                {/* Professional framing */}
-                <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
-                  Structured training simulator for clarity, objection handling, and conversational control in professional sales environments.
-                </p>
                 <div className="flex items-center gap-2 mb-1">
                   <h2 className="font-heading text-base font-bold text-foreground">
                     Mock Sales Interview Simulator
                   </h2>
                 </div>
-                <p className="text-[10px] text-primary font-medium mb-4">Built for SDR / AE Candidates</p>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-heading text-sm font-semibold text-muted-foreground">
-                    Training Mode
-                  </h3>
-                  <Badge variant="outline" className="text-[10px] font-medium border-border text-muted-foreground">
-                    {currentRank}
-                  </Badge>
-                </div>
+                <p className="text-[10px] text-primary font-medium mb-3">Built for SDR / AE Candidates</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
+                  Professional interview simulation with structured evaluation. Select a mode to begin.
+                </p>
+                <h3 className="font-heading text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                  Simulation Mode
+                </h3>
                 <div className="space-y-3">
                   {ENVIRONMENTS.map((env) => (
                     <motion.div
@@ -498,7 +492,9 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                       onClick={() => setSelectedEnv(env.id)}
-                      className="card-elevated p-4 flex items-start gap-3 cursor-pointer transition-all duration-200 hover:border-primary/40"
+                      className={`card-elevated p-4 flex items-start gap-3 cursor-pointer transition-all duration-200 hover:border-primary/40 ${
+                        env.id !== "interview" ? "opacity-70" : ""
+                      }`}
                     >
                       <div className="mt-0.5 h-9 w-9 shrink-0 rounded-full bg-muted flex items-center justify-center">
                         <env.icon className="h-4 w-4 text-muted-foreground" />
@@ -514,7 +510,6 @@ This evaluation style should subtly influence your questions and reactions. Do N
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-muted-foreground font-medium">{env.subtitle}</p>
                         <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                           {env.description}
                         </p>
@@ -719,8 +714,10 @@ This evaluation style should subtly influence your questions and reactions. Do N
               </div>
             )}
 
-            {/* Daily Challenge */}
-            <DailyChallengeCard onStart={handleStartChallenge} />
+            {/* Daily Challenge — hidden in interview mode for flow clarity */}
+            {selectedEnv !== "interview" && (
+              <DailyChallengeCard onStart={handleStartChallenge} />
+            )}
 
             {/* Profile Panel */}
             {alias && (
@@ -755,7 +752,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     </span>
                   )}
                   {!activeRole && !activeEnv && (
-                    <span className="text-xs text-muted-foreground">Roleplay</span>
+                    <span className="text-xs text-muted-foreground">Session</span>
                   )}
                 </div>
                 {sessionActive && (
@@ -775,8 +772,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   <div className="flex items-center justify-center h-full">
                     <p className="text-xs text-muted-foreground text-center">
                       {!selectedEnv
-                        ? "Choose an environment to start."
-                        : "Select a persona to begin."}
+                        ? "Select a simulation mode to begin."
+                        : "Select a persona or track round to begin."}
                     </p>
                   </div>
                 )}
@@ -886,14 +883,13 @@ This evaluation style should subtly influence your questions and reactions. Do N
               )}
               {feedback && !isFeedbackLoading && (
                 <>
-                  {lastPoints !== null && lastPoints > 0 && (
+                  {lastPoints !== null && lastPoints > 0 && selectedEnv !== "interview" && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className="card-elevated px-4 py-2.5 flex items-center gap-2 text-xs"
                     >
-                      <Flame className="h-3 w-3 text-primary" />
-                      <span className="text-muted-foreground">Points</span>
+                      <span className="text-muted-foreground">Session Points</span>
                       <span className="font-bold text-primary">+{lastPoints}</span>
                     </motion.div>
                   )}

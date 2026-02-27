@@ -30,7 +30,7 @@ export const ENVIRONMENTS: Environment[] = [
     subtitle: "Sales interview training",
     description: "Practice structured responses, professional storytelling, and confident delivery under interview conditions.",
     icon: Briefcase,
-    personaIds: ["hiring-manager", "sdr-behavioral", "sdr-coldcall", "sdr-objections"],
+    personaIds: ["hiring-manager"],
     promptAddendum: `ENVIRONMENT CONTEXT — Interview Prep:
 This is a sales job interview. Evaluate the candidate on these weighted criteria:
 - Clarity of communication (30%): Are answers clear and easy to follow?
