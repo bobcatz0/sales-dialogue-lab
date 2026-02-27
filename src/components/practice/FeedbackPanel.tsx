@@ -3,14 +3,24 @@ import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge } from "lucide-
 import { Button } from "@/components/ui/button";
 import type { Feedback } from "./types";
 
+const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
+
+function isInterviewRank(rank: string) {
+  return INTERVIEW_RANKS.includes(rank);
+}
+
 function getRankColor(rank: string) {
   switch (rank) {
     case "Rainmaker":
     case "Operator":
+    case "Interview Ready":
+    case "Strong Candidate":
       return "text-primary";
     case "Closer":
+    case "Prepared":
       return "text-accent-foreground";
     case "Starter":
+    case "Developing":
       return "text-muted-foreground";
     default:
       return "text-destructive";
@@ -60,7 +70,7 @@ export function FeedbackPanel({
           </span>
           <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
             <Gauge className="h-3 w-3" />
-            Lvl {feedback.peakDifficulty ?? 1}
+            {isInterviewRank(feedback.rank) ? "Pressure" : "Lvl"} {feedback.peakDifficulty ?? 1}
           </span>
         </div>
         {/* Score bar */}
@@ -104,7 +114,7 @@ export function FeedbackPanel({
           <div className="space-y-1.5">
             <div className="flex items-center gap-1 text-[11px] font-semibold text-foreground">
               <TrendingUp className="h-3 w-3 text-muted-foreground" />
-              Focus On
+              {isInterviewRank(feedback.rank) ? "Development Area" : "Focus On"}
             </div>
             {feedback.improvements.map((s, i) => (
               <p key={i} className="text-[11px] text-muted-foreground leading-snug pl-3.5 relative before:content-['→'] before:absolute before:left-0 before:text-[10px]">

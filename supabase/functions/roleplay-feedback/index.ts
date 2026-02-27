@@ -12,11 +12,38 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, roleTitle } = await req.json();
+    const { messages, roleTitle, environmentId } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are a direct, no-nonsense sales performance analyst. Review this practice conversation where the user played a sales rep against a "${roleTitle}" persona.
+    const isInterview = environmentId === "interview";
+
+    const interviewScoringBlock = `
+INTERVIEW-SPECIFIC SCORING CRITERIA (use these weights):
+- Clarity of communication (30%): Were answers clear, specific, and easy to follow?
+- Structure (20%): Did the candidate use logical frameworks or storytelling structure (STAR, situation-action-result)?
+- Confidence (20%): Did the candidate sound assured and professional, not defensive or uncertain?
+- Specific examples (20%): Did the candidate cite real situations with concrete details, numbers, or outcomes?
+- Conciseness (10%): Were answers focused and appropriately scoped, not rambling?
+
+INTERVIEW-SPECIFIC OUTPUT FORMAT:
+Replace the standard "strengths" and "improvements" with:
+- "strengths": ["<communication strength>", "<structural strength>"] — label each clearly (e.g., "Communication: ..." or "Structure: ...")
+- "improvements": ["<primary development area>"] — exactly 1 specific area to focus on
+- "nextDrill": Frame as "Suggested focus for next interview: <specific recommendation>"
+- "rank": Replace with interview readiness levels: "Not Ready" (0-30), "Developing" (31-50), "Prepared" (51-70), "Strong Candidate" (71-85), "Interview Ready" (86-100)
+`;
+
+    const standardScoringBlock = `
+SCORING RULES:
+- 0-20: "Rookie" — Cannot hold a conversation, no questions asked, no direction.
+- 21-40: "Starter" — Some effort but vague, no objection handling, no next step.
+- 41-60: "Closer" — Decent structure, some good questions, but gaps in objection handling or next-step clarity.
+- 61-80: "Operator" — Strong conversation control, good questions, handles objections, drives toward outcome.
+- 81-100: "Rainmaker" — Exceptional across all dimensions. Rare.
+`;
+
+    const systemPrompt = `You are a direct, no-nonsense ${isInterview ? "interview performance analyst" : "sales performance analyst"}. Review this practice conversation where the user ${isInterview ? "was interviewed by" : "played a sales rep against"} a "${roleTitle}" persona.
 
 Return a JSON object with this EXACT structure — nothing else:
 {
@@ -25,43 +52,38 @@ Return a JSON object with this EXACT structure — nothing else:
   "peakDifficulty": <1 | 2 | 3>,
   "bestMoment": "<exact quote>",
   "strengths": ["<strength>", "<strength>"],
-  "improvements": ["<improvement>", "<improvement>"],
+  "improvements": ["<improvement>"${isInterview ? "" : ', "<improvement>"'}],
   "nextDrill": "<one sentence>"
 }
 
-SCORING RULES:
-- 0-20: "Rookie" — Cannot hold a conversation, no questions asked, no direction.
-- 21-40: "Starter" — Some effort but vague, no objection handling, no next step.
-- 41-60: "Closer" — Decent structure, some good questions, but gaps in objection handling or next-step clarity.
-- 61-80: "Operator" — Strong conversation control, good questions, handles objections, drives toward outcome.
-- 81-100: "Rainmaker" — Exceptional across all dimensions. Rare.
+${isInterview ? interviewScoringBlock : standardScoringBlock}
 
 ANTI-GAMING SCORE ADJUSTMENT:
 Before scoring, check for these patterns and REDUCE the score accordingly:
 - Repetitive lines: If the user repeated similar phrases 3+ times, reduce score by 10-15 points.
 - Extremely short answers: If 50%+ of user messages are under 10 words, reduce by 10 points.
 - No questions asked: If the user never asked a single question, cap score at 35.
-- No next-step attempt: If the user never tried to schedule, propose, or advance, cap score at 50.
+${isInterview ? "" : "- No next-step attempt: If the user never tried to schedule, propose, or advance, cap score at 50."}
 Apply reductions silently — do not mention anti-gaming in the output.
 
 PEAK DIFFICULTY:
-Assess the highest difficulty the prospect reached based on their behavior:
-- Level 1: Cooperative, mild objections, volunteered information.
-- Level 2: Guarded, realistic objections, required effort to open up.
-- Level 3: Skeptical, short answers, strong pushback, required structured control.
+Assess the highest difficulty the ${isInterview ? "interviewer" : "prospect"} reached based on their behavior:
+- Level 1: Cooperative, mild ${isInterview ? "follow-ups" : "objections"}, volunteered information.
+- Level 2: Guarded, ${isInterview ? "probing follow-ups, challenged vague answers" : "realistic objections, required effort to open up"}.
+- Level 3: ${isInterview ? "Tough follow-ups, challenged assumptions, pressure questions" : "Skeptical, short answers, strong pushback, required structured control"}.
 If Level 3 reached and user performed well, add 5-10 point bonus.
 
 BEST MOMENT:
-Quote the single strongest line from the Sales Rep — one that shows clear positioning, a sharp question, calm objection handling, or a confident next-step ask. Quote it exactly. If no line stands out, pick the clearest attempt. Never say "no strong moment found."
+Quote the single strongest line from the ${isInterview ? "Candidate" : "Sales Rep"} — one that shows ${isInterview ? "clear thinking, a structured answer, or confident delivery" : "clear positioning, a sharp question, calm objection handling, or a confident next-step ask"}. Quote it exactly. If no line stands out, pick the clearest attempt. Never say "no strong moment found."
 
 STRENGTHS (exactly 2):
-Each must reference a specific behavior pattern observed in the conversation. Not generic praise. Example: "Asked a targeted budget question after the prospect raised pricing concerns" — not "Good at asking questions."
+Each must reference a specific behavior pattern observed in the conversation. Not generic praise.
 
-IMPROVEMENTS (exactly 2):
-Each must identify a specific missed opportunity or weak pattern. Be direct. Example: "Failed to acknowledge the timing objection before pivoting — came across as dismissive" — not "Could improve objection handling."
+IMPROVEMENTS (exactly ${isInterview ? "1" : "2"}):
+Each must identify a specific missed opportunity or weak pattern. Be direct.
 
 NEXT DRILL (exactly 1 sentence):
-One specific exercise tailored to this persona type. Actionable and concrete.
+${isInterview ? "One specific interview preparation exercise tailored to the identified development area." : "One specific exercise tailored to this persona type. Actionable and concrete."}
 
 TONE: Neutral and direct. No motivational language. No "Great job!" or "Keep it up!" — just clear analysis.
 
