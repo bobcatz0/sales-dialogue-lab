@@ -3,6 +3,11 @@ export interface ChatMessage {
   text: string;
 }
 
+export interface SkillScore {
+  name: string;
+  score: number; // 0-100
+}
+
 export interface Feedback {
   score: number;
   rank: string;
@@ -11,6 +16,8 @@ export interface Feedback {
   improvements: string[];
   nextDrill: string;
   bestMoment: string;
+  skillBreakdown?: SkillScore[];
+  trainingRecommendation?: string;
 }
 
 export interface SessionRecord {

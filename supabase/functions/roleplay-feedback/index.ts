@@ -53,10 +53,29 @@ Return a JSON object with this EXACT structure — nothing else:
   "bestMoment": "<exact quote>",
   "strengths": ["<strength>", "<strength>"],
   "improvements": ["<improvement>"${isInterview ? "" : ', "<improvement>"'}],
-  "nextDrill": "<one sentence>"
+  "nextDrill": "<one sentence>",
+  "skillBreakdown": [
+    {"name": "Clarity", "score": <0-100>},
+    {"name": "Structure", "score": <0-100>},
+    {"name": "Objection Handling", "score": <0-100>},
+    {"name": "Conversational Control", "score": <0-100>},
+    {"name": "Conciseness", "score": <0-100>}
+  ],
+  "trainingRecommendation": "<one sentence: suggest next environment + persona + specific skill>"
 }
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
+
+SKILL BREAKDOWN SCORING:
+Evaluate each skill dimension independently based on the conversation:
+- Clarity: How clear and specific were the user's statements? Did they avoid vague language?
+- Structure: Did responses follow logical flow? Were frameworks or patterns used?
+- Objection Handling: ${isInterview ? "How well did the candidate handle tough follow-up questions and challenges?" : "How effectively were objections acknowledged and addressed?"}
+- Conversational Control: Did the user drive the conversation forward, or were they reactive?
+- Conciseness: Were responses appropriately scoped, not too long or too short?
+
+TRAINING RECOMMENDATION:
+Based on the weakest skill area, suggest a specific next training session. Format: "<Environment> mode with <Persona> — focus on <specific skill>." Example: "Cold Call mode with Gatekeeper — focus on opening clarity under pressure."
 
 ANTI-GAMING SCORE ADJUSTMENT:
 Before scoring, check for these patterns and REDUCE the score accordingly:
