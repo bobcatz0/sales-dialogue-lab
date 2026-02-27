@@ -146,12 +146,14 @@ export function FeedbackPanel({
   feedback,
   onStartNew,
   onTrySameRole,
+  onStartDrill,
   alias,
   isValidSession,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
   onTrySameRole: () => void;
+  onStartDrill?: () => void;
   alias?: string | null;
   isValidSession?: boolean;
 }) {
@@ -413,16 +415,33 @@ export function FeedbackPanel({
         )}
 
         {/* Actions */}
-        <div className="flex gap-2 pt-1">
-          <Button variant="default" size="sm" className="flex-1 h-9" onClick={onStartNew}>
-            <Play className="h-3.5 w-3.5 mr-1.5" />
-            New Rehearsal
-          </Button>
-          <Button variant="outline" size="sm" className="flex-1 h-9" onClick={onTrySameRole}>
-            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-            Retry
-          </Button>
-        </div>
+        {interview && feedback.score < 60 && onStartDrill ? (
+          <div className="space-y-2 pt-1">
+            <div className="rounded-lg p-3 bg-muted/50 border border-border">
+              <p className="text-[11px] font-medium text-foreground text-center">
+                Focused Improvement Recommended Before Reattempt.
+              </p>
+            </div>
+            <Button variant="default" size="sm" className="w-full h-9" onClick={onStartDrill}>
+              <Target className="h-3.5 w-3.5 mr-1.5" />
+              Start Targeted Drill
+            </Button>
+            <Button variant="ghost" size="sm" className="w-full h-8 text-xs text-muted-foreground" onClick={onStartNew}>
+              Skip to New Rehearsal
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-2 pt-1">
+            <Button variant="default" size="sm" className="flex-1 h-9" onClick={onStartNew}>
+              <Play className="h-3.5 w-3.5 mr-1.5" />
+              New Rehearsal
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1 h-9" onClick={onTrySameRole}>
+              <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+              Retry
+            </Button>
+          </div>
+        )}
 
         {/* Download Report */}
         <Button

@@ -59,6 +59,8 @@ import {
 } from "@/components/practice/frictionTracking";
 import { OnboardingModal } from "@/components/practice/OnboardingModal";
 import { PostSessionPrompt } from "@/components/practice/PostSessionPrompt";
+import { DrillMode } from "@/components/practice/DrillMode";
+import { getDrillForWeakness, type Drill } from "@/components/practice/drillData";
 
 // --- Streaming ---
 
@@ -173,6 +175,7 @@ const PracticePage = () => {
   const [showHelpfulPrompt, setShowHelpfulPrompt] = useState(false);
   const [showRunAgainPrompt, setShowRunAgainPrompt] = useState(false);
   const sessionStartedWithRole = useRef(false);
+  const [activeDrill, setActiveDrill] = useState<Drill | null>(null);
 
   const timer = useCallTimer(sessionActive);
 
@@ -966,46 +969,68 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       <span className="font-bold text-primary">+{lastPoints}</span>
                     </motion.div>
                   )}
-                  <FeedbackPanel
-                    feedback={feedback}
-                    alias={alias}
-                    isValidSession={lastSessionValid}
-                    onStartNew={() => {
-                      setFeedback(null);
-                      setSelectedRole(null);
-                      setSelectedEnv("interview");
-                      setMessages([]);
-                      setInput("");
-                      setLastPoints(null);
-                      setLastSessionValid(false);
-                      setActiveSDRRound(null);
-                      setSdrProgress(loadSDRTrackProgress());
-                    }}
-                    onTrySameRole={() => {
-                      setFeedback(null);
-                      setLastPoints(null);
-                      setLastSessionValid(false);
-                      if (selectedRole) handleStart(selectedRole);
-                    }}
-                  />
-                  {/* Post-session prompts */}
-                  {showHelpfulPrompt && (
-                    <PostSessionPrompt
-                      type="helpful"
-                      onResponse={(r) => {
-                        trackHelpfulResponse(r);
-                        setShowHelpfulPrompt(false);
+                  {activeDrill ? (
+                    <DrillMode
+                      drill={activeDrill}
+                      onComplete={() => {
+                        setActiveDrill(null);
+                        setFeedback(null);
+                        setLastPoints(null);
+                        setLastSessionValid(false);
+                        if (selectedRole) handleStart(selectedRole);
                       }}
+                      onDismiss={() => setActiveDrill(null)}
                     />
-                  )}
-                  {showRunAgainPrompt && (
-                    <PostSessionPrompt
-                      type="run-again"
-                      onResponse={(r) => {
-                        trackWouldRunAgain(r);
-                        setShowRunAgainPrompt(false);
-                      }}
-                    />
+                  ) : (
+                    <>
+                      <FeedbackPanel
+                        feedback={feedback}
+                        alias={alias}
+                        isValidSession={lastSessionValid}
+                        onStartNew={() => {
+                          setFeedback(null);
+                          setSelectedRole(null);
+                          setSelectedEnv("interview");
+                          setMessages([]);
+                          setInput("");
+                          setLastPoints(null);
+                          setLastSessionValid(false);
+                          setActiveSDRRound(null);
+                          setSdrProgress(loadSDRTrackProgress());
+                          setActiveDrill(null);
+                        }}
+                        onTrySameRole={() => {
+                          setFeedback(null);
+                          setLastPoints(null);
+                          setLastSessionValid(false);
+                          if (selectedRole) handleStart(selectedRole);
+                        }}
+                        onStartDrill={
+                          selectedEnv === "interview" && feedback.score < 60
+                            ? () => setActiveDrill(getDrillForWeakness(feedback.skillBreakdown))
+                            : undefined
+                        }
+                      />
+                      {/* Post-session prompts */}
+                      {showHelpfulPrompt && (
+                        <PostSessionPrompt
+                          type="helpful"
+                          onResponse={(r) => {
+                            trackHelpfulResponse(r);
+                            setShowHelpfulPrompt(false);
+                          }}
+                        />
+                      )}
+                      {showRunAgainPrompt && (
+                        <PostSessionPrompt
+                          type="run-again"
+                          onResponse={(r) => {
+                            trackWouldRunAgain(r);
+                            setShowRunAgainPrompt(false);
+                          }}
+                        />
+                      )}
+                    </>
                   )}
                 </>
               )}
