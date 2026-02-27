@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import type { Feedback, SkillScore, ExposureMoment } from "./types";
+import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
@@ -212,6 +212,40 @@ export function FeedbackPanel({
       </div>
 
       <div className="p-5 space-y-5">
+        {/* Critical Weakness — top of report when recovery failed */}
+        {interview && feedback.criticalWeakness && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-lg p-4 bg-destructive/8 border border-destructive/25 space-y-3"
+          >
+            <div className="flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+              <p className="text-[11px] font-bold text-destructive uppercase tracking-wider">
+                Critical Weakness Identified
+              </p>
+            </div>
+            <p className="text-[11px] text-foreground italic leading-snug">
+              "{feedback.criticalWeakness.weakResponse}"
+            </p>
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              {feedback.criticalWeakness.credibilityImpact}
+            </p>
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              {feedback.criticalWeakness.recoveryFailure}
+            </p>
+            <div className="pt-2 border-t border-destructive/15">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Corrective Approach
+              </p>
+              <p className="text-[11px] text-foreground font-medium leading-snug">
+                "{feedback.criticalWeakness.correctiveExample}"
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         {/* B. Skill Breakdown */}
         {skills.length > 0 && (
           <div>

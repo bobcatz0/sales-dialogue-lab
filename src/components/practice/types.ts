@@ -28,6 +28,7 @@ export interface Feedback {
   evaluatorStyle?: EvaluatorStyle;
   exposureMoments?: ExposureMoment[];
   recoveryAssessment?: RecoveryAssessment;
+  criticalWeakness?: CriticalWeakness;
 }
 
 export interface ExposureMoment {
@@ -39,6 +40,13 @@ export interface ExposureMoment {
 export interface RecoveryAssessment {
   recovered: boolean;
   note: string;
+}
+
+export interface CriticalWeakness {
+  weakResponse: string;
+  credibilityImpact: string;
+  recoveryFailure: string;
+  correctiveExample: string;
 }
 
 export interface SessionRecord {
