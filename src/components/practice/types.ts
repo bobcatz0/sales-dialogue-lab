@@ -8,6 +8,8 @@ export interface SkillScore {
   score: number; // 0-100
 }
 
+export type EvaluatorStyle = "analytical" | "results-oriented" | "behavioral";
+
 export interface Feedback {
   score: number;
   rank: string;
@@ -23,6 +25,7 @@ export interface Feedback {
     metricsDefended: boolean;
     consistencyNote: string;
   };
+  evaluatorStyle?: EvaluatorStyle;
 }
 
 export interface SessionRecord {
