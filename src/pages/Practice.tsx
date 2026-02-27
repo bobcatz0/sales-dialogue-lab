@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, RotateCcw, StopCircle, Loader2, Flame, Lock, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/landing/Navbar";
 import { toast } from "sonner";
 
@@ -148,6 +149,9 @@ const PracticePage = () => {
   const [sessionActive, setSessionActive] = useState(false);
   const [activeSDRRound, setActiveSDRRound] = useState<SDRRound | null>(null);
   const [sdrProgress, setSdrProgress] = useState<SDRTrackProgress>(() => loadSDRTrackProgress());
+  const [resumeHighlights, setResumeHighlights] = useState<string>(() => {
+    try { return localStorage.getItem("salescalls_resume") || ""; } catch { return ""; }
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
   const elapsedRef = useRef(0);
@@ -227,7 +231,10 @@ const PracticePage = () => {
     });
     const envAddendum = activeEnv?.promptAddendum ? `\n\n${activeEnv.promptAddendum}` : "";
     const sdrAddendum = activeSDRRound?.promptAddendum ? `\n\n${activeSDRRound.promptAddendum}` : "";
-    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + pressureAddendum;
+    const resumeAddendum = (selectedEnv === "interview" && resumeHighlights.trim())
+      ? `\n\nCANDIDATE RESUME HIGHLIGHTS (use these to personalize questions):\n${resumeHighlights.trim()}\n\nINSTRUCTIONS FOR RESUME USE:\n- Ask at least 3 questions that directly reference specific claims from the resume.\n- Probe metrics: "You mentioned X% — how did you measure that?"\n- Probe process: "Walk me through how you actually did that day-to-day."\n- Probe tools: "How specifically did you use [tool] in your workflow?"\n- If the resume claims strong performance, increase skepticism: require measurable proof, challenge round numbers, ask for context.\n- Never praise resume claims. Evaluate them.`
+      : "";
+    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + pressureAddendum;
 
     let prospectText = "";
 
@@ -316,6 +323,7 @@ const PracticePage = () => {
           messages: conversationMessages,
           roleTitle: activeRole.title,
           environmentId: selectedEnv,
+          resumeHighlights: (selectedEnv === "interview" && resumeHighlights.trim()) ? resumeHighlights.trim() : undefined,
         }),
       });
 
@@ -505,6 +513,28 @@ const PracticePage = () => {
                     </motion.div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Resume Highlights — interview env, before persona selection */}
+            {selectedEnv === "interview" && !selectedRole && (
+              <div className="mb-4">
+                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+                  Paste Key Resume Highlights <span className="text-muted-foreground/60">(optional)</span>
+                </label>
+                <Textarea
+                  value={resumeHighlights}
+                  onChange={(e) => {
+                    setResumeHighlights(e.target.value);
+                    localStorage.setItem("salescalls_resume", e.target.value);
+                  }}
+                  placeholder={"- SDR at XYZ, 120 outbound calls/week\n- Closed 15% of booked meetings\n- Used Salesforce and Outreach\n- Led college sales club"}
+                  className="text-xs min-h-[80px] resize-none"
+                  rows={4}
+                />
+                <p className="text-[9px] text-muted-foreground mt-1">
+                  Questions will be personalized to your background. Leave blank for standard questions.
+                </p>
               </div>
             )}
 

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { motion } from "framer-motion";
-import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass } from "lucide-react";
+import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Feedback, SkillScore } from "./types";
@@ -273,6 +273,41 @@ export function FeedbackPanel({
               <span className="font-semibold text-foreground">Next Session: </span>
               {feedback.trainingRecommendation || feedback.nextDrill}
             </p>
+          </div>
+        )}
+
+        {/* F. Resume Alignment — interview only, when resume was provided */}
+        {interview && feedback.resumeAlignment && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <FileText className="h-3 w-3 text-muted-foreground" />
+              Resume Alignment
+            </div>
+            <div className="bg-muted/40 rounded-lg p-3 border border-border space-y-2">
+              <div className="flex items-center gap-2 text-[11px]">
+                {feedback.resumeAlignment.claimsMatched ? (
+                  <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
+                ) : (
+                  <XCircle className="h-3 w-3 text-destructive shrink-0" />
+                )}
+                <span className="text-muted-foreground">
+                  Claims {feedback.resumeAlignment.claimsMatched ? "substantiated" : "not substantiated"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-[11px]">
+                {feedback.resumeAlignment.metricsDefended ? (
+                  <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
+                ) : (
+                  <XCircle className="h-3 w-3 text-destructive shrink-0" />
+                )}
+                <span className="text-muted-foreground">
+                  Metrics {feedback.resumeAlignment.metricsDefended ? "defended with context" : "not defended"}
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-snug pt-1 border-t border-border">
+                {feedback.resumeAlignment.consistencyNote}
+              </p>
+            </div>
           </div>
         )}
 

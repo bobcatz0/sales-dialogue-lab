@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, roleTitle, environmentId } = await req.json();
+    const { messages, roleTitle, environmentId, resumeHighlights } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -61,7 +61,12 @@ Return a JSON object with this EXACT structure — nothing else:
     {"name": "Conversational Control", "score": <0-100>},
     {"name": "Conciseness", "score": <0-100>}
   ],
-  "trainingRecommendation": "<one sentence: suggest next environment + persona + specific skill>"
+  "trainingRecommendation": "<one sentence: suggest next environment + persona + specific skill>"${resumeHighlights ? `,
+  "resumeAlignment": {
+    "claimsMatched": <true if answers substantiated resume claims with specifics>,
+    "metricsDefended": <true if numbers/metrics were backed with methodology or context>,
+    "consistencyNote": "<1-2 sentence assessment of alignment between resume and answers>"
+  }` : ""}
 }
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
@@ -126,6 +131,17 @@ WRONG examples:
 - "Practice more." / "Try again with this persona." / "Work on your skills."
 
 TONE: Professional review. No motivational language. No "Great job!", "Keep it up!", "Well done!", "You did well.", or any soft encouragement. Write like a performance analyst delivering a debrief — neutral, precise, referencing exact moments. Every sentence should make the user feel cognitively sharper.
+${resumeHighlights ? `
+RESUME ALIGNMENT ANALYSIS:
+The candidate provided these resume highlights before the session:
+"""
+${resumeHighlights}
+"""
+Evaluate whether the candidate's answers substantiated these claims:
+- "claimsMatched": Did answers provide specific evidence backing resume claims? Or were claims left unsupported?
+- "metricsDefended": When metrics were referenced (percentages, numbers, quotas), did the candidate explain methodology, context, or timeframes? Round numbers without context should be flagged.
+- "consistencyNote": Write 1-2 sentences assessing alignment. Example: "Claimed 15% booking rate but could not explain what changed to achieve it. Salesforce usage was mentioned but workflow details were absent."
+No praise. No flattery. Neutral evaluation only.` : ""}
 
 Return ONLY the JSON object. No markdown fences, no explanation.`;
 
