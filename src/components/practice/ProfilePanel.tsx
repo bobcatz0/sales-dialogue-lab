@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { User, Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2, TrendingUp } from "lucide-react";
+import { User, Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2, TrendingUp, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BADGE_DEFINITIONS, loadEarnedBadges } from "@/components/practice/achievements";
 import type { ConsistencyData } from "@/components/practice/consistencyScoring";
@@ -135,15 +135,27 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
 
 
       {interviewReady && (
-        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/15">
-          <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold text-foreground">Interview Ready</p>
-            <p className="text-[9px] text-muted-foreground">
-              Score {interviewReady.score} · {new Date(interviewReady.grantedDate).toLocaleDateString()}
-            </p>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative overflow-hidden rounded-lg border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3"
+        >
+          <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="relative flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+              <ShieldCheck className="h-4.5 w-4.5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold text-primary uppercase tracking-wide">Interview Ready</p>
+              <p className="text-[10px] text-muted-foreground">
+                Score {interviewReady.score} · {(() => {
+                  const days = Math.max(0, 30 - Math.floor((Date.now() - new Date(interviewReady.grantedDate).getTime()) / 86400000));
+                  return `${days}d remaining`;
+                })()}
+              </p>
+            </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Sync note */}
