@@ -1,4 +1,5 @@
 import { Phone } from "lucide-react";
+import { APP_VERSION } from "@/version";
 
 const Footer = () => {
   return (
@@ -17,9 +18,13 @@ const Footer = () => {
           <p className="text-[10px] text-muted-foreground/60">
             Simulated interview environment. For practice purposes.
           </p>
-          <p className="text-xs text-muted-foreground/50 mt-2">
-            © {new Date().getFullYear()} SalesCalls Practice
-          </p>
+          <div className="flex items-center gap-3 mt-2">
+            <p className="text-xs text-muted-foreground/50">
+              © {new Date().getFullYear()} SalesCalls Practice
+            </p>
+            <span className="text-[10px] text-muted-foreground/30">·</span>
+            <span className="text-[10px] text-muted-foreground/40 font-mono">{APP_VERSION}</span>
+          </div>
         </div>
       </div>
     </footer>
