@@ -195,9 +195,14 @@ Quote the single strongest line from the ${isInterview ? "Candidate" : "Sales Re
 STRENGTHS (exactly 2):
 Each MUST reference a specific moment or exchange from the conversation using precision language. Describe what the user did and why it was effective.
 TONE: Analytical, not praising. Write like a professional reviewer, not a coach.
-CORRECT examples:
-- "Clarity improved when specifying metrics during the quota performance question — shifted from abstract to concrete."
-- "Control increased when summarizing the objection before responding — demonstrated structured listening."
+PHRASING VARIETY — CRITICAL:
+- NEVER start both strengths with the same word or structure.
+- NEVER use "Strength:" or "Improvement:" labels. Write naturally.
+- Vary sentence openings. Rotate between:
+  * Moment-first: "During the quota question, specificity increased when..."
+  * Skill-first: "Conversational control improved by summarizing the objection before responding."
+  * Impact-first: "Credibility spiked when citing the 120-dial figure — it grounded the entire answer."
+  * Contrast: "Where most candidates generalize, this response cited a specific workflow change."
 WRONG examples (never do this):
 - "Good clarity." / "Strong objection handling." / "You did well." / "Great job on..."
 
@@ -205,11 +210,13 @@ IMPROVEMENTS (exactly 2):
 One MUST be a STRUCTURAL improvement (how the user organized their thoughts, sequenced their response, or framed the conversation).
 The other MUST be a LANGUAGE improvement (how the user phrased things — word choice, directness, specificity of language).
 Each MUST reference a specific conversational moment. Identify what happened and what was missing.
-If the user rambled, state: "Response lacked structure — [specific moment]."
-If the user was vague, state: "Language lacked specificity — [specific moment]."
-CORRECT examples:
-- "Structure: When discussing quota performance, the answer lacked logical sequencing — jumped between timeframes without connecting outcomes."
-- "Language: Next-step framing lacked directness — 'maybe we could chat again' should be a clear calendar ask."
+PHRASING VARIETY — CRITICAL:
+- NEVER start both improvements with "Structure:" and "Language:" labels. Write naturally.
+- Vary sentence openings. Rotate between:
+  * Direct diagnosis: "The quota answer jumped between timeframes without connecting outcomes."
+  * Gap identification: "When asked about prospecting, no specific number anchored the response."
+  * Behavioral note: "Next-step language defaulted to 'maybe we could chat' — a real interview needs a concrete ask."
+  * Consequence framing: "Without a metric in the first sentence, the rest of the answer lost weight."
 WRONG examples (never do this):
 - "Improve clarity." / "Work on objection handling." / "Be more concise." / "Keep practicing."
 
