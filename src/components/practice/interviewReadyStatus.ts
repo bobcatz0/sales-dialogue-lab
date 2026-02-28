@@ -54,6 +54,22 @@ export function getInterviewReadyStatus(): InterviewReadyStatus | null {
 }
 
 /**
+ * Check expiry and return reason if just revoked (for toast notifications).
+ */
+export function checkExpiryRevocation(): "expired" | null {
+  const status = load();
+  if (!status || !status.granted) return null;
+
+  const daysDiff = Math.floor((Date.now() - new Date(status.grantedDate).getTime()) / 86400000);
+  if (daysDiff > 30) {
+    const revoked: InterviewReadyStatus = { ...status, granted: false, revokedReason: "expired" };
+    save(revoked);
+    return "expired";
+  }
+  return null;
+}
+
+/**
  * Grant Interview Ready status after qualifying Final Round session.
  */
 export function grantInterviewReady(score: number, alias: string | null) {

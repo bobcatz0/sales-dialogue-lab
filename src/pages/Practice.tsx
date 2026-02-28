@@ -62,7 +62,7 @@ import { OnboardingModal } from "@/components/practice/OnboardingModal";
 import { PostSessionPrompt } from "@/components/practice/PostSessionPrompt";
 import { DrillMode } from "@/components/practice/DrillMode";
 import { getDrillForWeakness, type Drill } from "@/components/practice/drillData";
-import { qualifiesForInterviewReady, grantInterviewReady, checkStatusRevocation } from "@/components/practice/interviewReadyStatus";
+import { qualifiesForInterviewReady, grantInterviewReady, checkStatusRevocation, checkExpiryRevocation } from "@/components/practice/interviewReadyStatus";
 import { trackDrillCompletion } from "@/components/practice/drillTracking";
 
 // --- Streaming ---
@@ -193,6 +193,11 @@ const PracticePage = () => {
   // Load history on mount
   useEffect(() => {
     setHistory(loadHistory());
+    // Check if Interview Ready expired since last visit
+    const expiry = checkExpiryRevocation();
+    if (expiry === "expired") {
+      toast("Interview Ready status expired after 30 days. Complete another Final Round to re-qualify.", { duration: 6000 });
+    }
   }, []);
 
   useEffect(() => {
@@ -538,7 +543,10 @@ This evaluation style should subtly influence your questions and reactions. Do N
         grantInterviewReady(data.score, alias);
       } else {
         // Check if this session revokes existing status
-        checkStatusRevocation(data.score);
+        const revoked = checkStatusRevocation(data.score);
+        if (revoked) {
+          toast.error("Interview Ready status revoked — score dropped below 70.", { duration: 5000 });
+        }
       }
 
       // Track completion and show post-session prompts
