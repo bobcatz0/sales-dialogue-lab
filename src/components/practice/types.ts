@@ -67,4 +67,5 @@ export interface SessionRecord {
   peakDifficulty: number;
   date: string;
   messageCount: number;
+  skillBreakdown?: SkillScore[];
 }

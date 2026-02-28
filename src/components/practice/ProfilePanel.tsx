@@ -276,6 +276,73 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
         );
       })()}
 
+      {/* Skill Progression (Last 10 Sessions) */}
+      {(() => {
+        const history = loadHistory();
+        const recent = history.slice(0, 10).reverse();
+        const sessionsWithSkills = recent.filter((s) => s.skillBreakdown && s.skillBreakdown.length > 0);
+        if (sessionsWithSkills.length < 2) return null;
+
+        const skillNames = Array.from(
+          new Set(sessionsWithSkills.flatMap((s) => (s.skillBreakdown || []).map((sk) => sk.name)))
+        );
+
+        const SKILL_COLORS = ["bg-primary", "bg-primary/70", "bg-primary/45", "bg-primary/25", "bg-accent"];
+
+        const mid = Math.floor(sessionsWithSkills.length / 2);
+        const firstHalf = sessionsWithSkills.slice(0, mid);
+        const secondHalf = sessionsWithSkills.slice(mid);
+
+        const avgForSkill = (sessions: typeof sessionsWithSkills, name: string) => {
+          const scores = sessions.flatMap((s) =>
+            (s.skillBreakdown || []).filter((sk) => sk.name === name).map((sk) => sk.score)
+          );
+          return scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+        };
+
+        const skillData = skillNames.map((name, i) => {
+          const early = avgForSkill(firstHalf, name);
+          const latest = avgForSkill(secondHalf, name);
+          const diff = early !== null && latest !== null ? latest - early : null;
+          return { name, latest, diff, color: SKILL_COLORS[i % SKILL_COLORS.length] };
+        }).filter((s) => s.latest !== null);
+
+        if (skillData.length === 0) return null;
+
+        return (
+          <div>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              Skill Progression <span className="normal-case font-normal">· last {sessionsWithSkills.length} sessions</span>
+            </p>
+            <div className="space-y-1.5">
+              {skillData.map((skill) => (
+                <div key={skill.name} className="space-y-0.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">{skill.name}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-bold text-foreground tabular-nums">{skill.latest}</span>
+                      {skill.diff !== null && skill.diff !== 0 && (
+                        <span className={`text-[9px] font-medium ${skill.diff > 0 ? "text-primary" : "text-destructive"}`}>
+                          {skill.diff > 0 ? "+" : ""}{skill.diff}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${skill.latest}%` }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                      className={`h-full rounded-full ${skill.color}`}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {BADGE_DEFINITIONS.length > 0 && (
         <div>
           <p className="text-[11px] text-muted-foreground mb-2 font-medium">Milestones</p>
