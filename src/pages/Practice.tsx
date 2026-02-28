@@ -76,6 +76,11 @@ import {
   trackValidationResumeSkip,
   VALIDATION_HIDDEN_ENVS,
 } from "@/components/practice/validationMode";
+import {
+  captureSessionSignal,
+  captureDropOff,
+  captureFeedbackSignal,
+} from "@/components/practice/signalCapture";
 
 // --- Streaming ---
 
@@ -223,10 +228,12 @@ const PracticePage = () => {
     // Track resume skip for interview mode
     if (selectedEnv === "interview" && !resumeHighlights.trim()) {
       trackResumeSkip();
+      if (validationOn) captureDropOff("resume-skip", selectedEnv || undefined);
     }
     // Track abandon if previous session was active but never ended
     if (sessionActive && sessionStartedWithRole.current) {
       trackSessionAbandon();
+      if (validationOn) captureDropOff("session-exit", "new-session-started-before-completing");
     }
     setSelectedRole(id);
     setMessages([]);
@@ -440,7 +447,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
     } catch (e: any) {
       console.error(e);
       sendingRef.current = false;
-      toast.error("Connection issue. Please try again.", { duration: 3000 });
+      toast.error("Session interruption detected. Please retry.", { duration: 3000 });
       setIsLoading(false);
     }
   };
@@ -451,6 +458,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
     const userMsgs = messages.filter((m) => m.role === "user").length;
     if (userMsgs > 0 && userMsgs < 4) {
       trackEarlyReset();
+      if (validationOn) captureDropOff("session-exit", `early-reset-after-${userMsgs}-messages`);
     }
     setMessages([]);
     setInput("");
@@ -645,9 +653,39 @@ This evaluation style should subtly influence your questions and reactions. Do N
       if (isValidSession && !loadAlias()) {
         setShowAliasPrompt(true);
       }
+
+      // --- Validation Signal Capture ---
+      if (validationOn) {
+        const weakSpots = data.exposureMoments?.length ?? 0;
+        const recovered = data.recoveryAssessment?.recovered ?? false;
+        const recoveryRate = weakSpots > 0 ? (recovered ? 1 : 0) : 1;
+        const isFR = selectedEnv === "final-round";
+        const irAchieved = qualifiesForInterviewReady({
+          isFinalRound: isFR,
+          score: data.score,
+          hasCriticalWeakness: !!data.criticalWeakness,
+        });
+        const vrScore = data.skillBreakdown?.find(s => s.name === "Verbal Readiness")?.score;
+        captureSessionSignal({
+          levelReached: data.peakDifficulty ?? 1,
+          weakSpotTriggers: weakSpots,
+          recoverySuccessRate: recoveryRate,
+          finalScore: data.score,
+          finalRoundAttempted: isFR,
+          interviewReadyAchieved: irAchieved,
+          environmentId: selectedEnv || "interview",
+          roleId: activeRole.id,
+          skillBreakdown: data.skillBreakdown,
+          verbalReadinessScore: vrScore,
+          durationSeconds,
+          userMessageCount: userMsgCount,
+          resumeProvided: !!(selectedEnv === "interview" && resumeHighlights.trim()),
+          evaluatorStyle: data.evaluatorStyle,
+        });
+      }
     } catch (e: any) {
       console.error(e);
-      toast.error("Connection issue. Please try again.", { duration: 3000 });
+      toast.error("Session interruption detected. Please retry.", { duration: 3000 });
     } finally {
       setIsFeedbackLoading(false);
     }
@@ -1273,6 +1311,18 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     className="w-full text-xs h-9"
                     onClick={() => {
                       saveExitResponse(opt.value, feedback?.score ?? 0);
+                      if (validationOn && feedback) {
+                        const weakest = (feedback.skillBreakdown || []).reduce(
+                          (min, s) => (s.score < min.score ? s : min),
+                          { name: "General", score: 100 }
+                        );
+                        captureFeedbackSignal(
+                          opt.value as "yes" | "maybe" | "no",
+                          feedback.score,
+                          feedback.peakDifficulty ?? 1,
+                          weakest.name
+                        );
+                      }
                       setShowExitQuestion(false);
                     }}
                   >
