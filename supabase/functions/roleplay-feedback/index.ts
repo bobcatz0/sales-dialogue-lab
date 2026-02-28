@@ -102,17 +102,18 @@ This session used the "${evaluatorStyle}" evaluator profile. Apply subtle scorin
 ${evaluatorStyle === "analytical" ? "- Increase weight on Clarity (+10%) and Structure (+5%). Reduce weight on Conversational Control (-5%). Penalize vague claims more heavily. Reward quantified results with specific methodology." : ""}${evaluatorStyle === "results-oriented" ? "- Increase weight on Conciseness (+10%) and Conversational Control (+5%). Reduce weight on Structure (-5%). Penalize long explanations without stated outcomes. Reward direct, outcome-driven answers." : ""}${evaluatorStyle === "behavioral" ? "- Increase weight on Objection Handling (+5%) and Structure (+5%). Evaluate ownership language — penalize 'we' without specifying individual contribution. Reward reflection, learning insights, and accountability." : ""}
 This variance must feel realistic, not arbitrary. Do not override core scoring fairness.` : ""}
 ${isFinalRound ? `
-FINAL ROUND EVALUATION RULES:
-This is an elevated-pressure final round. The evaluator has seen 50 candidates. Apply maximum strictness:
-- Scoring weights shift: Conciseness (25%), Ownership (25%), Structure (25%), Next-Step Framing (15%), Composure (10%).
-- Be 15-20% stricter on scoring than standard interview mode across all dimensions.
-- "pressureResilience": 80+ = stayed sharp under pressure. Below 50 = crumbled.
-- "recoveryStrength": 80+ = clear improvement after challenge. Below 40 = no adaptation.
-- "composure": Defensiveness, rambling, or visible frustration reduce this score significantly.
+FINAL ROUND — EXECUTIVE STANDARD EVALUATION:
+This is the highest evaluation tier. The evaluator has seen 50 candidates. Apply maximum strictness:
+- Scoring weights shift: Composure (25%), Conciseness (25%), Ownership (20%), Structure (20%), Metric Evidence (10%).
+- Be 20% stricter on scoring than standard interview mode across all dimensions.
+- "pressureResilience": 80+ = stayed sharp under rapid-fire probing. Below 50 = crumbled under pressure.
+- "recoveryStrength": 80+ = clear improvement after challenge. Below 40 = no adaptation despite multiple opportunities.
+- "composure": Defensiveness, rambling, or any visible frustration under rapid questioning reduces this score significantly. Composure is weighted more heavily than in any other mode.
 - "performanceDeclined": true ONLY if second-half answer quality was noticeably weaker than first half.
-- If performanceDeclined is true, add to improvements: "Performance declined under elevated pressure." AND cap score at 80.
-- Do NOT shield the score. Final round standards are the highest. No rounding up. No benefit of the doubt.
-- Mixed performance in Final Round should score LOWER than in standard mode, not the same.
+- If performanceDeclined is true, add to improvements: "Performance declined under executive-level pressure." AND cap score at 78.
+- Do NOT shield the score. Executive standard is the highest bar. No rounding up. No benefit of the doubt.
+- Mixed performance in Final Round should score 5-10 points LOWER than equivalent performance in standard mode.
+- High scores (85+) REQUIRE: strong performance at elevated pressure + consistent composure + concise delivery throughout.
 ` : ""}
 
 SKILL BREAKDOWN SCORING:
@@ -170,12 +171,13 @@ Before scoring, check for these patterns and REDUCE the score accordingly:
 ${isInterview ? "" : "- No next-step attempt: If the user never tried to schedule, propose, or advance, cap score at 50."}
 Apply reductions silently — do not mention anti-gaming in the output.
 
-PEAK DIFFICULTY:
-Assess the highest difficulty the ${isInterview ? "interviewer" : "prospect"} reached based on their behavior:
-- Level 1: Cooperative, mild ${isInterview ? "follow-ups" : "objections"}, volunteered information.
-- Level 2: Guarded, ${isInterview ? "probing follow-ups, challenged vague answers" : "realistic objections, required effort to open up"}.
-- Level 3: ${isInterview ? "Tough follow-ups, challenged assumptions, pressure questions" : "Skeptical, short answers, strong pushback, required structured control"}.
-If Level 3 reached and user performed well, add 5-10 point bonus.
+PEAK DIFFICULTY (PROGRESSIVE INTENSITY):
+Assess the highest intensity level the ${isInterview ? "interviewer" : "prospect"} reached based on their behavior:
+- Level 1 (Baseline): ${isInterview ? "Professional tone, light follow-ups, one pressure test, focus on structure/clarity assessment." : "Cooperative, mild objections, volunteered information."}
+- Level 2 (Controlled Pressure): ${isInterview ? "Zero warmth, faster follow-ups, conciseness enforced, at least two clarifying challenges, skepticism toward vague metrics." : "Guarded, realistic objections, required effort to open up."}
+- Level 3 (Elevated Evaluation): ${isInterview ? "Short clipped responses, quick interruption on rambling, strong ownership enforcement, metric proof demanded, recovery pressure applied." : "Skeptical, short answers, strong pushback, required structured control."}
+The user must have EARNED the level increase through demonstrated competence. If Level 3 reached and user performed well, add 5-10 point bonus.
+HIGH SCORES REQUIRE HIGH LEVELS: A score of 80+ requires the session to have reached at least Level 2. A score of 90+ requires Level 3 to have been reached and handled well.
 
 BEST MOMENT:
 Quote the single strongest line from the ${isInterview ? "Candidate" : "Sales Rep"} — one that shows ${isInterview ? "clear thinking, a structured answer, or confident delivery" : "clear positioning, a sharp question, calm objection handling, or a confident next-step ask"}. Quote it exactly. If no line stands out, pick the clearest attempt. Never say "no strong moment found."
