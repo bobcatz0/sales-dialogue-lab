@@ -103,15 +103,16 @@ ${evaluatorStyle === "analytical" ? "- Increase weight on Clarity (+10%) and Str
 This variance must feel realistic, not arbitrary. Do not override core scoring fairness.` : ""}
 ${isFinalRound ? `
 FINAL ROUND EVALUATION RULES:
-This is an elevated-pressure final round. Apply stricter standards:
+This is an elevated-pressure final round. The evaluator has seen 50 candidates. Apply maximum strictness:
 - Scoring weights shift: Conciseness (25%), Ownership (25%), Structure (25%), Next-Step Framing (15%), Composure (10%).
-- Be 10-15% stricter on scoring than standard interview mode across all dimensions.
+- Be 15-20% stricter on scoring than standard interview mode across all dimensions.
 - "pressureResilience": 80+ = stayed sharp under pressure. Below 50 = crumbled.
 - "recoveryStrength": 80+ = clear improvement after challenge. Below 40 = no adaptation.
-- "composure": Defensiveness, rambling, or visible frustration reduce this score.
+- "composure": Defensiveness, rambling, or visible frustration reduce this score significantly.
 - "performanceDeclined": true ONLY if second-half answer quality was noticeably weaker than first half.
-- If performanceDeclined is true, add to improvements: "Performance declined under elevated pressure."
-- Do NOT shield the score. Final round standards are higher.
+- If performanceDeclined is true, add to improvements: "Performance declined under elevated pressure." AND cap score at 80.
+- Do NOT shield the score. Final round standards are the highest. No rounding up. No benefit of the doubt.
+- Mixed performance in Final Round should score LOWER than in standard mode, not the same.
 ` : ""}
 
 SKILL BREAKDOWN SCORING:
@@ -139,17 +140,28 @@ A score of 85 or above REQUIRES ALL of the following. If ANY condition is missin
 6. At least one quantified answer — a response containing a concrete metric, percentage, or number tied to a result.
 7. The candidate's final response in the session must be concise (3 sentences or fewer). If the closing response was rambling or unfocused, cap at 84.
 
+ANTI-ROUNDING RULE:
+If performance was mixed (some strong answers, some weak), do NOT round the score upward. Score conservatively.
+If the candidate barely meets the 85 threshold but clarity or composure were inconsistent, score 83-84 instead.
+Only award 85+ when performance was clearly, consistently strong across the full session. No benefit of the doubt.
+
 SCORE CAP AT 82:
 If ANY of the following are true, cap the maximum score at 82 regardless of other performance:
 - Two or more vague responses occurred (performance claims without metrics, generic phrasing without specifics).
 - User failed recovery under pressure (recoveryAssessment.recovered is false).
 - No metric or number was cited across the entire session.
+- Performance quality was inconsistent (strong in first half, weak in second half, or vice versa).
 Apply these caps silently — do not mention calibration logic in the output.
+
+NO MOMENTUM CREDIT IN SCORING:
+Each answer must be evaluated independently. A strong opening does NOT compensate for weak follow-ups.
+Do not average-up — if 3 answers were strong and 2 were weak, the weak answers must pull the score down proportionally.
 
 ${isFinalRound ? `FINAL ROUND SCORE AMPLIFICATION:
 - Strong answers with quantified evidence and clear structure should receive a +3-5 point uplift compared to standard interview mode.
 - Rambling penalties are 50% heavier in Final Round: any response exceeding 30 seconds reduces Conciseness score by 15 points instead of 10.
 - A session with zero vague responses and successful recovery qualifies for the full scoring range up to 100.
+- Apply 15-20% stricter scoring than standard interview mode. The bar is higher. Do not shield scores.
 ` : ""}
 Before scoring, check for these patterns and REDUCE the score accordingly:
 - Repetitive lines: If the user repeated similar phrases 3+ times, reduce score by 10-15 points.
@@ -225,7 +237,7 @@ When recoveryAssessment.recovered is false, populate "criticalWeakness" with:
 - "correctiveExample": A concrete, realistic example answer the candidate should have given. Make it specific to their context.
 When recovery succeeded, set "criticalWeakness" to null.
 ` : ""}
-TONE: Professional review. No motivational language. No "Great job!", "Keep it up!", "Well done!", "You did well.", or any soft encouragement. Write like a performance analyst delivering a debrief — neutral, precise, referencing exact moments. Every sentence should make the user feel cognitively sharper.
+TONE: Strictly evaluative. Zero motivational language. Zero praise. No "Great job!", "Keep it up!", "Well done!", "You did well.", "Nice work", "Strong effort", or any soft encouragement. No hedging language like "You might want to consider..." — be direct: "This was weak because..." Write like a senior performance analyst delivering a final debrief — neutral, precise, referencing exact moments. Every sentence should make the user feel cognitively sharper, not emotionally validated.
 ${resumeHighlights ? `
 RESUME ALIGNMENT ANALYSIS:
 The candidate provided these resume highlights before the session:
