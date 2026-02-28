@@ -1168,7 +1168,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         voice.recordVoiceMetrics(text, duration, pauseData);
                         sendUserMessage(text);
                       }}
-                      disabled={!selectedRole || isLoading}
+                      disabled={!selectedRole || isLoading || voice.isAISpeaking}
                       isAISpeaking={voice.isAISpeaking}
                     />
                     {/* TTS controls */}
