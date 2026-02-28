@@ -64,6 +64,18 @@ import { DrillMode } from "@/components/practice/DrillMode";
 import { getDrillForWeakness, type Drill } from "@/components/practice/drillData";
 import { qualifiesForInterviewReady, grantInterviewReady, checkStatusRevocation, checkExpiryRevocation } from "@/components/practice/interviewReadyStatus";
 import { trackDrillCompletion } from "@/components/practice/drillTracking";
+import {
+  isValidationMode,
+  setValidationMode,
+  isFirstCompletedSession,
+  tagFirstSession,
+  markFirstSessionRetried,
+  hasAnsweredExitQuestion,
+  saveExitResponse,
+  trackAbandonPoint,
+  trackValidationResumeSkip,
+  VALIDATION_HIDDEN_ENVS,
+} from "@/components/practice/validationMode";
 
 // --- Streaming ---
 
@@ -179,7 +191,8 @@ const PracticePage = () => {
   const [showRunAgainPrompt, setShowRunAgainPrompt] = useState(false);
   const sessionStartedWithRole = useRef(false);
   const [activeDrill, setActiveDrill] = useState<Drill | null>(null);
-
+  const [showExitQuestion, setShowExitQuestion] = useState(false);
+  const [validationOn, setValidationOn] = useState(() => isValidationMode());
   const timer = useCallTimer(sessionActive);
 
   const activeEnv = selectedEnv ? getEnvironment(selectedEnv) : undefined;
@@ -566,6 +579,16 @@ This evaluation style should subtly influence your questions and reactions. Do N
         setShowRunAgainPrompt(true);
       }
 
+      // First-session tagging + exit question
+      if (isFirstCompletedSession()) {
+        const weakest = (data.skillBreakdown || []).reduce(
+          (min, s) => (s.score < min.score ? s : min),
+          { name: "General", score: 100 }
+        );
+        tagFirstSession(data.score, weakest.name);
+        setShowExitQuestion(true);
+      }
+
       // Prompt alias on first valid session completion
       if (isValidSession && !loadAlias()) {
         setShowAliasPrompt(true);
@@ -615,6 +638,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 </h3>
                 <div className="space-y-3">
                   {ENVIRONMENTS.filter((env) => {
+                    // Hide enterprise mode in validation mode
+                    if (validationOn && (VALIDATION_HIDDEN_ENVS as readonly string[]).includes(env.id)) return false;
                     if (env.id !== "final-round") return true;
                     // Unlock final round if score >= 85 or SDR track completed
                     const prog = loadProgression();
@@ -1087,6 +1112,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           setActiveDrill(null);
                         }}
                         onTrySameRole={() => {
+                          markFirstSessionRetried();
                           setFeedback(null);
                           setLastPoints(null);
                           setLastSessionValid(false);
@@ -1163,6 +1189,68 @@ This evaluation style should subtly influence your questions and reactions. Do N
           }
         }}
       />
+
+      {/* Exit Question — after first completed session */}
+      <AnimatePresence>
+        {showExitQuestion && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="card-elevated p-6 max-w-sm mx-4 space-y-4"
+            >
+              <p className="text-sm font-semibold text-foreground text-center">
+                Would this have improved your real interview performance?
+              </p>
+              <div className="flex flex-col gap-2">
+                {([
+                  { value: "yes" as const, label: "Yes, definitely" },
+                  { value: "maybe" as const, label: "Maybe" },
+                  { value: "no" as const, label: "No" },
+                ]).map((opt) => (
+                  <Button
+                    key={opt.value}
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs h-9"
+                    onClick={() => {
+                      saveExitResponse(opt.value, feedback?.score ?? 0);
+                      setShowExitQuestion(false);
+                    }}
+                  >
+                    {opt.label}
+                  </Button>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowExitQuestion(false)}
+                className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground w-full text-center transition-colors"
+              >
+                Skip
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Admin: Validation Mode Toggle (triple-tap on title area) */}
+      <div
+        className="fixed bottom-2 left-2 z-50"
+        onDoubleClick={() => {
+          const next = !validationOn;
+          setValidationMode(next);
+          setValidationOn(next);
+          toast(next ? "Validation Mode: ON" : "Validation Mode: OFF", { duration: 2000 });
+        }}
+      >
+        <div className="h-3 w-3 rounded-full opacity-0 hover:opacity-30 transition-opacity bg-muted-foreground cursor-default" />
+      </div>
     </div>
   );
 };
