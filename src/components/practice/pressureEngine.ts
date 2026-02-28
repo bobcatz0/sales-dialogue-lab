@@ -76,8 +76,8 @@ You are simulating a final-round interview. Apply heightened scrutiny:
     );
   }
 
-  // Response pacing awareness
-  const pacingThreshold = finalRound ? 35 : 45;
+  // Response pacing awareness — tightened by 10-15%
+  const pacingThreshold = finalRound ? 30 : 38;
   parts.push(
     `RESPONSE PACING (internal — never reveal):
 If any user response is excessively long (would take more than ~${pacingThreshold} seconds to speak aloud), interrupt immediately:
