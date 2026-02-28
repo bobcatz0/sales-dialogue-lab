@@ -203,6 +203,79 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
         );
       })()}
 
+      {/* 4-Week Performance Trends */}
+      {(() => {
+        const history = loadHistory();
+        if (history.length < 2) return null;
+
+        const today = new Date();
+        const dow = today.getDay();
+        const mondayOffset = dow === 0 ? -6 : 1 - dow;
+
+        const weeks = Array.from({ length: 4 }, (_, wi) => {
+          const weekStart = new Date(today);
+          weekStart.setDate(today.getDate() + mondayOffset - wi * 7);
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 7);
+          const startStr = weekStart.toISOString().slice(0, 10);
+          const endStr = weekEnd.toISOString().slice(0, 10);
+
+          const sessions = history.filter((s) => {
+            const d = s.date?.slice(0, 10);
+            return d && d >= startStr && d < endStr;
+          });
+
+          const avg = sessions.length > 0
+            ? Math.round(sessions.reduce((sum, s) => sum + s.score, 0) / sessions.length)
+            : null;
+
+          const label = wi === 0 ? "This" : wi === 1 ? "Last" : `${wi}w ago`;
+          return { label, sessions: sessions.length, avg };
+        }).reverse();
+
+        const maxSessions = Math.max(...weeks.map((w) => w.sessions), 1);
+
+        return (
+          <div>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">4-Week Trend</p>
+            <div className="flex gap-1 justify-between items-end h-16">
+              {weeks.map((week, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div className="relative w-full flex justify-center items-end h-10">
+                    <div
+                      className={`w-5 rounded-sm transition-all ${
+                        week.avg !== null && week.avg >= 70
+                          ? "bg-primary"
+                          : week.avg !== null
+                          ? "bg-primary/40"
+                          : "bg-muted"
+                      }`}
+                      style={{ height: `${week.sessions > 0 ? Math.max(20, (week.sessions / maxSessions) * 100) : 8}%` }}
+                    />
+                  </div>
+                  {week.avg !== null ? (
+                    <span className="text-[9px] font-bold text-foreground tabular-nums">{week.avg}</span>
+                  ) : (
+                    <span className="text-[9px] text-muted-foreground/40">—</span>
+                  )}
+                  <span className="text-[8px] text-muted-foreground">{week.label}</span>
+                </div>
+              ))}
+            </div>
+            {(() => {
+              const thisWeek = weeks[3];
+              const lastWeek = weeks[2];
+              if (thisWeek.avg !== null && lastWeek.avg !== null) {
+                const diff = thisWeek.avg - lastWeek.avg;
+                if (diff > 0) return <p className="text-[9px] text-primary mt-1.5 text-center font-medium">+{diff} avg vs last week</p>;
+                if (diff < 0) return <p className="text-[9px] text-muted-foreground mt-1.5 text-center">↓{Math.abs(diff)} avg vs last week</p>;
+              }
+              return null;
+            })()}
+          </div>
+        );
+      })()}
+
       {BADGE_DEFINITIONS.length > 0 && (
         <div>
           <p className="text-[11px] text-muted-foreground mb-2 font-medium">Milestones</p>
