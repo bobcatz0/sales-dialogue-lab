@@ -1,10 +1,11 @@
 import { useCallback } from "react";
 import { motion } from "framer-motion";
-import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
+import type { VoiceMetrics } from "./voiceInterviewDesign";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
 
@@ -151,6 +152,9 @@ export function FeedbackPanel({
   alias,
   isValidSession,
   isFinalRound,
+  voiceMetrics,
+  voiceFeedbackLines,
+  voiceScoreAdjustment,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
@@ -159,6 +163,9 @@ export function FeedbackPanel({
   alias?: string | null;
   isValidSession?: boolean;
   isFinalRound?: boolean;
+  voiceMetrics?: VoiceMetrics;
+  voiceFeedbackLines?: string[];
+  voiceScoreAdjustment?: number;
 }) {
   const interview = isInterviewRank(feedback.rank);
   const skills = feedback.skillBreakdown || [];
@@ -329,6 +336,51 @@ export function FeedbackPanel({
           </div>
         )}
 
+        {/* Voice Metrics — voice mode only */}
+        {voiceMetrics && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <Mic className="h-3 w-3 text-primary" />
+              Voice Analysis
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="text-center p-2 rounded-lg bg-muted/40 border border-border">
+                <p className="text-lg font-bold font-heading text-foreground">
+                  {voiceMetrics.fillerFrequency}
+                </p>
+                <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">Fillers/min</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-muted/40 border border-border">
+                <p className="text-lg font-bold font-heading text-foreground">
+                  {voiceMetrics.verbalPace}
+                </p>
+                <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">Words/min</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-muted/40 border border-border">
+                <p className="text-lg font-bold font-heading text-foreground">
+                  {voiceMetrics.responseDuration}s
+                </p>
+                <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">Total Duration</p>
+              </div>
+            </div>
+            {voiceFeedbackLines && voiceFeedbackLines.length > 0 && (
+              <div className="space-y-1">
+                {voiceFeedbackLines.map((line, i) => (
+                  <p key={i} className="text-[11px] text-muted-foreground leading-snug pl-3.5 relative before:content-['•'] before:absolute before:left-0 before:text-primary before:text-[10px]">
+                    {line}
+                  </p>
+                ))}
+              </div>
+            )}
+            {voiceScoreAdjustment !== undefined && voiceScoreAdjustment !== 0 && (
+              <p className="text-[10px] text-muted-foreground text-center">
+                Voice adjustment: <span className={`font-bold ${voiceScoreAdjustment > 0 ? "text-primary" : "text-destructive"}`}>
+                  {voiceScoreAdjustment > 0 ? "+" : ""}{voiceScoreAdjustment}
+                </span> points
+              </p>
+            )}
+          </div>
+        )}
 
         {interview && feedback.resumeAlignment && (
           <div className="space-y-1.5">

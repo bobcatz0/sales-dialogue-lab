@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,9 @@ import { FeedbackPanel } from "@/components/practice/FeedbackPanel";
 import { SessionHistory } from "@/components/practice/SessionHistory";
 import { loadHistory, saveSession } from "@/components/practice/sessionStorage";
 import { VoiceInputButton } from "@/components/practice/VoiceInputButton";
+import { VoiceRecorder } from "@/components/practice/VoiceRecorder";
+import { VoiceModeBanner } from "@/components/practice/VoiceModeBanner";
+import { useVoiceSession } from "@/components/practice/useVoiceSession";
 import { processSession, loadConsistency } from "@/components/practice/consistencyScoring";
 import {
   loadProgression,
@@ -198,7 +201,8 @@ const PracticePage = () => {
   const [activeDrill, setActiveDrill] = useState<Drill | null>(null);
   const [showExitQuestion, setShowExitQuestion] = useState(false);
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
-  const timer = useCallTimer(sessionActive);
+   const timer = useCallTimer(sessionActive);
+  const voice = useVoiceSession();
 
   const activeEnv = selectedEnv ? getEnvironment(selectedEnv) : undefined;
   const activeRole = roles.find((r) => r.id === selectedRole);
@@ -427,6 +431,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
         onDone: () => {
           setIsLoading(false);
           sendingRef.current = false;
+
+          // Voice mode: speak the AI response
+          if (voice.voiceMode && prospectText) {
+            voice.speakAIMessage(cleanResponseText(prospectText));
+          }
 
           // Check for hard close win
           if (detectHardCloseWin(prospectText)) {
@@ -823,6 +832,16 @@ This evaluation style should subtly influence your questions and reactions. Do N
               </div>
             )}
 
+            {/* Voice Mode Toggle — interview modes only, before persona selection */}
+            {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
+              <div className="mb-4">
+                <VoiceModeBanner
+                  enabled={voice.voiceMode}
+                  onToggle={voice.setVoiceMode}
+                />
+              </div>
+            )}
+
             {/* Step 2: Persona Selection (after environment chosen) */}
             {selectedEnv && (
               <div>
@@ -1097,54 +1116,161 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 )}
               </div>
 
-              {/* Input Area — mobile-optimized */}
+              {/* Input Area */}
               <div className="border-t border-border p-3 sm:p-4">
-                <div className="flex gap-1.5 sm:gap-2">
-                  <Input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Type…"
-                    disabled={!selectedRole || isLoading}
-                    className="flex-1 h-9 text-sm"
-                  />
-                  <VoiceInputButton
-                    onTranscript={(text) => setInput((prev) => (prev ? prev + " " + text : text))}
-                    disabled={!selectedRole || isLoading}
-                  />
-                  <Button
-                    onClick={handleSend}
-                    disabled={!selectedRole || !input.trim() || isLoading}
-                    size="icon"
-                    className="h-9 w-9 shrink-0"
-                  >
-                    <Send className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-                <div className="flex gap-1.5 sm:gap-2 mt-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs h-8 text-muted-foreground"
-                    onClick={handleReset}
-                    disabled={!selectedRole || isLoading}
-                  >
-                    <RotateCcw className="h-3 w-3 mr-1" />
-                    Reset
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={handleEndSession}
-                    disabled={
-                      !selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages
-                    }
-                  >
-                    <StopCircle className="h-3 w-3 mr-1" />
-                    End Session
-                  </Button>
-                </div>
+                {voice.voiceMode && selectedRole ? (
+                  /* Voice Mode: recording UI */
+                  <div>
+                    <VoiceRecorder
+                      onTranscript={(text, duration) => {
+                        voice.recordVoiceMetrics(text, duration);
+                        setInput(text);
+                        // Auto-send after transcription
+                        setTimeout(() => {
+                          const fakeInput = text;
+                          setInput("");
+                          if (fakeInput.trim() && activeRole && !isLoading && !sendingRef.current && !callEndTriggeredRef.current) {
+                            // Directly trigger send with the transcript
+                            const newMessages: ChatMessage[] = [...messages, { role: "user", text: fakeInput.trim() }];
+                            setMessages(newMessages);
+                            setInput("");
+                            setIsLoading(true);
+                            // Trigger the AI response
+                            const aiMessages = newMessages.map((m) => ({
+                              role: m.role === "user" ? "user" : "assistant",
+                              content: m.text,
+                            }));
+                            const userMsgCount = newMessages.filter((m) => m.role === "user").length;
+                            const pressureAddendum = buildPressurePrompt({
+                              elapsedSeconds: timer.elapsed,
+                              userMessageCount: userMsgCount,
+                              totalValidSessions: loadProgression().completedValidSessions,
+                              timePressureThresholdS: activeEnv?.timePressureThresholdS,
+                              callEndingEnabled: activeEnv?.callEndingEnabled,
+                              finalRoundMode: selectedEnv === "final-round" || (selectedEnv === "interview" && loadProgression().highestSessionScore >= 75),
+                            });
+                            const envAddendum = activeEnv?.promptAddendum ? `\n\n${activeEnv.promptAddendum}` : "";
+                            const sdrAddendum = activeSDRRound?.promptAddendum ? `\n\n${activeSDRRound.promptAddendum}` : "";
+                            const isInterviewLike = selectedEnv === "interview" || selectedEnv === "final-round";
+                            const resumeAddendum = (isInterviewLike && resumeHighlights.trim())
+                              ? `\n\nCANDIDATE RESUME HIGHLIGHTS (use these to personalize questions):\n${resumeHighlights.trim()}`
+                              : "";
+                            const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + pressureAddendum;
+                            let prospectText = "";
+                            streamChat({
+                              messages: aiMessages,
+                              systemPrompt: fullSystemPrompt,
+                              onDelta: (chunk) => {
+                                prospectText += chunk;
+                                const displayText = cleanResponseText(prospectText);
+                                setMessages((prev) => {
+                                  const last = prev[prev.length - 1];
+                                  if (last?.role === "prospect" && prev.length === newMessages.length + 1) {
+                                    return prev.map((m, i) =>
+                                      i === prev.length - 1 ? { ...m, text: displayText } : m
+                                    );
+                                  }
+                                  return [...prev, { role: "prospect", text: displayText }];
+                                });
+                              },
+                              onDone: () => {
+                                setIsLoading(false);
+                                sendingRef.current = false;
+                                if (voice.voiceMode && prospectText) {
+                                  voice.speakAIMessage(cleanResponseText(prospectText));
+                                }
+                                if (detectHardCloseWin(prospectText)) {
+                                  setHardCloseWin(true);
+                                }
+                                if (detectCallEnd(prospectText) && !callEndTriggeredRef.current) {
+                                  callEndTriggeredRef.current = true;
+                                  setSessionActive(false);
+                                  setTimeout(() => handleEndSession(), 1500);
+                                }
+                              },
+                            }).catch(() => {
+                              sendingRef.current = false;
+                              toast.error("Session interruption detected. Please retry.");
+                              setIsLoading(false);
+                            });
+                          }
+                        }, 50);
+                      }}
+                      disabled={!selectedRole || isLoading}
+                      isAISpeaking={voice.isAISpeaking}
+                    />
+                    <div className="flex gap-1.5 sm:gap-2 mt-2 justify-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-8 text-muted-foreground"
+                        onClick={handleReset}
+                        disabled={!selectedRole || isLoading}
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        Reset
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={handleEndSession}
+                        disabled={!selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages}
+                      >
+                        <StopCircle className="h-3 w-3 mr-1" />
+                        End Session
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Text Mode: standard input */
+                  <>
+                    <div className="flex gap-1.5 sm:gap-2">
+                      <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Type…"
+                        disabled={!selectedRole || isLoading}
+                        className="flex-1 h-9 text-sm"
+                      />
+                      <VoiceInputButton
+                        onTranscript={(text) => setInput((prev) => (prev ? prev + " " + text : text))}
+                        disabled={!selectedRole || isLoading}
+                      />
+                      <Button
+                        onClick={handleSend}
+                        disabled={!selectedRole || !input.trim() || isLoading}
+                        size="icon"
+                        className="h-9 w-9 shrink-0"
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <div className="flex gap-1.5 sm:gap-2 mt-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-8 text-muted-foreground"
+                        onClick={handleReset}
+                        disabled={!selectedRole || isLoading}
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        Reset
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={handleEndSession}
+                        disabled={!selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages}
+                      >
+                        <StopCircle className="h-3 w-3 mr-1" />
+                        End Session
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             </motion.main>
 
@@ -1192,6 +1318,9 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         feedback={feedback}
                         alias={alias}
                         isValidSession={lastSessionValid}
+                        voiceMetrics={voice.voiceMode ? voice.getSessionVoiceMetrics() ?? undefined : undefined}
+                        voiceFeedbackLines={voice.voiceMode ? voice.getVoiceFeedbackLines() : undefined}
+                        voiceScoreAdjustment={voice.voiceMode ? voice.getVoiceScoreAdjustment() : undefined}
                         onStartNew={() => {
                           setFeedback(null);
                           setSelectedRole(null);

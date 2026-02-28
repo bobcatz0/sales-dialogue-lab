@@ -191,4 +191,4 @@ export function generateVoiceFeedback(metrics: VoiceMetrics): string[] {
  * Phase 2 is hidden by default. Set to true only when ready
  * for controlled beta testing.
  */
-export const VOICE_INTERVIEW_ENABLED = false;
+export const VOICE_INTERVIEW_ENABLED = true;
