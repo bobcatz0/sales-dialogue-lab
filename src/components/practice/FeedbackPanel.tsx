@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { motion } from "framer-motion";
-import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
@@ -450,19 +450,32 @@ export function FeedbackPanel({
 
         {/* Interview Ready Status — Final Round qualified */}
         {isFinalRound && feedback.score >= 85 && !feedback.criticalWeakness && (
-          <div className="space-y-2 py-2">
-            <div className="text-center space-y-1.5">
-              <p className="text-sm font-semibold text-foreground">
-                Status: Interview Ready
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25, delay: 0.3 }}
+            className="relative overflow-hidden rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="relative flex flex-col items-center text-center space-y-2">
+              <motion.div
+                initial={{ rotate: -10, scale: 0 }}
+                animate={{ rotate: 0, scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.5 }}
+              >
+                <ShieldCheck className="h-8 w-8 text-primary" />
+              </motion.div>
+              <p className="text-sm font-bold text-primary tracking-wide uppercase">
+                Interview Ready
               </p>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Performance met structured evaluation standards under elevated pressure.
+              <p className="text-[11px] text-muted-foreground leading-relaxed max-w-[240px]">
+                Performance met structured evaluation standards under elevated pressure. Score: {feedback.score}/100.
               </p>
-              <p className="text-[10px] text-muted-foreground/60">
-                Status reflects simulator evaluation only.
+              <p className="text-[9px] text-muted-foreground/50 mt-1">
+                Valid for 30 days · Simulator evaluation only
               </p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Final Round Readiness — standard interview only */}
