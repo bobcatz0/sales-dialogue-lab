@@ -92,7 +92,7 @@ Return a JSON object with this EXACT structure — nothing else:
     "composure": <0-100: how professional and steady the candidate remained throughout — no defensiveness, no rambling under stress>,
     "performanceDeclined": <true if the candidate's answer quality noticeably dropped in the second half of the session compared to the first half>
   }` : ""}${isInterview ? `,
-  "pacingNote": <if any user responses were excessively long or rambling (would take ${isFinalRound ? "30+" : "38+"} seconds to speak), set to "Pacing Adjustment Needed: Responses exceeded optimal interview length." Otherwise set to null>` : ""}
+  "pacingNote": <if any user responses were excessively long or rambling (would take ${isFinalRound ? "35+" : "38+"} seconds to speak), set to "Pacing Adjustment Needed: Responses exceeded optimal interview length." Otherwise set to null>` : ""}
 }
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
@@ -102,18 +102,20 @@ This session used the "${evaluatorStyle}" evaluator profile. Apply subtle scorin
 ${evaluatorStyle === "analytical" ? "- Increase weight on Clarity (+10%) and Structure (+5%). Reduce weight on Conversational Control (-5%). Penalize vague claims more heavily. Reward quantified results with specific methodology." : ""}${evaluatorStyle === "results-oriented" ? "- Increase weight on Conciseness (+10%) and Conversational Control (+5%). Reduce weight on Structure (-5%). Penalize long explanations without stated outcomes. Reward direct, outcome-driven answers." : ""}${evaluatorStyle === "behavioral" ? "- Increase weight on Objection Handling (+5%) and Structure (+5%). Evaluate ownership language — penalize 'we' without specifying individual contribution. Reward reflection, learning insights, and accountability." : ""}
 This variance must feel realistic, not arbitrary. Do not override core scoring fairness.` : ""}
 ${isFinalRound ? `
-FINAL ROUND — EXECUTIVE STANDARD EVALUATION:
-This is the highest evaluation tier. The evaluator has seen 50 candidates. Apply maximum strictness:
-- Scoring weights shift: Composure (25%), Conciseness (25%), Ownership (20%), Structure (20%), Metric Evidence (10%).
-- Be 20% stricter on scoring than standard interview mode across all dimensions.
-- "pressureResilience": 80+ = stayed sharp under rapid-fire probing. Below 50 = crumbled under pressure.
-- "recoveryStrength": 80+ = clear improvement after challenge. Below 40 = no adaptation despite multiple opportunities.
-- "composure": Defensiveness, rambling, or any visible frustration under rapid questioning reduces this score significantly. Composure is weighted more heavily than in any other mode.
+FINAL ROUND — SENIOR SDR HIRING MANAGER EVALUATION:
+This is the highest SDR interview tier. The evaluator has hired 100+ SDRs and knows exactly what to look for. Apply strict but realistic SDR standards:
+- Scoring weights shift: Conciseness (25%), Metric Defense (25%), Recovery Under Pressure (20%), Composure (20%), Structure (10%).
+- Evaluate answers through an SDR lens: call volume, booking rates, pipeline discipline, daily workflow, objection handling, rejection resilience.
+- DO NOT penalize for lacking executive-level strategy or enterprise forecasting knowledge — that is outside SDR scope.
+- DO penalize heavily for: vague quota claims, inability to cite specific dial/meeting/booking numbers, rambling past 45 seconds, lack of ownership language.
+- "pressureResilience": 80+ = stayed sharp when challenged on metrics and ownership. Below 50 = crumbled under direct questioning.
+- "recoveryStrength": 80+ = clear improvement after being challenged on a weak answer. Below 40 = no adaptation despite opportunities.
+- "composure": Defensiveness, rambling, or deflection under questioning reduces this significantly. A strong SDR stays calm and direct.
 - "performanceDeclined": true ONLY if second-half answer quality was noticeably weaker than first half.
-- If performanceDeclined is true, add to improvements: "Performance declined under executive-level pressure." AND cap score at 78.
-- Do NOT shield the score. Executive standard is the highest bar. No rounding up. No benefit of the doubt.
+- If performanceDeclined is true, add to improvements: "Performance declined under sustained SDR interview pressure." AND cap score at 78.
+- Be 15% stricter than standard interview mode. The bar is high but grounded in SDR reality.
 - Mixed performance in Final Round should score 5-10 points LOWER than equivalent performance in standard mode.
-- High scores (85+) REQUIRE: strong performance at elevated pressure + consistent composure + concise delivery throughout.
+- High scores (85+) REQUIRE: specific SDR metrics cited + consistent composure + concise 30-45 second answers throughout.
 ` : ""}
 
 SKILL BREAKDOWN SCORING:
@@ -158,11 +160,11 @@ NO MOMENTUM CREDIT IN SCORING:
 Each answer must be evaluated independently. A strong opening does NOT compensate for weak follow-ups.
 Do not average-up — if 3 answers were strong and 2 were weak, the weak answers must pull the score down proportionally.
 
-${isFinalRound ? `FINAL ROUND SCORE AMPLIFICATION:
-- Strong answers with quantified evidence and clear structure should receive a +3-5 point uplift compared to standard interview mode.
-- Rambling penalties are 50% heavier in Final Round: any response exceeding 30 seconds reduces Conciseness score by 15 points instead of 10.
-- A session with zero vague responses and successful recovery qualifies for the full scoring range up to 100.
-- Apply 15-20% stricter scoring than standard interview mode. The bar is higher. Do not shield scores.
+${isFinalRound ? `FINAL ROUND SCORE AMPLIFICATION (SDR STANDARD):
+- Strong answers with specific SDR metrics (dials, meetings booked, conversion rates, show rates) receive a +3-5 point uplift.
+- Rambling penalties are 50% heavier: any response exceeding 45 seconds reduces Conciseness score by 15 points instead of 10.
+- A session with zero vague responses, clear ownership language, and successful recovery qualifies for the full range up to 100.
+- Apply 15% stricter scoring than standard interview mode. Grounded in SDR reality — not executive interrogation.
 ` : ""}
 Before scoring, check for these patterns and REDUCE the score accordingly:
 - Repetitive lines: If the user repeated similar phrases 3+ times, reduce score by 10-15 points.
