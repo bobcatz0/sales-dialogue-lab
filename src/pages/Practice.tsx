@@ -228,7 +228,20 @@ const PracticePage = () => {
     }
   }, [messages]);
 
-  const handleStart = (id: string) => {
+  const isColdCall = selectedEnv === "cold-call";
+
+  const handleStart = async (id: string) => {
+    // Cold Call requires mic — request permission before starting
+    if (isColdCall) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((t) => t.stop()); // release immediately
+        voice.setVoiceMode(true); // force voice on
+      } catch {
+        toast.error("Microphone access is required for Cold Call mode. Please allow mic access and try again.");
+        return;
+      }
+    }
     // Track resume skip for interview mode
     if (selectedEnv === "interview" && !resumeHighlights.trim()) {
       trackResumeSkip();
@@ -258,9 +271,14 @@ const PracticePage = () => {
     evaluatorStyleRef.current = styles[Math.floor(Math.random() * styles.length)];
     const role = roles.find((r) => r.id === id);
     if (role) {
-      setMessages([
-        { role: "prospect", text: `[${role.title}] — Ready. Begin when you are.` },
-      ]);
+      const openingText = isColdCall
+        ? `[${role.title}] — Incoming call. Line is live.`
+        : `[${role.title}] — Ready. Begin when you are.`;
+      setMessages([{ role: "prospect", text: openingText }]);
+      // In cold call, AI speaks the opening
+      if (isColdCall) {
+        voice.speakAIMessage(openingText);
+      }
     }
   };
 
@@ -842,6 +860,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
               </div>
             )}
 
+            {/* Cold Call: voice required notice */}
+            {selectedEnv === "cold-call" && !selectedRole && (
+              <div className="mb-4">
+                <VoiceModeBanner
+                  enabled={true}
+                  onToggle={() => {}}
+                  locked
+                />
+              </div>
+            )}
+
             {/* Step 2: Persona Selection (after environment chosen) */}
             {selectedEnv && (
               <div>
@@ -1038,12 +1067,12 @@ This evaluation style should subtly influence your questions and reactions. Do N
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col card-elevated overflow-hidden flex-1"
             >
-              {/* Chat Header — compact */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              {/* Chat Header — compact / call-style for cold call */}
+              <div className={`flex items-center justify-between px-4 py-3 border-b border-border ${isColdCall && sessionActive ? "bg-muted/40" : ""}`}>
                 <div className="flex items-center gap-2 min-w-0">
                   {activeEnv && (
-                    <Badge variant="secondary" className="text-[10px] font-medium shrink-0">
-                      {activeEnv.title}
+                    <Badge variant={isColdCall ? "destructive" : "secondary"} className="text-[10px] font-medium shrink-0">
+                      {isColdCall && sessionActive ? "LIVE CALL" : activeEnv.title}
                     </Badge>
                   )}
                   {activeRole && (
@@ -1054,9 +1083,16 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   {!activeRole && !activeEnv && (
                     <span className="text-xs text-muted-foreground">Session</span>
                   )}
+                  {/* Mic active indicator for cold call */}
+                  {isColdCall && sessionActive && !isLoading && (
+                    <span className="flex items-center gap-1 text-[10px] text-primary">
+                      <Mic className="h-3 w-3" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                    </span>
+                  )}
                 </div>
                 {sessionActive && (
-                  <span className="text-[10px] text-muted-foreground/60 tabular-nums shrink-0">
+                  <span className={`text-[10px] tabular-nums shrink-0 font-mono ${isColdCall ? "text-destructive font-semibold" : "text-muted-foreground/60"}`}>
                     {timer.display}
                   </span>
                 )}
@@ -1118,7 +1154,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
 
               {/* Input Area */}
               <div className="border-t border-border p-3 sm:p-4">
-                {voice.voiceMode && selectedRole ? (
+                {(voice.voiceMode || isColdCall) && selectedRole ? (
                   /* Voice Mode: recording UI */
                   <div>
                     <VoiceRecorder
@@ -1200,25 +1236,27 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       isAISpeaking={voice.isAISpeaking}
                     />
                     <div className="flex gap-1.5 sm:gap-2 mt-2 justify-center">
+                      {!isColdCall && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-8 text-muted-foreground"
+                          onClick={handleReset}
+                          disabled={!selectedRole || isLoading}
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          Reset
+                        </Button>
+                      )}
                       <Button
-                        variant="ghost"
+                        variant={isColdCall ? "destructive" : "outline"}
                         size="sm"
-                        className="text-xs h-8 text-muted-foreground"
-                        onClick={handleReset}
-                        disabled={!selectedRole || isLoading}
-                      >
-                        <RotateCcw className="h-3 w-3 mr-1" />
-                        Reset
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-8"
+                        className={`text-xs h-8 ${isColdCall ? "px-6" : ""}`}
                         onClick={handleEndSession}
                         disabled={!selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages}
                       >
                         <StopCircle className="h-3 w-3 mr-1" />
-                        End Session
+                        {isColdCall ? "End Call" : "End Session"}
                       </Button>
                     </div>
                   </div>
