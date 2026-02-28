@@ -480,8 +480,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
         setUnlockQueue(newUnlocks);
       }
 
-      // Evaluate badges
+      // Check weekly goal completion
       const updatedConsistency = loadConsistency();
+      const weeklyGoal = parseInt(localStorage.getItem("salescalls_weekly_goal") || "0", 10);
+      const goalJustMet = weeklyGoal > 0
+        && updatedConsistency.sessionsThisWeek >= weeklyGoal
+        && (updatedConsistency.sessionsThisWeek - 1) < weeklyGoal;
+      if (goalJustMet) {
+        toast.success("Weekly goal reached! Nice work staying consistent.", { duration: 4000 });
+      }
+
+      // Evaluate badges
       const newBadges = evaluateBadges({
         roleId: activeRole.id,
         sessionScore: data.score,
