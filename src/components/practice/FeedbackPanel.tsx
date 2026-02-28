@@ -124,6 +124,7 @@ function downloadPDF(feedback: Feedback, alias: string | null) {
       `  ${feedback.trainingRecommendation || feedback.nextDrill}`,
       ``,
       `${"═".repeat(50)}`,
+      `Evaluation based on structured SDR interview standards.`,
       `Generated via SalesCalls Practice Simulator`,
     ].join("\n");
 
@@ -180,6 +181,9 @@ export function FeedbackPanel({
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           {isFinalRound ? "Final Round Evaluation" : "Performance Report"}
         </h3>
+        <p className="text-[9px] text-muted-foreground/60 mt-0.5">
+          Evaluation based on structured SDR interview standards.
+        </p>
       </div>
 
       {/* A. Overall Performance */}
