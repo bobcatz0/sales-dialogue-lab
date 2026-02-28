@@ -58,13 +58,37 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
           <div className="text-[10px] text-muted-foreground">Sessions</div>
         </div>
         <div>
-          <div className="text-lg font-bold font-heading text-foreground">{consistency.currentStreak}</div>
-          <div className="text-[10px] text-muted-foreground">Streak</div>
-        </div>
-        <div>
           <div className="text-lg font-bold font-heading text-foreground">{earnedIds.length}</div>
           <div className="text-[10px] text-muted-foreground">Milestones</div>
         </div>
+        <div>
+          <div className="text-lg font-bold font-heading text-foreground">{consistency.sessionsThisWeek}</div>
+          <div className="text-[10px] text-muted-foreground">This Week</div>
+        </div>
+      </div>
+
+      {/* Streak Display */}
+      <div className={`rounded-lg p-3 border ${consistency.currentStreak >= 3 ? "border-primary/25 bg-primary/5" : "border-border bg-muted/30"}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Flame className={`h-4 w-4 ${consistency.currentStreak >= 3 ? "text-primary" : "text-muted-foreground"}`} />
+            <div>
+              <p className={`text-sm font-bold ${consistency.currentStreak >= 3 ? "text-primary" : "text-foreground"}`}>
+                {consistency.currentStreak} day{consistency.currentStreak !== 1 ? "s" : ""}
+              </p>
+              <p className="text-[9px] text-muted-foreground">Current streak</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-bold text-foreground">{consistency.bestStreak}</p>
+            <p className="text-[9px] text-muted-foreground">Best</p>
+          </div>
+        </div>
+        {consistency.currentStreak >= 5 && (
+          <p className="text-[9px] text-primary/80 font-medium mt-1.5 text-center">
+            Consistency compounds. Keep building.
+          </p>
+        )}
       </div>
 
       {/* Badges grid */}
