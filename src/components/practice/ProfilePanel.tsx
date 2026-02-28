@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { User, Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2, TrendingUp, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +68,70 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
           <div className="text-[10px] text-muted-foreground">This Week</div>
         </div>
       </div>
+
+      {/* Weekly Goal */}
+      {(() => {
+        const GOAL_KEY = "salescalls_weekly_goal";
+        const [goal, setGoalState] = useState<number>(() => {
+          try { return parseInt(localStorage.getItem(GOAL_KEY) || "0", 10) || 0; } catch { return 0; }
+        });
+        const setGoal = useCallback((v: number) => {
+          const clamped = Math.max(0, Math.min(14, v));
+          setGoalState(clamped);
+          if (clamped > 0) localStorage.setItem(GOAL_KEY, String(clamped));
+          else localStorage.removeItem(GOAL_KEY);
+        }, []);
+
+        const done = consistency.sessionsThisWeek;
+        const pct = goal > 0 ? Math.min(100, Math.round((done / goal) * 100)) : 0;
+        const met = goal > 0 && done >= goal;
+
+        if (goal === 0) {
+          return (
+            <div className="flex items-center justify-between rounded-lg p-2.5 border border-dashed border-border bg-muted/20">
+              <p className="text-[10px] text-muted-foreground">Set a weekly session goal</p>
+              <div className="flex gap-1">
+                {[3, 5, 7].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setGoal(n)}
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded-md border border-border bg-background text-foreground hover:bg-primary/10 hover:border-primary/30 transition-colors"
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className={`rounded-lg p-2.5 border ${met ? "border-primary/30 bg-primary/5" : "border-border bg-muted/20"}`}>
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-1.5">
+                <Target className={`h-3 w-3 ${met ? "text-primary" : "text-muted-foreground"}`} />
+                <p className={`text-[10px] font-semibold ${met ? "text-primary" : "text-foreground"}`}>
+                  {met ? "Goal reached!" : `${done}/${goal} sessions`}
+                </p>
+              </div>
+              <button
+                onClick={() => setGoal(0)}
+                className="text-[9px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              >
+                Reset
+              </button>
+            </div>
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className={`h-full rounded-full ${met ? "bg-primary" : "bg-primary/50"}`}
+              />
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Streak Display */}
       <div className={`rounded-lg p-3 border ${consistency.currentStreak >= 3 ? "border-primary/25 bg-primary/5" : "border-border bg-muted/30"}`}>
