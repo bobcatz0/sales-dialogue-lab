@@ -20,10 +20,7 @@ const CTASection = () => {
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button variant="hero" size="lg" className="gap-2" asChild>
-              <a href="/practice">Start Rehearsal <ArrowRight className="h-4 w-4" /></a>
-            </Button>
-            <Button variant="heroOutline" size="lg" asChild>
-              <a href="/roleplays">Browse Scenarios</a>
+              <a href="/practice">Start Mock SDR Interview <ArrowRight className="h-4 w-4" /></a>
             </Button>
           </div>
         </motion.div>

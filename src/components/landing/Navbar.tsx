@@ -16,12 +16,10 @@ const Navbar = () => {
           <a href="#scripts" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Scripts</a>
           <a href="/frameworks" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Frameworks</a>
           <a href="/roleplays" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Roleplays</a>
-          <a href="/ai-roleplay" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Scenarios</a>
           <a href="/practice" className="text-sm font-medium text-foreground hover:text-primary transition-colors">Mock Interview</a>
-          <a href="/leaderboard" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">Leaderboard</a>
         </div>
         <Button variant="hero" size="sm" asChild>
-          <a href="/practice">Start Mock Interview</a>
+          <a href="/practice">Start Mock SDR Interview</a>
         </Button>
       </div>
     </nav>
