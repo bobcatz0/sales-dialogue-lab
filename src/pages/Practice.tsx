@@ -17,6 +17,7 @@ import { VoiceInputButton } from "@/components/practice/VoiceInputButton";
 import { VoiceRecorder } from "@/components/practice/VoiceRecorder";
 import { VoiceModeBanner } from "@/components/practice/VoiceModeBanner";
 import { useVoiceSession } from "@/components/practice/useVoiceSession";
+import { MicPreflight, useMicPermission } from "@/components/practice/MicPreflight";
 import { processSession, loadConsistency } from "@/components/practice/consistencyScoring";
 import {
   loadProgression,
@@ -203,6 +204,7 @@ const PracticePage = () => {
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
    const timer = useCallTimer(sessionActive);
   const voice = useVoiceSession();
+  const mic = useMicPermission();
 
   const activeEnv = selectedEnv ? getEnvironment(selectedEnv) : undefined;
   const activeRole = roles.find((r) => r.id === selectedRole);
@@ -231,16 +233,15 @@ const PracticePage = () => {
   const isColdCall = selectedEnv === "cold-call";
 
   const handleStart = async (id: string) => {
-    // Cold Call requires mic — request permission before starting
-    if (isColdCall) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach((t) => t.stop()); // release immediately
-        voice.setVoiceMode(true); // force voice on
-      } catch {
-        toast.error("Microphone access is required for Cold Call mode. Please allow mic access and try again.");
+    // Voice modes require mic — request permission on user gesture
+    const needsMic = isColdCall || voice.voiceMode;
+    if (needsMic) {
+      const granted = await mic.requestMic();
+      if (!granted) {
+        toast.error("Microphone access is required. Please allow mic access and try again.");
         return;
       }
+      if (isColdCall) voice.setVoiceMode(true);
     }
     // Track resume skip for interview mode
     if (selectedEnv === "interview" && !resumeHighlights.trim()) {
@@ -858,21 +859,31 @@ This evaluation style should subtly influence your questions and reactions. Do N
 
             {/* Voice Mode Toggle — interview modes only, before persona selection */}
             {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
-              <div className="mb-4">
+              <div className="mb-4 space-y-2">
                 <VoiceModeBanner
                   enabled={voice.voiceMode}
                   onToggle={voice.setVoiceMode}
                 />
+                {voice.voiceMode && (
+                  <MicPreflight
+                    status={mic.status}
+                    onRequestMic={mic.requestMic}
+                  />
+                )}
               </div>
             )}
 
             {/* Cold Call: voice required notice */}
             {selectedEnv === "cold-call" && !selectedRole && (
-              <div className="mb-4">
+              <div className="mb-4 space-y-2">
                 <VoiceModeBanner
                   enabled={true}
                   onToggle={() => {}}
                   locked
+                />
+                <MicPreflight
+                  status={mic.status}
+                  onRequestMic={mic.requestMic}
                 />
               </div>
             )}
@@ -1162,7 +1173,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
               <div className="border-t border-border p-3 sm:p-4">
                 {(voice.voiceMode || isColdCall) && selectedRole ? (
                   /* Voice Mode: recording UI */
-                  <div>
+                  <div className="space-y-1">
+                    <MicPreflight status={mic.status} onRequestMic={mic.requestMic} compact />
                     <VoiceRecorder
                       onTranscript={(text, duration, pauseData) => {
                         voice.recordVoiceMetrics(text, duration, pauseData);
