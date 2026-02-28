@@ -92,7 +92,7 @@ Return a JSON object with this EXACT structure — nothing else:
     "composure": <0-100: how professional and steady the candidate remained throughout — no defensiveness, no rambling under stress>,
     "performanceDeclined": <true if the candidate's answer quality noticeably dropped in the second half of the session compared to the first half>
   }` : ""}${isInterview ? `,
-  "pacingNote": <if any user responses were excessively long or rambling (would take ${isFinalRound ? "35+" : "45+"} seconds to speak), set to "Pacing Adjustment Needed: Responses exceeded optimal interview length." Otherwise set to null>` : ""}
+  "pacingNote": <if any user responses were excessively long or rambling (would take ${isFinalRound ? "30+" : "38+"} seconds to speak), set to "Pacing Adjustment Needed: Responses exceeded optimal interview length." Otherwise set to null>` : ""}
 }
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
@@ -120,7 +120,7 @@ Evaluate each skill dimension independently based on the conversation. Apply str
 - Structure: Did responses follow logical flow? Were frameworks or patterns used?
 - Objection Handling: ${isInterview ? "How well did the candidate handle tough follow-up questions and challenges?" : "How effectively were objections acknowledged and addressed?"}
 - Conversational Control: Did the user drive the conversation forward, or were they reactive?
-- Conciseness: Were responses appropriately scoped? Any response that would take 45+ seconds to speak aloud should significantly reduce this score. In Final Round, the threshold is 35 seconds.
+- Conciseness: Were responses appropriately scoped? Any response that would take 38+ seconds to speak aloud should significantly reduce this score. In Final Round, the threshold is 30 seconds.
 
 OVER-SMOOTHING PENALTY:
 If answers sounded polished but lacked real substance — specific numbers, concrete examples, or authentic details — reduce the Clarity score by 5-10 points even if Structure is strong. Smooth delivery without evidence is a red flag, not a strength.
@@ -135,16 +135,20 @@ A score of 85 or above REQUIRES ALL of the following. If ANY condition is missin
 2. No unresolved Critical Weakness (criticalWeakness must be null).
 3. Successful recovery from at least one pressure escalation (recoveryAssessment.recovered must be true, or no pressure was applied).
 4. Conciseness skill score must be 60 or above.
+5. At least one high-pressure recovery moment — the candidate must have been challenged and responded with improved clarity or specificity.
+6. At least one quantified answer — a response containing a concrete metric, percentage, or number tied to a result.
+7. The candidate's final response in the session must be concise (3 sentences or fewer). If the closing response was rambling or unfocused, cap at 84.
 
 SCORE CAP AT 82:
 If ANY of the following are true, cap the maximum score at 82 regardless of other performance:
 - Two or more vague responses occurred (performance claims without metrics, generic phrasing without specifics).
 - User failed recovery under pressure (recoveryAssessment.recovered is false).
+- No metric or number was cited across the entire session.
 Apply these caps silently — do not mention calibration logic in the output.
 
 ${isFinalRound ? `FINAL ROUND SCORE AMPLIFICATION:
 - Strong answers with quantified evidence and clear structure should receive a +3-5 point uplift compared to standard interview mode.
-- Rambling penalties are 50% heavier in Final Round: any response exceeding 35 seconds reduces Conciseness score by 15 points instead of 10.
+- Rambling penalties are 50% heavier in Final Round: any response exceeding 30 seconds reduces Conciseness score by 15 points instead of 10.
 - A session with zero vague responses and successful recovery qualifies for the full scoring range up to 100.
 ` : ""}
 Before scoring, check for these patterns and REDUCE the score accordingly:
