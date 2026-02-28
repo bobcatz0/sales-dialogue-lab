@@ -6,8 +6,12 @@ export interface VoiceSessionState {
   voiceMode: boolean;
   setVoiceMode: (v: boolean) => void;
   isAISpeaking: boolean;
+  isMuted: boolean;
+  volume: number;
+  toggleMute: () => void;
+  setVolume: (v: number) => void;
   speakAIMessage: (text: string) => Promise<void>;
-  recordVoiceMetrics: (transcript: string, durationSeconds: number) => void;
+  recordVoiceMetrics: (transcript: string, durationSeconds: number, pauseData?: { pauseLengthAvg: number; pauseLengthVariance: number }) => void;
   getSessionVoiceMetrics: () => VoiceMetrics | null;
   getVoiceFeedbackLines: () => string[];
   getVoiceScoreAdjustment: () => number;
@@ -16,8 +20,8 @@ export interface VoiceSessionState {
 
 export function useVoiceSession(): VoiceSessionState {
   const [voiceMode, setVoiceMode] = useState(false);
-  const { isPlaying, speak, cleanup } = useProspectVoice();
-  const metricsAccumulator = useRef<{ transcript: string; duration: number }[]>([]);
+  const { isMuted, isPlaying, speak, toggleMute, cleanup, setVolume: setProspectVolume, volume } = useProspectVoice();
+  const metricsAccumulator = useRef<{ transcript: string; duration: number; pauseAvg?: number; pauseVar?: number }[]>([]);
 
   const speakAIMessage = useCallback(
     async (text: string) => {
@@ -34,8 +38,13 @@ export function useVoiceSession(): VoiceSessionState {
   );
 
   const recordVoiceMetrics = useCallback(
-    (transcript: string, durationSeconds: number) => {
-      metricsAccumulator.current.push({ transcript, duration: durationSeconds });
+    (transcript: string, durationSeconds: number, pauseData?: { pauseLengthAvg: number; pauseLengthVariance: number }) => {
+      metricsAccumulator.current.push({
+        transcript,
+        duration: durationSeconds,
+        pauseAvg: pauseData?.pauseLengthAvg,
+        pauseVar: pauseData?.pauseLengthVariance,
+      });
     },
     []
   );
@@ -47,7 +56,18 @@ export function useVoiceSession(): VoiceSessionState {
     const fullTranscript = entries.map((e) => e.transcript).join(" ");
     const totalDuration = entries.reduce((sum, e) => sum + e.duration, 0);
 
-    return analyzeVoiceMetrics(fullTranscript, totalDuration);
+    const metrics = analyzeVoiceMetrics(fullTranscript, totalDuration);
+
+    // Overlay pause data from Web Audio if available
+    const pauseEntries = entries.filter((e) => e.pauseAvg !== undefined);
+    if (pauseEntries.length > 0) {
+      const avgPause = pauseEntries.reduce((s, e) => s + (e.pauseAvg ?? 0), 0) / pauseEntries.length;
+      const avgVar = pauseEntries.reduce((s, e) => s + (e.pauseVar ?? 0), 0) / pauseEntries.length;
+      metrics.pauseLengthAvg = Math.round(avgPause * 100) / 100;
+      metrics.pauseLengthVariance = Math.round(avgVar * 100) / 100;
+    }
+
+    return metrics;
   }, []);
 
   const getVoiceFeedbackLines = useCallback((): string[] => {
@@ -96,6 +116,10 @@ export function useVoiceSession(): VoiceSessionState {
     voiceMode,
     setVoiceMode: handleSetVoiceMode,
     isAISpeaking: isPlaying,
+    isMuted,
+    volume,
+    toggleMute,
+    setVolume: setProspectVolume,
     speakAIMessage,
     recordVoiceMetrics,
     getSessionVoiceMetrics,

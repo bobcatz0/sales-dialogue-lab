@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, Volume2, VolumeX } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -289,13 +289,12 @@ const PracticePage = () => {
 
   const sendingRef = useRef(false);
 
-  const handleSend = async () => {
-    if (!input.trim() || !activeRole || isLoading || sendingRef.current || callEndTriggeredRef.current) return;
+  // Shared send logic for both text and voice modes
+  const sendUserMessage = useCallback(async (userText: string) => {
+    if (!userText.trim() || !activeRole || isLoading || sendingRef.current || callEndTriggeredRef.current) return;
     sendingRef.current = true;
-    const userText = input.trim();
-    setInput("");
 
-    const newMessages: ChatMessage[] = [...messages, { role: "user", text: userText }];
+    const newMessages: ChatMessage[] = [...messages, { role: "user", text: userText.trim() }];
     setMessages(newMessages);
     setIsLoading(true);
 
@@ -477,6 +476,13 @@ This evaluation style should subtly influence your questions and reactions. Do N
       toast.error("Session interruption detected. Please retry.", { duration: 3000 });
       setIsLoading(false);
     }
+  }, [activeRole, isLoading, messages, timer.elapsed, activeEnv, selectedEnv, resumeHighlights, activeSDRRound, voice]);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+    const userText = input.trim();
+    setInput("");
+    await sendUserMessage(userText);
   };
 
   const handleReset = () => {
@@ -1158,83 +1164,51 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   /* Voice Mode: recording UI */
                   <div>
                     <VoiceRecorder
-                      onTranscript={(text, duration) => {
-                        voice.recordVoiceMetrics(text, duration);
-                        setInput(text);
-                        // Auto-send after transcription
-                        setTimeout(() => {
-                          const fakeInput = text;
-                          setInput("");
-                          if (fakeInput.trim() && activeRole && !isLoading && !sendingRef.current && !callEndTriggeredRef.current) {
-                            // Directly trigger send with the transcript
-                            const newMessages: ChatMessage[] = [...messages, { role: "user", text: fakeInput.trim() }];
-                            setMessages(newMessages);
-                            setInput("");
-                            setIsLoading(true);
-                            // Trigger the AI response
-                            const aiMessages = newMessages.map((m) => ({
-                              role: m.role === "user" ? "user" : "assistant",
-                              content: m.text,
-                            }));
-                            const userMsgCount = newMessages.filter((m) => m.role === "user").length;
-                            const pressureAddendum = buildPressurePrompt({
-                              elapsedSeconds: timer.elapsed,
-                              userMessageCount: userMsgCount,
-                              totalValidSessions: loadProgression().completedValidSessions,
-                              timePressureThresholdS: activeEnv?.timePressureThresholdS,
-                              callEndingEnabled: activeEnv?.callEndingEnabled,
-                              finalRoundMode: selectedEnv === "final-round" || (selectedEnv === "interview" && loadProgression().highestSessionScore >= 75),
-                            });
-                            const envAddendum = activeEnv?.promptAddendum ? `\n\n${activeEnv.promptAddendum}` : "";
-                            const sdrAddendum = activeSDRRound?.promptAddendum ? `\n\n${activeSDRRound.promptAddendum}` : "";
-                            const isInterviewLike = selectedEnv === "interview" || selectedEnv === "final-round";
-                            const resumeAddendum = (isInterviewLike && resumeHighlights.trim())
-                              ? `\n\nCANDIDATE RESUME HIGHLIGHTS (use these to personalize questions):\n${resumeHighlights.trim()}`
-                              : "";
-                            const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + pressureAddendum;
-                            let prospectText = "";
-                            streamChat({
-                              messages: aiMessages,
-                              systemPrompt: fullSystemPrompt,
-                              onDelta: (chunk) => {
-                                prospectText += chunk;
-                                const displayText = cleanResponseText(prospectText);
-                                setMessages((prev) => {
-                                  const last = prev[prev.length - 1];
-                                  if (last?.role === "prospect" && prev.length === newMessages.length + 1) {
-                                    return prev.map((m, i) =>
-                                      i === prev.length - 1 ? { ...m, text: displayText } : m
-                                    );
-                                  }
-                                  return [...prev, { role: "prospect", text: displayText }];
-                                });
-                              },
-                              onDone: () => {
-                                setIsLoading(false);
-                                sendingRef.current = false;
-                                if (voice.voiceMode && prospectText) {
-                                  voice.speakAIMessage(cleanResponseText(prospectText));
-                                }
-                                if (detectHardCloseWin(prospectText)) {
-                                  setHardCloseWin(true);
-                                }
-                                if (detectCallEnd(prospectText) && !callEndTriggeredRef.current) {
-                                  callEndTriggeredRef.current = true;
-                                  setSessionActive(false);
-                                  setTimeout(() => handleEndSession(), 1500);
-                                }
-                              },
-                            }).catch(() => {
-                              sendingRef.current = false;
-                              toast.error("Session interruption detected. Please retry.");
-                              setIsLoading(false);
-                            });
-                          }
-                        }, 50);
+                      onTranscript={(text, duration, pauseData) => {
+                        voice.recordVoiceMetrics(text, duration, pauseData);
+                        sendUserMessage(text);
                       }}
                       disabled={!selectedRole || isLoading}
                       isAISpeaking={voice.isAISpeaking}
                     />
+                    {/* TTS controls */}
+                    <div className="flex items-center justify-center gap-3 mt-1">
+                      <button
+                        onClick={voice.toggleMute}
+                        className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                        aria-label={voice.isMuted ? "Unmute AI voice" : "Mute AI voice"}
+                      >
+                        {voice.isMuted ? (
+                          <VolumeX className="h-3.5 w-3.5" />
+                        ) : (
+                          <Volume2 className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={voice.volume}
+                        onChange={(e) => voice.setVolume(parseFloat(e.target.value))}
+                        className="w-16 h-1 accent-primary"
+                        aria-label="AI voice volume"
+                      />
+                    </div>
+                    {/* "Type instead" fallback */}
+                    {!isColdCall && (
+                      <div className="flex items-center justify-center mt-2">
+                        <button
+                          onClick={() => {
+                            const text = prompt("Type your response:");
+                            if (text?.trim()) sendUserMessage(text);
+                          }}
+                          className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground underline transition-colors"
+                        >
+                          Type instead
+                        </button>
+                      </div>
+                    )}
                     <div className="flex gap-1.5 sm:gap-2 mt-2 justify-center">
                       {!isColdCall && (
                         <Button
