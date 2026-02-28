@@ -64,8 +64,10 @@ export const VOICE_FEEDBACK_TEMPLATES = {
   durationLong: "Response ran long — tighten delivery.",
   durationIdeal: "Response length appropriate for question complexity.",
 
-  pauseErratic: "Inconsistent pausing signals uncertainty.",
-  pauseNatural: "Natural pause rhythm — sounds composed.",
+  pauseErratic: "Long hesitation under pressure affected clarity.",
+  pauseNatural: "Your pause control was steady.",
+  pauseRushed: "Responses felt rushed with minimal thinking space.",
+  pauseLongFrequent: "Frequent pauses over 3 seconds signaled uncertainty.",
 
   structureStrong: "Strong verbal structure detected.",
   structureWeak: "Response lacked clear verbal structure.",
@@ -95,8 +97,14 @@ export const VOICE_THRESHOLDS = {
     idealMax: 120,
     tooLong: 150,
   },
+  pause: {
+    naturalMax: 1.5,       // seconds — not penalized
+    longThreshold: 3.0,    // seconds — flagged if frequent
+    longThresholdFinal: 2.5, // tighter in Final Round
+    rushedMax: 0.4,        // avg pause below this = rushed
+  },
   pauseVariance: {
-    consistent: 0.3, // seconds std dev
+    consistent: 0.4, // seconds std dev — relaxed from 0.3
     erratic: 0.8,
   },
 } as const;
@@ -173,11 +181,20 @@ export function generateVoiceFeedback(metrics: VoiceMetrics): string[] {
     feedback.push(VOICE_FEEDBACK_TEMPLATES.durationLong);
   }
 
-  // Pause consistency
-  if (metrics.pauseLengthVariance > T.pauseVariance.erratic) {
-    feedback.push(VOICE_FEEDBACK_TEMPLATES.pauseErratic);
-  } else if (metrics.pauseLengthVariance <= T.pauseVariance.consistent && metrics.pauseLengthAvg > 0) {
-    feedback.push(VOICE_FEEDBACK_TEMPLATES.pauseNatural);
+  // Pause analysis — ignore natural pauses under threshold
+  if (metrics.pauseLengthAvg > 0) {
+    if (metrics.pauseLengthAvg < T.pause.rushedMax) {
+      feedback.push(VOICE_FEEDBACK_TEMPLATES.pauseRushed);
+    } else if (metrics.pauseLengthAvg > T.pause.longThreshold) {
+      feedback.push(VOICE_FEEDBACK_TEMPLATES.pauseLongFrequent);
+    } else if (metrics.pauseLengthVariance > T.pauseVariance.erratic) {
+      feedback.push(VOICE_FEEDBACK_TEMPLATES.pauseErratic);
+    } else if (
+      metrics.pauseLengthAvg <= T.pause.naturalMax &&
+      metrics.pauseLengthVariance <= T.pauseVariance.consistent
+    ) {
+      feedback.push(VOICE_FEEDBACK_TEMPLATES.pauseNatural);
+    }
   }
 
   return feedback;
