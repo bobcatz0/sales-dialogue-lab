@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { User, Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2, TrendingUp, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,7 @@ import type { ConsistencyData } from "@/components/practice/consistencyScoring";
 import { getRank } from "@/components/practice/progression";
 import { getInterviewReadyStatus } from "@/components/practice/interviewReadyStatus";
 import { getDrillStats } from "@/components/practice/drillTracking";
+import { loadHistory } from "@/components/practice/sessionStorage";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
@@ -91,7 +93,52 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
         )}
       </div>
 
-      {/* Badges grid */}
+      {/* 7-Day Activity Heatmap */}
+      {(() => {
+        const history = loadHistory();
+        const today = new Date();
+        const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
+        const dow = today.getDay(); // 0=Sun
+        const mondayOffset = dow === 0 ? -6 : 1 - dow;
+
+        const days = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(today);
+          d.setDate(today.getDate() + mondayOffset + i);
+          const dateStr = d.toISOString().slice(0, 10);
+          const count = history.filter((s) => s.date?.slice(0, 10) === dateStr).length;
+          const isToday = dateStr === today.toISOString().slice(0, 10);
+          return { label: dayLabels[i], count, isToday };
+        });
+
+        return (
+          <div>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">This Week</p>
+            <div className="flex gap-1.5 justify-between">
+              {days.map((day, i) => (
+                <div key={i} className="flex flex-col items-center gap-1">
+                  <div
+                    className={`h-6 w-6 rounded-md flex items-center justify-center text-[10px] font-bold transition-colors ${
+                      day.count >= 3
+                        ? "bg-primary text-primary-foreground"
+                        : day.count === 2
+                        ? "bg-primary/60 text-primary-foreground"
+                        : day.count === 1
+                        ? "bg-primary/25 text-primary"
+                        : "bg-muted text-muted-foreground/40"
+                    } ${day.isToday ? "ring-1 ring-primary/50 ring-offset-1 ring-offset-background" : ""}`}
+                  >
+                    {day.count || ""}
+                  </div>
+                  <span className={`text-[9px] ${day.isToday ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
+                    {day.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {BADGE_DEFINITIONS.length > 0 && (
         <div>
           <p className="text-[11px] text-muted-foreground mb-2 font-medium">Milestones</p>
