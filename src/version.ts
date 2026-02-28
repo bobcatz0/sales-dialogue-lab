@@ -1,5 +1,5 @@
 /**
- * SalesCalls v1 — Structured Interview Simulator
+ * SalesCalls v1 — Structured SDR Interview Simulator
  * Phase 1: Cognitive Pressure System (STABLE)
  *
  * PHASE 1 LOCK — DO NOT EXPAND:
@@ -12,4 +12,4 @@
 
 export const APP_VERSION = "v1";
 export const APP_PHASE = "Phase 1 — Stable";
-export const APP_LABEL = "SalesCalls v1 — Structured Interview Simulator";
+export const APP_LABEL = "SalesCalls v1 — Structured SDR Interview Simulator";

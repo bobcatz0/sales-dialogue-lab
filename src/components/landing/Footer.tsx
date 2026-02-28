@@ -13,7 +13,7 @@ const Footer = () => {
             </span>
           </div>
           <p className="text-sm text-muted-foreground max-w-md">
-            Structured Mock Interviews for SDR Candidates.
+            Structured SDR Interview Simulator.
           </p>
           <p className="text-[10px] text-muted-foreground/60">
             Simulated interview environment. For practice purposes.

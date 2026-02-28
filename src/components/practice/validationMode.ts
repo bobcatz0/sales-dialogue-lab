@@ -12,9 +12,12 @@ const FRICTION_MARKERS_KEY = "salescalls_friction_markers";
 
 export function isValidationMode(): boolean {
   try {
-    return localStorage.getItem(VALIDATION_KEY) === "true";
+    const val = localStorage.getItem(VALIDATION_KEY);
+    // Default to true for v1 validation-ready release
+    if (val === null) return true;
+    return val === "true";
   } catch {
-    return false;
+    return true;
   }
 }
 
