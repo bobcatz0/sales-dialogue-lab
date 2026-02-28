@@ -719,7 +719,10 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     Interview Rehearsal Simulator
                   </h2>
                 </div>
-                <p className="text-[10px] text-primary font-medium mb-3">Pre-Interview Preparation</p>
+                <p className="text-[10px] text-primary font-medium mb-1">Pre-Interview Preparation</p>
+                <p className="text-[10px] text-muted-foreground/70 mb-3 leading-relaxed">
+                  Built on structured SDR evaluation principles: clarity, ownership, metrics, conciseness, recovery under pressure.
+                </p>
                 <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
                   Structured interview simulation with personalized evaluation. Your final rehearsal before the real thing.
                 </p>
