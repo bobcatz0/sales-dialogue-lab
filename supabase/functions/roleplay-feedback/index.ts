@@ -129,6 +129,24 @@ TRAINING RECOMMENDATION:
 Based on the weakest skill area, suggest a specific next training session. Format: "<Environment> mode with <Persona> — focus on <specific skill>." Example: "Cold Call mode with Gatekeeper — focus on opening clarity under pressure."
 
 
+SCORE CALIBRATION — 85+ THRESHOLD:
+A score of 85 or above REQUIRES ALL of the following. If ANY condition is missing, cap the score at 84:
+1. At least one quantified example with a specific number, percentage, or metric.
+2. No unresolved Critical Weakness (criticalWeakness must be null).
+3. Successful recovery from at least one pressure escalation (recoveryAssessment.recovered must be true, or no pressure was applied).
+4. Conciseness skill score must be 60 or above.
+
+SCORE CAP AT 82:
+If ANY of the following are true, cap the maximum score at 82 regardless of other performance:
+- Two or more vague responses occurred (performance claims without metrics, generic phrasing without specifics).
+- User failed recovery under pressure (recoveryAssessment.recovered is false).
+Apply these caps silently — do not mention calibration logic in the output.
+
+${isFinalRound ? `FINAL ROUND SCORE AMPLIFICATION:
+- Strong answers with quantified evidence and clear structure should receive a +3-5 point uplift compared to standard interview mode.
+- Rambling penalties are 50% heavier in Final Round: any response exceeding 35 seconds reduces Conciseness score by 15 points instead of 10.
+- A session with zero vague responses and successful recovery qualifies for the full scoring range up to 100.
+` : ""}
 Before scoring, check for these patterns and REDUCE the score accordingly:
 - Repetitive lines: If the user repeated similar phrases 3+ times, reduce score by 10-15 points.
 - Extremely short answers: If 50%+ of user messages are under 10 words, reduce by 10 points.
