@@ -111,6 +111,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       toast.error("Voice input not supported in this browser. Using text mode.");
       return;
     }
+    if (disabled || isAISpeaking) return; // enforce queue rule
     // Reset pause tracking
     pauseTimestampsRef.current = [];
     wasSpeakingRef.current = false;
@@ -158,7 +159,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     setIsRecording(true);
     recognition.start();
     startWaveform();
-  }, [isSupported, startWaveform, stopWaveform]);
+  }, [isSupported, disabled, isAISpeaking, startWaveform, stopWaveform]);
 
   const stopRecording = useCallback(() => {
     const duration = (Date.now() - startTimeRef.current) / 1000;
