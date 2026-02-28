@@ -134,29 +134,41 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
       )}
 
 
-      {interviewReady && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative overflow-hidden rounded-lg border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3"
-        >
-          <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="relative flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
-              <ShieldCheck className="h-4.5 w-4.5 text-primary" />
+      {interviewReady && (() => {
+        const daysLeft = Math.max(0, 30 - Math.floor((Date.now() - new Date(interviewReady.grantedDate).getTime()) / 86400000));
+        const expiring = daysLeft <= 5;
+        return (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={`relative overflow-hidden rounded-lg border-2 p-3 ${
+              expiring
+                ? "border-destructive/40 bg-gradient-to-br from-destructive/10 via-destructive/5 to-transparent"
+                : "border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"
+            }`}
+          >
+            <div className={`absolute top-0 right-0 w-16 h-16 rounded-full -translate-y-1/2 translate-x-1/2 ${expiring ? "bg-destructive/5" : "bg-primary/5"}`} />
+            <div className="relative flex items-center gap-2.5">
+              <div className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 ${expiring ? "bg-destructive/15" : "bg-primary/15"}`}>
+                <ShieldCheck className={`h-4.5 w-4.5 ${expiring ? "text-destructive" : "text-primary"}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-[11px] font-bold uppercase tracking-wide ${expiring ? "text-destructive" : "text-primary"}`}>
+                  Interview Ready
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  Score {interviewReady.score} · {daysLeft}d remaining
+                </p>
+                {expiring && (
+                  <p className="text-[9px] text-destructive/80 font-medium mt-0.5">
+                    Expiring soon — complete a Final Round to renew
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-primary uppercase tracking-wide">Interview Ready</p>
-              <p className="text-[10px] text-muted-foreground">
-                Score {interviewReady.score} · {(() => {
-                  const days = Math.max(0, 30 - Math.floor((Date.now() - new Date(interviewReady.grantedDate).getTime()) / 86400000));
-                  return `${days}d remaining`;
-                })()}
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        );
+      })()}
 
       {/* Sync note */}
       <p className="text-[10px] text-muted-foreground/60 text-center">
