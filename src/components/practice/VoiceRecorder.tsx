@@ -4,8 +4,13 @@ import { Mic, Square, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+interface PauseData {
+  pauseLengthAvg: number;
+  pauseLengthVariance: number;
+}
+
 interface VoiceRecorderProps {
-  onTranscript: (text: string, durationSeconds: number) => void;
+  onTranscript: (text: string, durationSeconds: number, pauseData?: PauseData) => void;
   disabled?: boolean;
   isAISpeaking?: boolean;
 }
@@ -22,6 +27,9 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const pauseTimestampsRef = useRef<number[]>([]);
+  const wasSpeakingRef = useRef(false);
+  const lastSpeechEndRef = useRef<number>(0);
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -55,6 +63,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       analyserRef.current = analyser;
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const SPEECH_THRESHOLD = 30; // byte value threshold for "speaking"
       const update = () => {
         analyser.getByteFrequencyData(dataArray);
         const levels = Array.from({ length: 20 }, (_, i) => {
@@ -62,6 +71,23 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
           return Math.max(0.08, dataArray[idx] / 255);
         });
         setWaveformLevels(levels);
+
+        // Pause detection: track silence gaps
+        const avgLevel = dataArray.reduce((s, v) => s + v, 0) / dataArray.length;
+        const isSpeaking = avgLevel > SPEECH_THRESHOLD;
+        const now = Date.now();
+        if (wasSpeakingRef.current && !isSpeaking) {
+          // Transition from speaking → silence
+          lastSpeechEndRef.current = now;
+        } else if (!wasSpeakingRef.current && isSpeaking && lastSpeechEndRef.current > 0) {
+          // Transition from silence → speaking: record pause length
+          const pauseMs = now - lastSpeechEndRef.current;
+          if (pauseMs > 200) { // ignore very short gaps
+            pauseTimestampsRef.current.push(pauseMs / 1000);
+          }
+        }
+        wasSpeakingRef.current = isSpeaking;
+
         animFrameRef.current = requestAnimationFrame(update);
       };
       update();
@@ -85,6 +111,10 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       toast.error("Voice input not supported in this browser. Using text mode.");
       return;
     }
+    // Reset pause tracking
+    pauseTimestampsRef.current = [];
+    wasSpeakingRef.current = false;
+    lastSpeechEndRef.current = 0;
 
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognitionAPI();
@@ -146,7 +176,20 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       setIsTranscribing(false);
       const transcript = transcriptRef.current.trim();
       if (transcript) {
-        onTranscript(transcript, Math.round(duration));
+        // Compute pause metrics
+        const pauses = pauseTimestampsRef.current;
+        let pauseData: PauseData | undefined;
+        if (pauses.length > 0) {
+          const avg = pauses.reduce((s, p) => s + p, 0) / pauses.length;
+          const variance = Math.sqrt(
+            pauses.reduce((s, p) => s + (p - avg) ** 2, 0) / pauses.length
+          );
+          pauseData = {
+            pauseLengthAvg: Math.round(avg * 100) / 100,
+            pauseLengthVariance: Math.round(variance * 100) / 100,
+          };
+        }
+        onTranscript(transcript, Math.round(duration), pauseData);
       } else {
         toast.error("No speech detected. Try again.");
       }

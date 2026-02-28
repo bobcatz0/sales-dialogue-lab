@@ -6,6 +6,7 @@ const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-tts`
 export function useProspectVoice() {
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolumeState] = useState(1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
 
@@ -47,6 +48,7 @@ export function useProspectVoice() {
         objectUrlRef.current = url;
 
         const audio = new Audio(url);
+        audio.volume = volume;
         audioRef.current = audio;
 
         audio.onended = () => {
@@ -65,7 +67,7 @@ export function useProspectVoice() {
         // Don't toast – text response is still available
       }
     },
-    [isMuted, cleanup]
+    [isMuted, cleanup, volume]
   );
 
   const toggleMute = useCallback(() => {
@@ -76,5 +78,10 @@ export function useProspectVoice() {
     });
   }, [cleanup]);
 
-  return { isMuted, isPlaying, speak, toggleMute, cleanup };
+  const setVolume = useCallback((v: number) => {
+    setVolumeState(v);
+    if (audioRef.current) audioRef.current.volume = v;
+  }, []);
+
+  return { isMuted, isPlaying, volume, speak, toggleMute, setVolume, cleanup };
 }
