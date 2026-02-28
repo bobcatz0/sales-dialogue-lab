@@ -462,6 +462,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
         peakDifficulty: data.peakDifficulty ?? 1,
         date: new Date().toISOString(),
         messageCount: conversationMessages.length,
+        skillBreakdown: data.skillBreakdown,
       };
       const updated = saveSession(session);
       setHistory(updated);
