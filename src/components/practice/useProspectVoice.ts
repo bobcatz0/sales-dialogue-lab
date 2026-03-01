@@ -19,8 +19,39 @@ export function useProspectVoice() {
       URL.revokeObjectURL(objectUrlRef.current);
       objectUrlRef.current = null;
     }
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     setIsPlaying(false);
   }, []);
+
+  const speakBrowserNative = useCallback(
+    (text: string): Promise<void> => {
+      return new Promise((resolve) => {
+        if (!window.speechSynthesis) {
+          console.warn("[TTS] Browser speechSynthesis not available");
+          resolve();
+          return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = volume;
+        utterance.onend = () => {
+          setIsPlaying(false);
+          resolve();
+        };
+        utterance.onerror = () => {
+          setIsPlaying(false);
+          resolve();
+        };
+        setIsPlaying(true);
+        window.speechSynthesis.speak(utterance);
+      });
+    },
+    [volume]
+  );
 
   const speak = useCallback(
     async (text: string) => {
@@ -39,8 +70,9 @@ export function useProspectVoice() {
         });
 
         if (!resp.ok) {
-          console.error("TTS request failed:", resp.status);
-          return; // silent fail – text is still visible
+          console.warn("[TTS] ElevenLabs failed:", resp.status, "— falling back to browser TTS");
+          await speakBrowserNative(text);
+          return;
         }
 
         const blob = await resp.blob();
@@ -63,8 +95,8 @@ export function useProspectVoice() {
         setIsPlaying(true);
         await audio.play();
       } catch (e) {
-        console.error("TTS error:", e);
-        // Don't toast – text response is still available
+        console.warn("[TTS] ElevenLabs error, falling back to browser TTS:", e);
+        await speakBrowserNative(text);
       }
     },
     [isMuted, cleanup, volume]
