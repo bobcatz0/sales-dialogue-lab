@@ -1164,12 +1164,29 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   {!activeRole && !activeEnv && (
                     <span className="text-xs text-muted-foreground">Session</span>
                   )}
-                  {/* Mic active indicator for cold call */}
-                  {isColdCall && sessionActive && !isLoading && (
-                    <span className="flex items-center gap-1 text-[10px] text-primary">
-                      <Mic className="h-3 w-3" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                    </span>
+                  {/* Voice / Text mode indicator */}
+                  {sessionActive && (
+                    <Badge
+                      variant="outline"
+                      className={`text-[9px] px-1.5 py-0 h-4 gap-1 shrink-0 ${
+                        voice.voiceMode && !coldCallTextMode
+                          ? "border-primary/40 text-primary"
+                          : "border-muted-foreground/30 text-muted-foreground"
+                      }`}
+                    >
+                      {voice.voiceMode && !coldCallTextMode ? (
+                        <>
+                          <Mic className="h-2.5 w-2.5" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                          Voice
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-mono">T</span>
+                          Text
+                        </>
+                      )}
+                    </Badge>
                   )}
                 </div>
                 {sessionActive && (
