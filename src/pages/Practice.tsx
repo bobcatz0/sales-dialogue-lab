@@ -232,9 +232,10 @@ const PracticePage = () => {
 
   const isColdCall = selectedEnv === "cold-call";
 
-  const handleStart = async (id: string) => {
+  const handleStart = async (id: string, sdrRound?: SDRRound) => {
     // Voice modes require mic — request permission on user gesture
-    const needsMic = isColdCall || voice.voiceMode;
+    const isSDRColdCall = sdrRound?.id === "cold-call-sim";
+    const needsMic = isColdCall || isSDRColdCall || voice.voiceMode;
     if (needsMic) {
       const granted = await mic.requestMic();
       if (!granted) {
@@ -247,7 +248,7 @@ const PracticePage = () => {
         }
         return;
       }
-      if (isColdCall) voice.setVoiceMode(true);
+      if (isColdCall || isSDRColdCall) voice.setVoiceMode(true);
     }
     // Track resume skip for interview mode
     if (selectedEnv === "interview" && !resumeHighlights.trim()) {
@@ -1037,7 +1038,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                                 className="shrink-0 text-[10px] h-7 px-2.5"
                                 onClick={() => {
                                   setActiveSDRRound(round);
-                                  handleStart(round.personaId);
+                                  handleStart(round.personaId, round);
                                 }}
                               >
                                 {isActiveRound ? "Active" : isCompleted ? "Redo" : "Start"}
