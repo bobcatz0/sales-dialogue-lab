@@ -293,7 +293,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       const avgRms = history.length > 0 ? history.reduce((a, b) => a + b, 0) / history.length : -Infinity;
       console.log(`[VoiceRecorder] STOP — duration: ${duration.toFixed(1)}s | avgRMS: ${avgRms.toFixed(1)} dB | signalMs: ${signalDurationRef.current.toFixed(0)} | hadAudio: ${hadAnyAudioRef.current} | transcript: "${transcript.slice(0, 50)}"`);
 
-      if (transcript) {
+      if (transcript && transcript.length >= 2) {
         const pauses = pauseTimestampsRef.current;
         let pauseData: PauseData | undefined;
         if (pauses.length > 0) {
@@ -307,13 +307,9 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
           };
         }
         onTranscript(transcript, Math.round(duration), pauseData);
-      } else if (duration < 0.3) {
-        toast.error("Recording too short. Hold for at least a moment.");
-      } else if (hadAnyAudioRef.current) {
-        // Analyser detected movement but STT returned nothing — iOS STT issue
-        toast.error("Audio was captured but speech wasn't recognized. This may be an iOS browser limitation — try speaking louder or use text input.");
       } else {
-        toast.error("No audio detected. Check your microphone connection.");
+        // STT returned nothing — rely on transcript, not VAD/RMS
+        toast.error("No speech detected. Try again.");
       }
     }, 500);
   }, [onTranscript, stopWaveform]);
