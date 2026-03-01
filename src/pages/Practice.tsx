@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/landing/Navbar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 
 import { roles } from "@/components/practice/roleData";
@@ -1171,33 +1172,44 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     const noMic = coldCallTextMode && (mic.status === "no-device" || mic.status === "blocked");
 
                     return (
-                      <Badge
-                        variant="outline"
-                        className={`text-[9px] px-2 py-0.5 h-[18px] gap-1 shrink-0 transition-colors duration-200 ${
-                          isVoice
-                            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                            : "border-muted-foreground/25 bg-muted/40 text-muted-foreground"
-                        }`}
-                      >
-                        {isVoice ? (
-                          <>
-                            <Mic className="h-2.5 w-2.5" />
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            Voice Mode
-                            {isRequired && (
-                              <span className="text-[8px] opacity-70 ml-0.5">· Required</span>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-[10px]">⌨️</span>
-                            Text Mode
-                            {noMic && (
-                              <span className="text-[8px] opacity-60 ml-0.5">(No mic detected)</span>
-                            )}
-                          </>
-                        )}
-                      </Badge>
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge
+                              variant="outline"
+                              className={`text-[9px] px-2 py-0.5 h-[18px] gap-1 shrink-0 cursor-pointer transition-colors duration-200 ${
+                                isVoice
+                                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                  : "border-muted-foreground/25 bg-muted/40 text-muted-foreground"
+                              }`}
+                            >
+                              {isVoice ? (
+                                <>
+                                  <Mic className="h-2.5 w-2.5" />
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  Voice Mode
+                                  {isRequired && (
+                                    <span className="text-[8px] opacity-70 ml-0.5">· Required</span>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-[10px]">⌨️</span>
+                                  Text Mode
+                                  {noMic && (
+                                    <span className="text-[8px] opacity-60 ml-0.5">(No mic detected)</span>
+                                  )}
+                                </>
+                              )}
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-[10px] max-w-[220px] text-center">
+                            {isVoice
+                              ? "Voice mode scores pacing + pauses."
+                              : "Text mode scores structure + clarity."}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     );
                   })()}
                 </div>
