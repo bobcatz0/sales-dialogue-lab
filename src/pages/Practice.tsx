@@ -1165,29 +1165,41 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     <span className="text-xs text-muted-foreground">Session</span>
                   )}
                   {/* Voice / Text mode indicator */}
-                  {sessionActive && (
-                    <Badge
-                      variant="outline"
-                      className={`text-[9px] px-1.5 py-0 h-4 gap-1 shrink-0 ${
-                        voice.voiceMode && !coldCallTextMode
-                          ? "border-primary/40 text-primary"
-                          : "border-muted-foreground/30 text-muted-foreground"
-                      }`}
-                    >
-                      {voice.voiceMode && !coldCallTextMode ? (
-                        <>
-                          <Mic className="h-2.5 w-2.5" />
-                          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                          Voice
-                        </>
-                      ) : (
-                        <>
-                          <span className="font-mono">T</span>
-                          Text
-                        </>
-                      )}
-                    </Badge>
-                  )}
+                  {sessionActive && (() => {
+                    const isVoice = (voice.voiceMode || (isColdCall && !coldCallTextMode)) && !coldCallTextMode;
+                    const isRequired = isColdCall && isVoice;
+                    const noMic = coldCallTextMode && (mic.status === "no-device" || mic.status === "blocked");
+
+                    return (
+                      <Badge
+                        variant="outline"
+                        className={`text-[9px] px-2 py-0.5 h-[18px] gap-1 shrink-0 transition-colors duration-200 ${
+                          isVoice
+                            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            : "border-muted-foreground/25 bg-muted/40 text-muted-foreground"
+                        }`}
+                      >
+                        {isVoice ? (
+                          <>
+                            <Mic className="h-2.5 w-2.5" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Voice Mode
+                            {isRequired && (
+                              <span className="text-[8px] opacity-70 ml-0.5">· Required</span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-[10px]">⌨️</span>
+                            Text Mode
+                            {noMic && (
+                              <span className="text-[8px] opacity-60 ml-0.5">(No mic detected)</span>
+                            )}
+                          </>
+                        )}
+                      </Badge>
+                    );
+                  })()}
                 </div>
                 {sessionActive && (
                   <span className={`text-[10px] tabular-nums shrink-0 font-mono ${isColdCall ? "text-destructive font-semibold" : "text-muted-foreground/60"}`}>
