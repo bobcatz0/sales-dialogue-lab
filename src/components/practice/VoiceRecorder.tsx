@@ -193,6 +193,8 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     setRmsDb(-Infinity);
   }, []);
 
+  const isListeningRef = useRef(false);
+
   const startRecording = useCallback(() => {
     if (!isSupported) {
       toast.error("Voice input not supported in this browser. Using text mode.");
@@ -210,14 +212,13 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     lastAboveSilenceRef.current = 0;
     setHasReceivedAudio(false);
     setPeakDb(-Infinity);
+    transcriptRef.current = "";
 
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognitionAPI();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-US";
-
-    transcriptRef.current = "";
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let finalTranscript = "";
@@ -230,19 +231,21 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
         }
       }
       transcriptRef.current = (finalTranscript + interimTranscript).trim();
+      console.log("[VoiceRecorder] onresult — transcript so far:", transcriptRef.current.slice(0, 60));
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.warn("[VoiceRecorder] SpeechRecognition error:", event.error);
       if (event.error === "not-allowed") {
         toast.error("Microphone access denied. Falling back to text mode.");
+        isListeningRef.current = false;
         setIsRecording(false);
         stopWaveform();
         return;
       }
-      // On mobile, "no-speech" fires frequently due to low gain — ignore it
+      // "no-speech" is normal on mobile — will auto-restart via onend
       if (event.error === "no-speech") {
-        console.log("[VoiceRecorder] no-speech error ignored (mobile VAD)");
+        console.log("[VoiceRecorder] no-speech — will auto-restart via onend");
         return;
       }
       if (event.error !== "aborted") {
@@ -251,28 +254,36 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     };
 
     recognition.onend = () => {
-      // Auto-restart if user is still recording (mobile browsers stop after silence)
-      if (recognitionRef.current && startTimeRef.current > 0) {
-        console.log("[VoiceRecorder] SpeechRecognition ended, auto-restarting...");
+      console.log("[VoiceRecorder] onend fired — isListening:", isListeningRef.current);
+      // Auto-restart only if user hasn't tapped Stop
+      if (isListeningRef.current) {
+        console.log("[VoiceRecorder] Auto-restarting recognition...");
         try {
           recognition.start();
         } catch (e) {
-          console.warn("[VoiceRecorder] Failed to restart recognition:", e);
+          console.warn("[VoiceRecorder] Restart failed (iOS gesture loss):", e);
+          // On iOS, restart may fail outside gesture context.
+          // Don't stop recording — user still has transcript from first session.
         }
       }
     };
 
     recognitionRef.current = recognition;
+    isListeningRef.current = true;
     startTimeRef.current = Date.now();
     setIsRecording(true);
+
+    // CRITICAL: start() must be called directly in user gesture context (iOS Safari)
     recognition.start();
-    // Start waveform inside this click handler (user gesture) for iOS AudioContext
+    // Start waveform in same gesture context for iOS AudioContext
     startWaveform();
   }, [isSupported, disabled, isAISpeaking, startWaveform, stopWaveform]);
 
   const stopRecording = useCallback(() => {
     const duration = (Date.now() - startTimeRef.current) / 1000;
-    startTimeRef.current = 0; // Signal onend to NOT auto-restart
+    // Signal onend to NOT auto-restart before stopping
+    isListeningRef.current = false;
+    startTimeRef.current = 0;
     setIsRecording(false);
     stopWaveform();
 
