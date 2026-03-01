@@ -26,6 +26,8 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
   const [debugTranscript, setDebugTranscript] = useState("");
   const [debugConfidence, setDebugConfidence] = useState<number | null>(null);
   const [debugSpeechDuration, setDebugSpeechDuration] = useState(0);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [speechEvents, setSpeechEvents] = useState<{type: string; detail: string; time: string}[]>([]);
 
   const recognitionRef = useRef<any>(null);
   const startTimeRef = useRef<number>(0);
@@ -49,6 +51,11 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
   const isSupported =
     typeof window !== "undefined" &&
     (!!window.SpeechRecognition || !!window.webkitSpeechRecognition);
+
+  const logEvent = useCallback((type: string, detail: string) => {
+    const time = new Date().toLocaleTimeString("en-US", { hour12: false, fractionalSecondDigits: 1 } as any);
+    setSpeechEvents(prev => [{ type, detail, time }, ...prev].slice(0, 30));
+  }, []);
 
   // Timer
   useEffect(() => {
@@ -273,6 +280,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     });
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
+      logEvent("onresult", `${event.results.length} result(s)`);
       console.log("[VoiceRecorder] onresult fired:", event);
       let finalTranscript = "";
       let interimTranscript = "";
@@ -302,6 +310,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       confidenceRef.current = latestConfidence;
       setDebugConfidence(latestConfidence);
 
+      logEvent("onresult", `"${transcriptRef.current.slice(0, 40)}" conf=${latestConfidence !== null ? latestConfidence.toFixed(2) : "n/a"}`);
       console.log(`[VoiceRecorder] transcript: "${transcriptRef.current}"`);
       console.log(
         `[VoiceRecorder] confidence: ${latestConfidence !== null ? latestConfidence.toFixed(2) : "n/a"}`
@@ -309,10 +318,12 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     };
 
     recognitionAny.onspeechend = () => {
+      logEvent("onspeechend", "speech ended");
       console.log("[VoiceRecorder] onspeechend event fired");
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      logEvent("onerror", event.error);
       console.error("[VoiceRecorder] onerror event:", event.error, event);
       if (event.error === "not-allowed") {
         toast.error("Microphone access denied. Falling back to text mode.");
@@ -332,7 +343,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     };
 
     recognition.onend = () => {
-      // Android: require explicit user gesture for each start.
+      logEvent("onend", "recognition session ended");
       console.log("[VoiceRecorder] onend fired — waiting for next user tap to restart");
     };
 
@@ -469,6 +480,27 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
                 <p>Confidence score: {debugConfidence !== null ? debugConfidence.toFixed(2) : "n/a"}</p>
                 <p>Speech duration: {debugSpeechDuration.toFixed(1)}s</p>
               </div>
+              <button
+                onClick={() => setShowDiagnostics(p => !p)}
+                className="mt-1.5 text-[9px] text-primary underline"
+              >
+                {showDiagnostics ? "Hide" : "Show"} event log ({speechEvents.length})
+              </button>
+              {showDiagnostics && (
+                <div className="mt-1 max-h-[100px] overflow-y-auto space-y-px border-t border-border pt-1">
+                  {speechEvents.length === 0 && <p className="text-muted-foreground italic">No events yet</p>}
+                  {speechEvents.map((e, i) => (
+                    <p key={i} className="font-mono text-[9px] text-muted-foreground">
+                      <span className="text-foreground/60">{e.time}</span>{" "}
+                      <span className={
+                        e.type === "onerror" ? "text-destructive" :
+                        e.type === "onresult" ? "text-primary" : "text-muted-foreground"
+                      }>{e.type}</span>{" "}
+                      {e.detail}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Timer */}
