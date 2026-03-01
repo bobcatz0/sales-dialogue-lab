@@ -238,7 +238,13 @@ const PracticePage = () => {
     if (needsMic) {
       const granted = await mic.requestMic();
       if (!granted) {
-        toast.error("Microphone access is required. Please allow mic access and try again.");
+        if (mic.status === "no-device") {
+          toast.error("No microphone detected. Please connect a microphone and try again.");
+        } else if (mic.permissionState === "in-use") {
+          toast.error("Microphone is already in use by another application. Please close it and retry.");
+        } else {
+          toast.error("Microphone access is required. Please allow mic access and try again.");
+        }
         return;
       }
       if (isColdCall) voice.setVoiceMode(true);
@@ -868,6 +874,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   <MicPreflight
                     status={mic.status}
                     onRequestMic={mic.requestMic}
+                    deviceDetected={mic.deviceDetected}
+                    permissionState={mic.permissionState}
                   />
                 )}
               </div>
@@ -884,6 +892,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 <MicPreflight
                   status={mic.status}
                   onRequestMic={mic.requestMic}
+                  deviceDetected={mic.deviceDetected}
+                  permissionState={mic.permissionState}
                 />
               </div>
             )}
@@ -1174,7 +1184,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 {(voice.voiceMode || isColdCall) && selectedRole ? (
                   /* Voice Mode: recording UI */
                   <div className="space-y-1">
-                    <MicPreflight status={mic.status} onRequestMic={mic.requestMic} compact />
+                    <MicPreflight status={mic.status} onRequestMic={mic.requestMic} compact deviceDetected={mic.deviceDetected} permissionState={mic.permissionState} />
                     <VoiceRecorder
                       onTranscript={(text, duration, pauseData) => {
                         voice.recordVoiceMetrics(text, duration, pauseData);
