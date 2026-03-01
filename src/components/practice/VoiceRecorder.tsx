@@ -259,25 +259,21 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
 
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = true;
+    const recognitionAny = recognition as any;
+    recognition.continuous = false;
     recognition.interimResults = true;
+    recognitionAny.maxAlternatives = 3;
     recognition.lang = "en-US";
 
-    // Loosen speech detection for quieter iOS mic input
-    const recognitionAny = recognition as any;
-    recognitionAny.maxAlternatives = 1;
-    recognitionAny.minSpeechConfidence = 0.05;
-    recognitionAny.maxListeningTimeout = 10000; // >= 10s
-    recognitionAny.silenceDuration = 1500; // 1.5s silence cutoff
-
     console.log("[VoiceRecorder] Recognition config:", {
-      minSpeechConfidence: recognitionAny.minSpeechConfidence,
-      maxListeningTimeout: recognitionAny.maxListeningTimeout,
-      silenceDuration: recognitionAny.silenceDuration,
+      continuous: recognition.continuous,
+      interimResults: recognition.interimResults,
       maxAlternatives: recognitionAny.maxAlternatives,
+      lang: recognition.lang,
     });
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
+      console.log("[VoiceRecorder] onresult fired:", event);
       let finalTranscript = "";
       let interimTranscript = "";
       let latestConfidence: number | null = null;
@@ -306,16 +302,18 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       confidenceRef.current = latestConfidence;
       setDebugConfidence(latestConfidence);
 
+      console.log(`[VoiceRecorder] transcript: "${transcriptRef.current}"`);
       console.log(
-        `[VoiceRecorder] Transcript returned: "${transcriptRef.current}" | confidence: ${
-          latestConfidence !== null ? latestConfidence.toFixed(2) : "n/a"
-        }`
+        `[VoiceRecorder] confidence: ${latestConfidence !== null ? latestConfidence.toFixed(2) : "n/a"}`
       );
+    };
 
+    recognitionAny.onspeechend = () => {
+      console.log("[VoiceRecorder] onspeechend event fired");
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      console.warn("[VoiceRecorder] SpeechRecognition error:", event.error);
+      console.error("[VoiceRecorder] onerror event:", event.error, event);
       if (event.error === "not-allowed") {
         toast.error("Microphone access denied. Falling back to text mode.");
         isListeningRef.current = false;
@@ -323,9 +321,9 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
         stopWaveform();
         return;
       }
-      // "no-speech" is normal on mobile — will auto-restart via onend
+      // Do not reject on silence/no-speech; keep session flow user-controlled.
       if (event.error === "no-speech") {
-        console.log("[VoiceRecorder] no-speech — will auto-restart via onend");
+        console.log("[VoiceRecorder] no-speech event received");
         return;
       }
       if (event.error !== "aborted") {
@@ -334,18 +332,8 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     };
 
     recognition.onend = () => {
-      console.log("[VoiceRecorder] onend fired — isListening:", isListeningRef.current);
-      // Auto-restart only if user hasn't tapped Stop
-      if (isListeningRef.current) {
-        console.log("[VoiceRecorder] Auto-restarting recognition...");
-        try {
-          recognition.start();
-        } catch (e) {
-          console.warn("[VoiceRecorder] Restart failed (iOS gesture loss):", e);
-          // On iOS, restart may fail outside gesture context.
-          // Don't stop recording — user still has transcript from first session.
-        }
-      }
+      // Android: require explicit user gesture for each start.
+      console.log("[VoiceRecorder] onend fired — waiting for next user tap to restart");
     };
 
     recognitionRef.current = recognition;
