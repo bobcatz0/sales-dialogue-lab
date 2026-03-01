@@ -240,13 +240,26 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
         stopWaveform();
         return;
       }
-      if (event.error !== "no-speech") {
+      // On mobile, "no-speech" fires frequently due to low gain — ignore it
+      if (event.error === "no-speech") {
+        console.log("[VoiceRecorder] no-speech error ignored (mobile VAD)");
+        return;
+      }
+      if (event.error !== "aborted") {
         toast.error("Recording failed. Try again.");
       }
     };
 
     recognition.onend = () => {
-      // handled by stopRecording
+      // Auto-restart if user is still recording (mobile browsers stop after silence)
+      if (recognitionRef.current && startTimeRef.current > 0) {
+        console.log("[VoiceRecorder] SpeechRecognition ended, auto-restarting...");
+        try {
+          recognition.start();
+        } catch (e) {
+          console.warn("[VoiceRecorder] Failed to restart recognition:", e);
+        }
+      }
     };
 
     recognitionRef.current = recognition;
@@ -259,12 +272,14 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
 
   const stopRecording = useCallback(() => {
     const duration = (Date.now() - startTimeRef.current) / 1000;
+    startTimeRef.current = 0; // Signal onend to NOT auto-restart
     setIsRecording(false);
     stopWaveform();
 
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
+    const rec = recognitionRef.current;
+    recognitionRef.current = null;
+    if (rec) {
+      try { rec.stop(); } catch { /* already stopped */ }
     }
 
     setIsTranscribing(true);
