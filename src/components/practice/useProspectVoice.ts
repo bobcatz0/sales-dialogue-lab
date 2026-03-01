@@ -55,51 +55,11 @@ export function useProspectVoice() {
 
   const speak = useCallback(
     async (text: string) => {
-      if (isMuted || !text.trim()) return;
-
-      cleanup();
-
-      try {
-        const resp = await fetch(TTS_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text }),
-        });
-
-        if (!resp.ok) {
-          console.warn("[TTS] ElevenLabs failed:", resp.status, "— falling back to browser TTS");
-          await speakBrowserNative(text);
-          return;
-        }
-
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        objectUrlRef.current = url;
-
-        const audio = new Audio(url);
-        audio.volume = volume;
-        audioRef.current = audio;
-
-        audio.onended = () => {
-          setIsPlaying(false);
-          cleanup();
-        };
-        audio.onerror = () => {
-          setIsPlaying(false);
-          cleanup();
-        };
-
-        setIsPlaying(true);
-        await audio.play();
-      } catch (e) {
-        console.warn("[TTS] ElevenLabs error, falling back to browser TTS:", e);
-        await speakBrowserNative(text);
-      }
+      // TTS temporarily disabled — focusing on STT input first
+      console.log("[TTS] DISABLED — skipping speech for:", text.slice(0, 60));
+      return;
     },
-    [isMuted, cleanup, volume]
+    []
   );
 
   const toggleMute = useCallback(() => {

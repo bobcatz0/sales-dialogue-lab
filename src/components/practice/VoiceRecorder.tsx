@@ -388,7 +388,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       console.log(`[VoiceRecorder] STOP — duration: ${duration.toFixed(1)}s | avgRMS: ${avgRms.toFixed(1)} dB | signalMs: ${signalDurationRef.current.toFixed(0)} | hadAudio: ${hadAnyAudioRef.current} | transcript: "${transcript.slice(0, 50)}" | confidence: ${confidence !== null ? confidence.toFixed(2) : "n/a"}`);
       console.log(`[VoiceRecorder] transcript returned: "${transcript}" | confidence score: ${confidence !== null ? confidence.toFixed(2) : "n/a"}`);
 
-      if (transcript && transcript.length > 3) {
+      if (transcript && transcript.length > 2) {
         const pauses = pauseTimestampsRef.current;
         let pauseData: PauseData | undefined;
         if (pauses.length > 0) {
