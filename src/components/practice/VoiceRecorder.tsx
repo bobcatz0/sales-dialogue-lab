@@ -36,6 +36,9 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
   const wasSpeakingRef = useRef(false);
   const lastSpeechEndRef = useRef<number>(0);
   const hadAnyAudioRef = useRef(false);
+  const rmsHistoryRef = useRef<number[]>([]);
+  const signalDurationRef = useRef<number>(0);
+  const lastAboveSilenceRef = useRef<number>(0);
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -97,8 +100,9 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
 
       const timeDomainData = new Uint8Array(analyser.frequencyBinCount);
       const freqData = new Uint8Array(analyser.frequencyBinCount);
-      // Very low threshold for iOS AGC — treat anything above -50 dB as speech
-      const SPEECH_THRESHOLD_DB = -50;
+      // Ultra-low threshold for iOS AGC — near-silence floor only
+      const SPEECH_THRESHOLD_DB = -65;
+      const SILENCE_FLOOR_DB = -75;
       let frameCount = 0;
 
       const update = () => {
@@ -115,15 +119,34 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
         setRmsDb(Math.round(db * 10) / 10);
         setPeakDb(prev => Math.max(prev, Math.round(db * 10) / 10));
 
-        if (db > SPEECH_THRESHOLD_DB) {
+        // Track RMS history for debug summary
+        rmsHistoryRef.current.push(db);
+
+        // Any signal above silence floor counts as audio received
+        if (db > SILENCE_FLOOR_DB) {
           hadAnyAudioRef.current = true;
           setHasReceivedAudio(true);
+        }
+
+        // Track sustained signal duration (>150ms = speech)
+        const now = Date.now();
+        if (db > SPEECH_THRESHOLD_DB) {
+          if (lastAboveSilenceRef.current === 0) lastAboveSilenceRef.current = now;
+          signalDurationRef.current += (now - (lastAboveSilenceRef.current || now));
+          lastAboveSilenceRef.current = now;
+        } else {
+          // Reset sustained tracker after 200ms gap
+          if (lastAboveSilenceRef.current > 0 && now - lastAboveSilenceRef.current > 200) {
+            lastAboveSilenceRef.current = 0;
+          }
         }
 
         // Debug logging every ~60 frames (~1s at 60fps)
         frameCount++;
         if (frameCount % 60 === 0) {
-          console.log(`[VoiceRecorder] RMS: ${db.toFixed(1)} dB, hadAudio: ${hadAnyAudioRef.current}`);
+          const history = rmsHistoryRef.current;
+          const avgRms = history.length > 0 ? history.reduce((a, b) => a + b, 0) / history.length : -Infinity;
+          console.log(`[VoiceRecorder] RMS: ${db.toFixed(1)} dB | avg: ${avgRms.toFixed(1)} dB | threshold: ${SPEECH_THRESHOLD_DB} dB | signalMs: ${signalDurationRef.current.toFixed(0)} | hadAudio: ${hadAnyAudioRef.current}`);
         }
 
         // Frequency data for waveform visualization
@@ -136,11 +159,11 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
 
         // Pause detection using lowered threshold
         const isSpeaking = db > SPEECH_THRESHOLD_DB;
-        const now = Date.now();
+        const nowPause = Date.now();
         if (wasSpeakingRef.current && !isSpeaking) {
-          lastSpeechEndRef.current = now;
+          lastSpeechEndRef.current = nowPause;
         } else if (!wasSpeakingRef.current && isSpeaking && lastSpeechEndRef.current > 0) {
-          const pauseMs = now - lastSpeechEndRef.current;
+          const pauseMs = nowPause - lastSpeechEndRef.current;
           if (pauseMs > 200) {
             pauseTimestampsRef.current.push(pauseMs / 1000);
           }
@@ -182,6 +205,9 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     wasSpeakingRef.current = false;
     lastSpeechEndRef.current = 0;
     hadAnyAudioRef.current = false;
+    rmsHistoryRef.current = [];
+    signalDurationRef.current = 0;
+    lastAboveSilenceRef.current = 0;
     setHasReceivedAudio(false);
     setPeakDb(-Infinity);
 
@@ -242,10 +268,16 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     }
 
     setIsTranscribing(true);
-    // No minimum duration — accept even short bursts
+    // No minimum duration — accept even short bursts (>300ms)
     setTimeout(() => {
       setIsTranscribing(false);
       const transcript = transcriptRef.current.trim();
+
+      // Debug summary
+      const history = rmsHistoryRef.current;
+      const avgRms = history.length > 0 ? history.reduce((a, b) => a + b, 0) / history.length : -Infinity;
+      console.log(`[VoiceRecorder] STOP — duration: ${duration.toFixed(1)}s | avgRMS: ${avgRms.toFixed(1)} dB | signalMs: ${signalDurationRef.current.toFixed(0)} | hadAudio: ${hadAnyAudioRef.current} | transcript: "${transcript.slice(0, 50)}"`);
+
       if (transcript) {
         const pauses = pauseTimestampsRef.current;
         let pauseData: PauseData | undefined;
@@ -260,13 +292,13 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
           };
         }
         onTranscript(transcript, Math.round(duration), pauseData);
+      } else if (duration < 0.3) {
+        toast.error("Recording too short. Hold for at least a moment.");
+      } else if (hadAnyAudioRef.current) {
+        // Analyser detected movement but STT returned nothing — iOS STT issue
+        toast.error("Audio was captured but speech wasn't recognized. This may be an iOS browser limitation — try speaking louder or use text input.");
       } else {
-        // Check if we got audio energy but no transcript (iOS STT issue)
-        if (hadAnyAudioRef.current) {
-          toast.error("Audio was captured but speech wasn't recognized. Try speaking louder or closer to the mic.");
-        } else {
-          toast.error("No audio detected. Check your microphone connection.");
-        }
+        toast.error("No audio detected. Check your microphone connection.");
       }
     }, 500);
   }, [onTranscript, stopWaveform]);
