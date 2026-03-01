@@ -20,16 +20,22 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [waveformLevels, setWaveformLevels] = useState<number[]>(Array(20).fill(0.1));
+  const [rmsDb, setRmsDb] = useState<number>(-Infinity);
+  const [peakDb, setPeakDb] = useState<number>(-Infinity);
+  const [hasReceivedAudio, setHasReceivedAudio] = useState(false);
+
   const recognitionRef = useRef<any>(null);
   const startTimeRef = useRef<number>(0);
   const transcriptRef = useRef("");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const pauseTimestampsRef = useRef<number[]>([]);
   const wasSpeakingRef = useRef(false);
   const lastSpeechEndRef = useRef<number>(0);
+  const hadAnyAudioRef = useRef(false);
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -50,39 +56,92 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     };
   }, [isRecording]);
 
-  // Waveform via analyser
+  // Waveform + RMS meter via analyser — called inside click handler for iOS
   const startWaveform = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      const ctx = new AudioContext();
+
+      // Debug: log device info
+      const track = stream.getTracks()[0];
+      if (track) {
+        console.log("[VoiceRecorder] Audio track label:", track.label);
+        console.log("[VoiceRecorder] Audio track settings:", JSON.stringify(track.getSettings()));
+      }
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(d => d.kind === "audioinput");
+        console.log("[VoiceRecorder] Audio input devices:", audioInputs.map(d => d.label || d.deviceId));
+      } catch { /* ignore */ }
+
+      // Create AudioContext inside user gesture handler (critical for iOS)
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioCtx();
+      // iOS requires explicit resume inside user gesture
+      await ctx.resume();
+      console.log("[VoiceRecorder] AudioContext state after resume:", ctx.state);
+      audioCtxRef.current = ctx;
+
       const source = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
-      analyser.fftSize = 64;
+      analyser.fftSize = 2048; // higher resolution for RMS
       source.connect(analyser);
+      // Connect to destination to keep audio graph active on iOS
+      // Use a gain node at 0 to avoid feedback
+      const silentGain = ctx.createGain();
+      silentGain.gain.value = 0;
+      analyser.connect(silentGain);
+      silentGain.connect(ctx.destination);
+
       analyserRef.current = analyser;
 
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      const SPEECH_THRESHOLD = 30; // byte value threshold for "speaking"
+      const timeDomainData = new Uint8Array(analyser.frequencyBinCount);
+      const freqData = new Uint8Array(analyser.frequencyBinCount);
+      // Very low threshold for iOS AGC — treat anything above -50 dB as speech
+      const SPEECH_THRESHOLD_DB = -50;
+      let frameCount = 0;
+
       const update = () => {
-        analyser.getByteFrequencyData(dataArray);
+        // Time-domain RMS calculation
+        analyser.getByteTimeDomainData(timeDomainData);
+        let sumSquares = 0;
+        for (let i = 0; i < timeDomainData.length; i++) {
+          const normalized = (timeDomainData[i] - 128) / 128;
+          sumSquares += normalized * normalized;
+        }
+        const rms = Math.sqrt(sumSquares / timeDomainData.length);
+        const db = 20 * Math.log10(rms || 1e-9);
+
+        setRmsDb(Math.round(db * 10) / 10);
+        setPeakDb(prev => Math.max(prev, Math.round(db * 10) / 10));
+
+        if (db > SPEECH_THRESHOLD_DB) {
+          hadAnyAudioRef.current = true;
+          setHasReceivedAudio(true);
+        }
+
+        // Debug logging every ~60 frames (~1s at 60fps)
+        frameCount++;
+        if (frameCount % 60 === 0) {
+          console.log(`[VoiceRecorder] RMS: ${db.toFixed(1)} dB, hadAudio: ${hadAnyAudioRef.current}`);
+        }
+
+        // Frequency data for waveform visualization
+        analyser.getByteFrequencyData(freqData);
         const levels = Array.from({ length: 20 }, (_, i) => {
-          const idx = Math.floor((i / 20) * dataArray.length);
-          return Math.max(0.08, dataArray[idx] / 255);
+          const idx = Math.floor((i / 20) * freqData.length);
+          return Math.max(0.08, freqData[idx] / 255);
         });
         setWaveformLevels(levels);
 
-        // Pause detection: track silence gaps
-        const avgLevel = dataArray.reduce((s, v) => s + v, 0) / dataArray.length;
-        const isSpeaking = avgLevel > SPEECH_THRESHOLD;
+        // Pause detection using lowered threshold
+        const isSpeaking = db > SPEECH_THRESHOLD_DB;
         const now = Date.now();
         if (wasSpeakingRef.current && !isSpeaking) {
-          // Transition from speaking → silence
           lastSpeechEndRef.current = now;
         } else if (!wasSpeakingRef.current && isSpeaking && lastSpeechEndRef.current > 0) {
-          // Transition from silence → speaking: record pause length
           const pauseMs = now - lastSpeechEndRef.current;
-          if (pauseMs > 200) { // ignore very short gaps
+          if (pauseMs > 200) {
             pauseTimestampsRef.current.push(pauseMs / 1000);
           }
         }
@@ -91,8 +150,8 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
         animFrameRef.current = requestAnimationFrame(update);
       };
       update();
-    } catch {
-      // Waveform is cosmetic — fail silently
+    } catch (err) {
+      console.error("[VoiceRecorder] Waveform/analyser setup failed:", err);
     }
   }, []);
 
@@ -102,8 +161,13 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
+    if (audioCtxRef.current) {
+      audioCtxRef.current.close().catch(() => {});
+      audioCtxRef.current = null;
+    }
     analyserRef.current = null;
     setWaveformLevels(Array(20).fill(0.1));
+    setRmsDb(-Infinity);
   }, []);
 
   const startRecording = useCallback(() => {
@@ -111,11 +175,15 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       toast.error("Voice input not supported in this browser. Using text mode.");
       return;
     }
-    if (disabled || isAISpeaking) return; // enforce queue rule
-    // Reset pause tracking
+    if (disabled || isAISpeaking) return;
+
+    // Reset state
     pauseTimestampsRef.current = [];
     wasSpeakingRef.current = false;
     lastSpeechEndRef.current = 0;
+    hadAnyAudioRef.current = false;
+    setHasReceivedAudio(false);
+    setPeakDb(-Infinity);
 
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognitionAPI();
@@ -139,6 +207,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      console.warn("[VoiceRecorder] SpeechRecognition error:", event.error);
       if (event.error === "not-allowed") {
         toast.error("Microphone access denied. Falling back to text mode.");
         setIsRecording(false);
@@ -151,13 +220,14 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     };
 
     recognition.onend = () => {
-      // Will be handled by stopRecording
+      // handled by stopRecording
     };
 
     recognitionRef.current = recognition;
     startTimeRef.current = Date.now();
     setIsRecording(true);
     recognition.start();
+    // Start waveform inside this click handler (user gesture) for iOS AudioContext
     startWaveform();
   }, [isSupported, disabled, isAISpeaking, startWaveform, stopWaveform]);
 
@@ -171,13 +241,12 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       recognitionRef.current = null;
     }
 
-    // Small delay to capture final results
     setIsTranscribing(true);
+    // No minimum duration — accept even short bursts
     setTimeout(() => {
       setIsTranscribing(false);
       const transcript = transcriptRef.current.trim();
       if (transcript) {
-        // Compute pause metrics
         const pauses = pauseTimestampsRef.current;
         let pauseData: PauseData | undefined;
         if (pauses.length > 0) {
@@ -192,7 +261,12 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
         }
         onTranscript(transcript, Math.round(duration), pauseData);
       } else {
-        toast.error("No speech detected. Try again.");
+        // Check if we got audio energy but no transcript (iOS STT issue)
+        if (hadAnyAudioRef.current) {
+          toast.error("Audio was captured but speech wasn't recognized. Try speaking louder or closer to the mic.");
+        } else {
+          toast.error("No audio detected. Check your microphone connection.");
+        }
       }
     }, 500);
   }, [onTranscript, stopWaveform]);
@@ -204,6 +278,9 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
   };
 
   if (!isSupported) return null;
+
+  // Map dB to a 0-100 meter level for display
+  const meterLevel = Math.max(0, Math.min(100, ((rmsDb + 60) / 60) * 100));
 
   return (
     <div className="flex flex-col items-center gap-3 py-4">
@@ -237,6 +314,25 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
                   transition={{ duration: 0.1 }}
                 />
               ))}
+            </div>
+
+            {/* Live RMS meter */}
+            <div className="w-full max-w-[200px] space-y-1">
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  className={`h-full rounded-full ${
+                    meterLevel > 30 ? "bg-primary" : meterLevel > 5 ? "bg-yellow-500" : "bg-destructive/50"
+                  }`}
+                  animate={{ width: `${meterLevel}%` }}
+                  transition={{ duration: 0.05 }}
+                />
+              </div>
+              <div className="flex justify-between text-[9px] font-mono text-muted-foreground">
+                <span>{rmsDb > -Infinity ? `${rmsDb} dB` : "—"}</span>
+                <span className={hasReceivedAudio ? "text-primary" : "text-destructive"}>
+                  {hasReceivedAudio ? "Audio ✓" : "No signal"}
+                </span>
+              </div>
             </div>
 
             {/* Timer */}
