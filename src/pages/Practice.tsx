@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, Volume2, VolumeX } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -201,6 +201,8 @@ const PracticePage = () => {
   const sessionStartedWithRole = useRef(false);
   const [activeDrill, setActiveDrill] = useState<Drill | null>(null);
   const [showExitQuestion, setShowExitQuestion] = useState(false);
+  const [showTextModeFallback, setShowTextModeFallback] = useState(false);
+  const [coldCallTextMode, setColdCallTextMode] = useState(false);
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
    const timer = useCallTimer(sessionActive);
   const voice = useVoiceSession();
@@ -235,10 +237,15 @@ const PracticePage = () => {
   const handleStart = async (id: string, sdrRound?: SDRRound) => {
     // Voice modes require mic — request permission on user gesture
     const isSDRColdCall = sdrRound?.id === "cold-call-sim";
-    const needsMic = isColdCall || isSDRColdCall || voice.voiceMode;
+    const needsMic = coldCallTextMode ? false : (isColdCall || isSDRColdCall || voice.voiceMode);
     if (needsMic) {
       const granted = await mic.requestMic();
       if (!granted) {
+        // For cold call / SDR cold call, allow text-mode fallback (handled by UI below)
+        if ((isColdCall || isSDRColdCall) && (mic.status === "no-device" || mic.status === "blocked")) {
+          setShowTextModeFallback(true);
+          return;
+        }
         if (mic.status === "no-device") {
           toast.error("No microphone detected. Please connect a microphone and try again.");
         } else if (mic.permissionState === "in-use") {
@@ -882,20 +889,64 @@ This evaluation style should subtly influence your questions and reactions. Do N
               </div>
             )}
 
-            {/* Cold Call: voice required notice */}
+            {/* Cold Call: voice required notice or text-mode fallback */}
             {selectedEnv === "cold-call" && !selectedRole && (
               <div className="mb-4 space-y-2">
-                <VoiceModeBanner
-                  enabled={true}
-                  onToggle={() => {}}
-                  locked
-                />
-                <MicPreflight
-                  status={mic.status}
-                  onRequestMic={mic.requestMic}
-                  deviceDetected={mic.deviceDetected}
-                  permissionState={mic.permissionState}
-                />
+                {showTextModeFallback ? (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-3">
+                    <div className="flex items-start gap-2">
+                      <MicOff className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-destructive">
+                          No microphone detected
+                        </p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Please connect a mic to use Cold Call mode with voice, or switch to Text Mode below. Text Mode uses the same pressure logic, persona, and scoring — without voice analysis.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          setShowTextModeFallback(false);
+                          mic.requestMic();
+                        }}
+                      >
+                        <Mic className="h-3 w-3" />
+                        Re-check Mic
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="h-8 text-xs gap-1.5"
+                        onClick={() => {
+                          setShowTextModeFallback(false);
+                          setColdCallTextMode(true);
+                          voice.setVoiceMode(false);
+                        }}
+                      >
+                        Switch to Text Mode Instead
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <VoiceModeBanner
+                      enabled={true}
+                      onToggle={() => {}}
+                      locked={!showTextModeFallback && mic.status !== "no-device" && mic.status !== "blocked"}
+                    />
+                    <MicPreflight
+                      status={mic.status}
+                      onRequestMic={mic.requestMic}
+                      deviceDetected={mic.deviceDetected}
+                      permissionState={mic.permissionState}
+                    />
+                  </>
+                )}
               </div>
             )}
 
@@ -914,6 +965,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       setFeedback(null);
                       setSessionActive(false);
                       setActiveSDRRound(null);
+                      setColdCallTextMode(false);
+                      setShowTextModeFallback(false);
                     }}
                   >
                     <ArrowLeft className="h-4 w-4" />
