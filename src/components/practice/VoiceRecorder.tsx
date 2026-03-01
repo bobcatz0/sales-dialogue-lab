@@ -38,8 +38,6 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
   const streamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const listeningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pauseTimestampsRef = useRef<number[]>([]);
   const wasSpeakingRef = useRef(false);
   const lastSpeechEndRef = useRef<number>(0);
@@ -229,14 +227,6 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       audioCtxRef.current.close().catch(() => {});
       audioCtxRef.current = null;
     }
-    if (listeningTimeoutRef.current) {
-      clearTimeout(listeningTimeoutRef.current);
-      listeningTimeoutRef.current = null;
-    }
-    if (silenceTimeoutRef.current) {
-      clearTimeout(silenceTimeoutRef.current);
-      silenceTimeoutRef.current = null;
-    }
     analyserRef.current = null;
     setWaveformLevels(Array(20).fill(0.1));
     setRmsDb(-Infinity);
@@ -275,6 +265,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
 
     // Loosen speech detection for quieter iOS mic input
     const recognitionAny = recognition as any;
+    recognitionAny.maxAlternatives = 1;
     recognitionAny.minSpeechConfidence = 0.05;
     recognitionAny.maxListeningTimeout = 10000; // >= 10s
     recognitionAny.silenceDuration = 1500; // 1.5s silence cutoff
@@ -283,28 +274,8 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       minSpeechConfidence: recognitionAny.minSpeechConfidence,
       maxListeningTimeout: recognitionAny.maxListeningTimeout,
       silenceDuration: recognitionAny.silenceDuration,
+      maxAlternatives: recognitionAny.maxAlternatives,
     });
-
-    const MAX_LISTENING_TIMEOUT_MS = 10000;
-    const SILENCE_CUTOFF_MS = 1500;
-
-    const armMaxListeningTimeout = () => {
-      if (listeningTimeoutRef.current) clearTimeout(listeningTimeoutRef.current);
-      listeningTimeoutRef.current = setTimeout(() => {
-        if (!isListeningRef.current) return;
-        console.log("[VoiceRecorder] max listening timeout reached (10s), cycling recognizer");
-        try { recognition.stop(); } catch { /* ignore */ }
-      }, MAX_LISTENING_TIMEOUT_MS);
-    };
-
-    const armSilenceCutoff = () => {
-      if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
-      silenceTimeoutRef.current = setTimeout(() => {
-        if (!isListeningRef.current) return;
-        console.log("[VoiceRecorder] silence cutoff reached (1.5s), cycling recognizer");
-        try { recognition.stop(); } catch { /* ignore */ }
-      }, SILENCE_CUTOFF_MS);
-    };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let finalTranscript = "";
@@ -341,8 +312,6 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
         }`
       );
 
-      armMaxListeningTimeout();
-      armSilenceCutoff();
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -366,21 +335,11 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
 
     recognition.onend = () => {
       console.log("[VoiceRecorder] onend fired — isListening:", isListeningRef.current);
-      if (listeningTimeoutRef.current) {
-        clearTimeout(listeningTimeoutRef.current);
-        listeningTimeoutRef.current = null;
-      }
-      if (silenceTimeoutRef.current) {
-        clearTimeout(silenceTimeoutRef.current);
-        silenceTimeoutRef.current = null;
-      }
       // Auto-restart only if user hasn't tapped Stop
       if (isListeningRef.current) {
         console.log("[VoiceRecorder] Auto-restarting recognition...");
         try {
           recognition.start();
-          armMaxListeningTimeout();
-          armSilenceCutoff();
         } catch (e) {
           console.warn("[VoiceRecorder] Restart failed (iOS gesture loss):", e);
           // On iOS, restart may fail outside gesture context.
@@ -396,8 +355,6 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
 
     // CRITICAL: start() must be called directly in user gesture context (iOS Safari)
     recognition.start();
-    armMaxListeningTimeout();
-    armSilenceCutoff();
     // Start waveform in same gesture context for iOS AudioContext
     startWaveform();
   }, [isSupported, disabled, isAISpeaking, startWaveform, stopWaveform]);
@@ -409,15 +366,6 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     startTimeRef.current = 0;
     setIsRecording(false);
     setDebugSpeechDuration(Math.round(duration * 10) / 10);
-
-    if (listeningTimeoutRef.current) {
-      clearTimeout(listeningTimeoutRef.current);
-      listeningTimeoutRef.current = null;
-    }
-    if (silenceTimeoutRef.current) {
-      clearTimeout(silenceTimeoutRef.current);
-      silenceTimeoutRef.current = null;
-    }
 
     stopWaveform();
 
