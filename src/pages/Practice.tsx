@@ -1276,7 +1276,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
 
               {/* Input Area */}
               <div className="border-t border-border p-3 sm:p-4">
-                {(voice.voiceMode || isColdCall) && selectedRole ? (
+                {(voice.voiceMode || (isColdCall && !coldCallTextMode)) && selectedRole ? (
                   /* Voice Mode: recording UI */
                   <div className="space-y-1">
                     <MicPreflight status={mic.status} onRequestMic={mic.requestMic} compact deviceDetected={mic.deviceDetected} permissionState={mic.permissionState} />
@@ -1285,6 +1285,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         voice.recordVoiceMetrics(text, duration, pauseData);
                         sendUserMessage(text);
                       }}
+                      onTextModeFallbackToggle={(enabled) => {
+                        if (isColdCall) {
+                          setColdCallTextMode(enabled);
+                          setShowTextModeFallback(false);
+                          if (!enabled) {
+                            void mic.requestMic();
+                          }
+                        }
+                        voice.setVoiceMode(!enabled);
+                      }}
+                      textModeFallbackEnabled={isColdCall ? coldCallTextMode : !voice.voiceMode}
                       disabled={!selectedRole || isLoading || voice.isAISpeaking}
                       isAISpeaking={voice.isAISpeaking}
                     />
