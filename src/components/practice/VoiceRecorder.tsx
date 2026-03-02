@@ -2,7 +2,12 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Square, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+
+const STT_FALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-stt`;
+const UNSUPPORTED_STT_MESSAGE = "Voice transcription not supported in this browser. Open in Chrome / Safari, or switch to Text Mode.";
+const HEALTH_CHECK_TIMEOUT_MS = 5000;
 
 interface PauseData {
   pauseLengthAvg: number;
@@ -13,9 +18,17 @@ interface VoiceRecorderProps {
   onTranscript: (text: string, durationSeconds: number, pauseData?: PauseData) => void;
   disabled?: boolean;
   isAISpeaking?: boolean;
+  onTextModeFallbackToggle?: (enabled: boolean) => void;
+  textModeFallbackEnabled?: boolean;
 }
 
-export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRecorderProps) {
+export function VoiceRecorder({
+  onTranscript,
+  disabled,
+  isAISpeaking,
+  onTextModeFallbackToggle,
+  textModeFallbackEnabled = false,
+}: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -27,19 +40,27 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
   const [debugConfidence, setDebugConfidence] = useState<number | null>(null);
   const [debugSpeechDuration, setDebugSpeechDuration] = useState(0);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
-  const [speechEvents, setSpeechEvents] = useState<{type: string; detail: string; time: string}[]>([]);
+  const [speechEvents, setSpeechEvents] = useState<{ type: string; detail: string; time: string }[]>([]);
+  const [sttBanner, setSttBanner] = useState<string | null>(null);
 
   const recognitionRef = useRef<any>(null);
   const startTimeRef = useRef<number>(0);
   const transcriptRef = useRef("");
   const confidenceRef = useRef<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const healthCheckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasSpeechStartOrResultRef = useRef(false);
+  const hadAnyRecognitionResultRef = useRef(false);
+  const stopRequestedRef = useRef(false);
+  const sessionFailedRef = useRef(false);
+
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const recordedAudioBlobRef = useRef<Blob | null>(null);
   const pauseTimestampsRef = useRef<number[]>([]);
   const wasSpeakingRef = useRef(false);
   const lastSpeechEndRef = useRef<number>(0);
@@ -48,13 +69,13 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
   const signalDurationRef = useRef<number>(0);
   const lastAboveSilenceRef = useRef<number>(0);
 
-  const isSupported =
+  const isSpeechRecognitionSupported =
     typeof window !== "undefined" &&
     (!!window.SpeechRecognition || !!window.webkitSpeechRecognition);
 
   const logEvent = useCallback((type: string, detail: string) => {
     const time = new Date().toLocaleTimeString("en-US", { hour12: false, fractionalSecondDigits: 1 } as any);
-    setSpeechEvents(prev => [{ type, detail, time }, ...prev].slice(0, 30));
+    setSpeechEvents((prev) => [{ type, detail, time }, ...prev].slice(0, 30));
   }, []);
 
   // Timer
@@ -74,6 +95,71 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     };
   }, [isRecording]);
 
+  const clearHealthCheck = useCallback(() => {
+    if (healthCheckTimeoutRef.current) {
+      clearTimeout(healthCheckTimeoutRef.current);
+      healthCheckTimeoutRef.current = null;
+    }
+  }, []);
+
+  const showUnsupportedBanner = useCallback(() => {
+    setSttBanner(UNSUPPORTED_STT_MESSAGE);
+    toast.error(UNSUPPORTED_STT_MESSAGE);
+  }, []);
+
+  const transcribeWithBackendFallback = useCallback(
+    async (audioBlob: Blob): Promise<string | null> => {
+      try {
+        logEvent("backend-stt", `uploading ${Math.round(audioBlob.size / 1024)} KB`);
+        const formData = new FormData();
+        formData.append("audio", audioBlob, `voice.${audioBlob.type.includes("mp4") ? "m4a" : "webm"}`);
+
+        const response = await fetch(STT_FALLBACK_URL, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: formData,
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const backendError = typeof payload?.error === "string" ? payload.error : "Backend STT failed";
+          logEvent("backend-stt-error", backendError);
+          console.error("[VoiceRecorder] backend STT error:", backendError);
+          return null;
+        }
+
+        const transcript = typeof payload?.transcript === "string" ? payload.transcript.trim() : "";
+        if (transcript.length > 2) {
+          logEvent("backend-stt", `transcript ok (${transcript.length} chars)`);
+          console.log("[VoiceRecorder] backend transcript:", transcript);
+          return transcript;
+        }
+
+        logEvent("backend-stt", "no transcript returned");
+        return null;
+      } catch (error) {
+        logEvent("backend-stt-error", "request failed");
+        console.error("[VoiceRecorder] backend STT request failed:", error);
+        return null;
+      }
+    },
+    [logEvent]
+  );
+
+  useEffect(() => {
+    if (!isSpeechRecognitionSupported) {
+      setSttBanner(UNSUPPORTED_STT_MESSAGE);
+    }
+  }, [isSpeechRecognitionSupported]);
+
+  useEffect(() => {
+    return () => {
+      clearHealthCheck();
+    };
+  }, [clearHealthCheck]);
+
   // Waveform + RMS meter via analyser — called inside click handler for iOS
   const startWaveform = useCallback(async () => {
     try {
@@ -92,11 +178,12 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
         console.log("[VoiceRecorder] Audio input devices:", audioInputs.map(d => d.label || d.deviceId));
       } catch { /* ignore */ }
 
-      // Debug-only audio capture to inspect blob size
+      // Capture microphone audio so we can optionally use backend Whisper fallback
       if (typeof MediaRecorder !== "undefined") {
         try {
           const recorder = new MediaRecorder(stream);
           audioChunksRef.current = [];
+          recordedAudioBlobRef.current = null;
           recorder.ondataavailable = (evt) => {
             if (evt.data && evt.data.size > 0) {
               audioChunksRef.current.push(evt.data);
@@ -104,12 +191,15 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
           };
           recorder.onstop = () => {
             const audioBlob = new Blob(audioChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+            recordedAudioBlobRef.current = audioBlob;
+            logEvent("media-stop", `${Math.round(audioBlob.size / 1024)} KB captured`);
             console.log("[VoiceRecorder] audio blob length:", audioBlob.size);
           };
           recorder.start(1000);
           mediaRecorderRef.current = recorder;
         } catch (mediaErr) {
-          console.warn("[VoiceRecorder] MediaRecorder debug capture unavailable:", mediaErr);
+          console.warn("[VoiceRecorder] MediaRecorder capture unavailable:", mediaErr);
+          logEvent("media-error", "MediaRecorder unavailable");
         }
       }
 
@@ -213,7 +303,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     } catch (err) {
       console.error("[VoiceRecorder] Waveform/analyser setup failed:", err);
     }
-  }, []);
+  }, [logEvent]);
 
   const stopWaveform = useCallback(() => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
@@ -241,12 +331,33 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
 
   const isListeningRef = useRef(false);
 
+  const buildPauseData = useCallback((): PauseData | undefined => {
+    const pauses = pauseTimestampsRef.current;
+    if (pauses.length === 0) return undefined;
+
+    const avg = pauses.reduce((s, p) => s + p, 0) / pauses.length;
+    const variance = Math.sqrt(
+      pauses.reduce((s, p) => s + (p - avg) ** 2, 0) / pauses.length
+    );
+
+    return {
+      pauseLengthAvg: Math.round(avg * 100) / 100,
+      pauseLengthVariance: Math.round(variance * 100) / 100,
+    };
+  }, []);
+
   const startRecording = useCallback(() => {
-    if (!isSupported) {
-      toast.error("Voice input not supported in this browser. Using text mode.");
+    if (!isSpeechRecognitionSupported) {
+      showUnsupportedBanner();
       return;
     }
     if (disabled || isAISpeaking) return;
+
+    clearHealthCheck();
+    stopRequestedRef.current = false;
+    sessionFailedRef.current = false;
+    hasSpeechStartOrResultRef.current = false;
+    hadAnyRecognitionResultRef.current = false;
 
     // Reset state
     pauseTimestampsRef.current = [];
@@ -258,11 +369,13 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     lastAboveSilenceRef.current = 0;
     transcriptRef.current = "";
     confidenceRef.current = null;
+    recordedAudioBlobRef.current = null;
     setHasReceivedAudio(false);
     setPeakDb(-Infinity);
     setDebugTranscript("");
     setDebugConfidence(null);
     setDebugSpeechDuration(0);
+    setSttBanner(null);
 
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognitionAPI();
@@ -279,9 +392,21 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       lang: recognition.lang,
     });
 
+    recognitionAny.onspeechstart = () => {
+      hasSpeechStartOrResultRef.current = true;
+      clearHealthCheck();
+      logEvent("onspeechstart", "speech started");
+      console.log("[VoiceRecorder] onspeechstart event fired");
+    };
+
     recognition.onresult = (event: SpeechRecognitionEvent) => {
+      hasSpeechStartOrResultRef.current = true;
+      hadAnyRecognitionResultRef.current = true;
+      clearHealthCheck();
+
       logEvent("onresult", `${event.results.length} result(s)`);
       console.log("[VoiceRecorder] onresult fired:", event);
+
       let finalTranscript = "";
       let interimTranscript = "";
       let latestConfidence: number | null = null;
@@ -310,11 +435,12 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
       confidenceRef.current = latestConfidence;
       setDebugConfidence(latestConfidence);
 
-      logEvent("onresult", `"${transcriptRef.current.slice(0, 40)}" conf=${latestConfidence !== null ? latestConfidence.toFixed(2) : "n/a"}`);
-      console.log(`[VoiceRecorder] transcript: "${transcriptRef.current}"`);
-      console.log(
-        `[VoiceRecorder] confidence: ${latestConfidence !== null ? latestConfidence.toFixed(2) : "n/a"}`
+      logEvent(
+        "onresult",
+        `"${transcriptRef.current.slice(0, 40)}" conf=${latestConfidence !== null ? latestConfidence.toFixed(2) : "n/a"}`
       );
+      console.log(`[VoiceRecorder] transcript: "${transcriptRef.current}"`);
+      console.log(`[VoiceRecorder] confidence: ${latestConfidence !== null ? latestConfidence.toFixed(2) : "n/a"}`);
     };
 
     recognitionAny.onspeechend = () => {
@@ -325,26 +451,42 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       logEvent("onerror", event.error);
       console.error("[VoiceRecorder] onerror event:", event.error, event);
+
       if (event.error === "not-allowed") {
-        toast.error("Microphone access denied. Falling back to text mode.");
         isListeningRef.current = false;
         setIsRecording(false);
         stopWaveform();
+        showUnsupportedBanner();
         return;
       }
-      // Do not reject on silence/no-speech; keep session flow user-controlled.
+
+      // Do not reject on silence/no-speech; keep flow user-controlled.
       if (event.error === "no-speech") {
         console.log("[VoiceRecorder] no-speech event received");
         return;
       }
+
       if (event.error !== "aborted") {
         toast.error("Recording failed. Try again.");
       }
     };
 
     recognition.onend = () => {
+      clearHealthCheck();
       logEvent("onend", "recognition session ended");
-      console.log("[VoiceRecorder] onend fired — waiting for next user tap to restart");
+      console.log("[VoiceRecorder] onend fired");
+
+      if (stopRequestedRef.current || sessionFailedRef.current) return;
+
+      isListeningRef.current = false;
+      setIsRecording(false);
+      stopWaveform();
+
+      if (!hadAnyRecognitionResultRef.current && transcriptRef.current.trim().length <= 2) {
+        sessionFailedRef.current = true;
+        setIsTranscribing(false);
+        showUnsupportedBanner();
+      }
     };
 
     recognitionRef.current = recognition;
@@ -352,17 +494,52 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     startTimeRef.current = Date.now();
     setIsRecording(true);
 
-    // CRITICAL: start() must be called directly in user gesture context (iOS Safari)
-    recognition.start();
-    // Start waveform in same gesture context for iOS AudioContext
-    startWaveform();
-  }, [isSupported, disabled, isAISpeaking, startWaveform, stopWaveform]);
+    healthCheckTimeoutRef.current = setTimeout(() => {
+      if (hasSpeechStartOrResultRef.current || stopRequestedRef.current) return;
 
-  const stopRecording = useCallback(() => {
+      sessionFailedRef.current = true;
+      logEvent("health-check", `No onspeechstart/onresult within ${HEALTH_CHECK_TIMEOUT_MS / 1000}s`);
+      console.error("[VoiceRecorder] STT health check failed: no speech events");
+      toast.error("Speech engine unavailable / blocked");
+      setSttBanner(UNSUPPORTED_STT_MESSAGE);
+
+      stopRequestedRef.current = true;
+      isListeningRef.current = false;
+      setIsRecording(false);
+
+      const activeRecognition = recognitionRef.current;
+      recognitionRef.current = null;
+      if (activeRecognition) {
+        try {
+          activeRecognition.stop();
+        } catch {
+          // ignore stop race
+        }
+      }
+      stopWaveform();
+    }, HEALTH_CHECK_TIMEOUT_MS);
+
+    // CRITICAL: start() must be called directly in user gesture context
+    recognition.start();
+    startWaveform();
+  }, [
+    isSpeechRecognitionSupported,
+    disabled,
+    isAISpeaking,
+    clearHealthCheck,
+    logEvent,
+    showUnsupportedBanner,
+    startWaveform,
+    stopWaveform,
+  ]);
+
+  const stopRecording = useCallback(async () => {
     const duration = (Date.now() - startTimeRef.current) / 1000;
-    // Signal onend to NOT auto-restart before stopping
+    stopRequestedRef.current = true;
     isListeningRef.current = false;
     startTimeRef.current = 0;
+    clearHealthCheck();
+
     setIsRecording(false);
     setDebugSpeechDuration(Math.round(duration * 10) / 10);
 
@@ -371,42 +548,54 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     const rec = recognitionRef.current;
     recognitionRef.current = null;
     if (rec) {
-      try { rec.stop(); } catch { /* already stopped */ }
+      try {
+        rec.stop();
+      } catch {
+        // already stopped
+      }
     }
 
     setIsTranscribing(true);
-    // No minimum duration — accept even short bursts (>300ms)
-    setTimeout(() => {
-      setIsTranscribing(false);
-      const transcript = transcriptRef.current.trim();
-      const confidence = confidenceRef.current;
+    await new Promise((resolve) => setTimeout(resolve, 650));
 
-      // Debug summary
-      const history = rmsHistoryRef.current;
-      const avgRms = history.length > 0 ? history.reduce((a, b) => a + b, 0) / history.length : -Infinity;
-      console.log(`[VoiceRecorder] STOP — duration: ${duration.toFixed(1)}s | avgRMS: ${avgRms.toFixed(1)} dB | signalMs: ${signalDurationRef.current.toFixed(0)} | hadAudio: ${hadAnyAudioRef.current} | transcript: "${transcript.slice(0, 50)}" | confidence: ${confidence !== null ? confidence.toFixed(2) : "n/a"}`);
-      console.log(`[VoiceRecorder] transcript returned: "${transcript}" | confidence score: ${confidence !== null ? confidence.toFixed(2) : "n/a"}`);
+    let transcript = transcriptRef.current.trim();
+    const confidence = confidenceRef.current;
 
-      if (transcript && transcript.length > 2) {
-        const pauses = pauseTimestampsRef.current;
-        let pauseData: PauseData | undefined;
-        if (pauses.length > 0) {
-          const avg = pauses.reduce((s, p) => s + p, 0) / pauses.length;
-          const variance = Math.sqrt(
-            pauses.reduce((s, p) => s + (p - avg) ** 2, 0) / pauses.length
-          );
-          pauseData = {
-            pauseLengthAvg: Math.round(avg * 100) / 100,
-            pauseLengthVariance: Math.round(variance * 100) / 100,
-          };
-        }
-        onTranscript(transcript, Math.round(duration), pauseData);
-      } else {
-        // STT returned nothing — rely on transcript, not VAD/RMS
-        toast.error("No speech detected. Try again.");
+    // Debug summary
+    const history = rmsHistoryRef.current;
+    const avgRms = history.length > 0 ? history.reduce((a, b) => a + b, 0) / history.length : -Infinity;
+    console.log(
+      `[VoiceRecorder] STOP — duration: ${duration.toFixed(1)}s | avgRMS: ${avgRms.toFixed(1)} dB | signalMs: ${signalDurationRef.current.toFixed(0)} | hadAudio: ${hadAnyAudioRef.current} | transcript: "${transcript.slice(0, 50)}" | confidence: ${confidence !== null ? confidence.toFixed(2) : "n/a"}`
+    );
+    console.log(`[VoiceRecorder] transcript returned: "${transcript}" | confidence score: ${confidence !== null ? confidence.toFixed(2) : "n/a"}`);
+
+    if (transcript.length <= 2 && recordedAudioBlobRef.current?.size) {
+      const backendTranscript = await transcribeWithBackendFallback(recordedAudioBlobRef.current);
+      if (backendTranscript && backendTranscript.length > 2) {
+        transcript = backendTranscript;
+        setDebugTranscript(backendTranscript);
+        setDebugConfidence(null);
       }
-    }, 500);
-  }, [onTranscript, stopWaveform]);
+    }
+
+    setIsTranscribing(false);
+
+    if (transcript.length > 2) {
+      setSttBanner(null);
+      onTranscript(transcript, Math.round(duration), buildPauseData());
+      return;
+    }
+
+    sessionFailedRef.current = true;
+    showUnsupportedBanner();
+  }, [
+    buildPauseData,
+    clearHealthCheck,
+    onTranscript,
+    showUnsupportedBanner,
+    stopWaveform,
+    transcribeWithBackendFallback,
+  ]);
 
   const formatTime = (s: number) => {
     const mins = Math.floor(s / 60);
@@ -414,13 +603,26 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  if (!isSupported) return null;
-
   // Map dB to a 0-100 meter level for display
   const meterLevel = Math.max(0, Math.min(100, ((rmsDb + 60) / 60) * 100));
 
   return (
-    <div className="flex flex-col items-center gap-3 py-4">
+    <div className="flex flex-col items-center gap-3 py-4 w-full">
+      {sttBanner && (
+        <div className="w-full max-w-[360px] rounded-md border border-destructive/30 bg-destructive/5 p-2.5">
+          <p className="text-[11px] leading-relaxed text-destructive">{sttBanner}</p>
+          {onTextModeFallbackToggle && (
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <span className="text-[10px] text-muted-foreground">Text Mode fallback</span>
+              <Switch
+                checked={textModeFallbackEnabled}
+                onCheckedChange={onTextModeFallbackToggle}
+                aria-label="Enable Text Mode fallback"
+              />
+            </div>
+          )}
+        </div>
+      )}
       <AnimatePresence mode="wait">
         {isTranscribing ? (
           <motion.div
@@ -538,7 +740,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
               <>
                 <Button
                   onClick={startRecording}
-                  disabled={disabled}
+                  disabled={disabled || !isSpeechRecognitionSupported}
                   variant="outline"
                   size="lg"
                   className="h-14 w-14 rounded-full p-0 border-2 border-primary/40 hover:border-primary hover:bg-primary/5"
@@ -546,7 +748,7 @@ export function VoiceRecorder({ onTranscript, disabled, isAISpeaking }: VoiceRec
                   <Mic className="h-6 w-6 text-primary" />
                 </Button>
                 <p className="text-[10px] text-muted-foreground">
-                  Tap to record your answer
+                  {isSpeechRecognitionSupported ? "Tap to record your answer" : "Switch to Text Mode to continue"}
                 </p>
               </>
             )}
