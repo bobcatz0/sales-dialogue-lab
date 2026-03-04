@@ -8,6 +8,7 @@ import { toast } from "sonner";
 const STT_FALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-stt`;
 const UNSUPPORTED_STT_MESSAGE = "Voice transcription not supported in this browser. Open in Chrome / Safari, or switch to Text Mode.";
 const HEALTH_CHECK_TIMEOUT_MS = 5000;
+const SWITCHING_TO_BACKUP_MSG = "Switching to backup transcription…";
 
 interface PauseData {
   pauseLengthAvg: number;
@@ -42,6 +43,8 @@ export function VoiceRecorder({
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [speechEvents, setSpeechEvents] = useState<{ type: string; detail: string; time: string }[]>([]);
   const [sttBanner, setSttBanner] = useState<string | null>(null);
+  const [sttFallbackState, setSttFallbackState] = useState<"idle" | "switching" | "failed">("idle");
+  const networkErrorTriggeredRef = useRef(false);
 
   const recognitionRef = useRef<any>(null);
   const startTimeRef = useRef<number>(0);
@@ -361,36 +364,45 @@ export function VoiceRecorder({
       console.log(
         `[VoiceRecorder] STOP — duration: ${duration.toFixed(1)}s | avgRMS: ${avgRms.toFixed(1)} dB | signalMs: ${signalDurationRef.current.toFixed(0)} | hadAudio: ${hadAnyAudioRef.current} | transcript: "${transcript.slice(0, 50)}" | confidence: ${confidence !== null ? confidence.toFixed(2) : "n/a"}`
       );
-      console.log(
-        `[VoiceRecorder] transcript returned: "${transcript}" | confidence score: ${confidence !== null ? confidence.toFixed(2) : "n/a"}`
-      );
 
+      // If native STT returned nothing useful, try backend Whisper fallback
       if ((backendOnlyModeRef.current || transcript.length <= 2) && recordedAudioBlobRef.current?.size) {
+        setSttFallbackState("switching");
+        setSttBanner(SWITCHING_TO_BACKUP_MSG);
+        logEvent("fallback", networkErrorTriggeredRef.current ? "onerror:network → backend" : "empty transcript → backend");
+
         const backendTranscript = await transcribeWithBackendFallback(recordedAudioBlobRef.current);
         if (backendTranscript && backendTranscript.length > 2) {
           transcript = backendTranscript;
           setDebugTranscript(backendTranscript);
           setDebugConfidence(null);
+          setSttFallbackState("idle");
+          setSttBanner(null);
+        } else {
+          setSttFallbackState("failed");
+          setSttBanner("Backup transcription returned no result.");
         }
       }
 
       setIsTranscribing(false);
+      networkErrorTriggeredRef.current = false;
 
       if (transcript.length > 2) {
-        setSttBanner(isSpeechRecognitionSupported ? null : UNSUPPORTED_STT_MESSAGE);
+        setSttBanner(null);
+        setSttFallbackState("idle");
         onTranscript(transcript, Math.round(duration), buildPauseData());
         return true;
       }
 
       sessionFailedRef.current = true;
-      showUnsupportedBanner();
+      setSttFallbackState("failed");
+      setSttBanner(UNSUPPORTED_STT_MESSAGE);
       return false;
     },
     [
       buildPauseData,
-      isSpeechRecognitionSupported,
       onTranscript,
-      showUnsupportedBanner,
+      logEvent,
       transcribeWithBackendFallback,
     ]
   );
@@ -404,6 +416,8 @@ export function VoiceRecorder({
     hasSpeechStartOrResultRef.current = false;
     hadAnyRecognitionResultRef.current = false;
     backendOnlyModeRef.current = !isSpeechRecognitionSupported;
+    networkErrorTriggeredRef.current = false;
+    setSttFallbackState("idle");
 
     // Reset state
     pauseTimestampsRef.current = [];
@@ -517,6 +531,15 @@ export function VoiceRecorder({
         setIsRecording(false);
         stopWaveform();
         showUnsupportedBanner();
+        return;
+      }
+
+      // Network error = STT engine unavailable (common on Android Brave/Opera)
+      // Switch to backend-only mode so finalizeTranscript uses Whisper
+      if (event.error === "network") {
+        networkErrorTriggeredRef.current = true;
+        backendOnlyModeRef.current = true;
+        logEvent("onerror", "network — will use backend Whisper fallback");
         return;
       }
 
@@ -634,7 +657,29 @@ export function VoiceRecorder({
       {sttBanner && (
         <div className="w-full max-w-[360px] rounded-md border border-destructive/30 bg-destructive/5 p-2.5">
           <p className="text-[11px] leading-relaxed text-destructive">{sttBanner}</p>
-          {onTextModeFallbackToggle && (
+          {sttFallbackState === "failed" && (
+            <div className="mt-2 flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[10px]"
+                onClick={startRecording}
+              >
+                Retry
+              </Button>
+              {onTextModeFallbackToggle && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-7 text-[10px]"
+                  onClick={() => onTextModeFallbackToggle(true)}
+                >
+                  Use Text Instead
+                </Button>
+              )}
+            </div>
+          )}
+          {sttFallbackState === "idle" && onTextModeFallbackToggle && (
             <div className="mt-2 flex items-center justify-between gap-2">
               <span className="text-[10px] text-muted-foreground">Text Mode fallback</span>
               <Switch
