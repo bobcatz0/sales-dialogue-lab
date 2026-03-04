@@ -310,14 +310,26 @@ export function VoiceRecorder({
     }
   }, [logEvent]);
 
-  const stopWaveform = useCallback(() => {
+  // Returns a promise that resolves once MediaRecorder blob is ready
+  const stopWaveform = useCallback((): Promise<void> => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+
+    let recorderDone: Promise<void> = Promise.resolve();
 
     if (mediaRecorderRef.current) {
       const recorder = mediaRecorderRef.current;
       mediaRecorderRef.current = null;
       if (recorder.state !== "inactive") {
-        try { recorder.stop(); } catch { /* ignore */ }
+        recorderDone = new Promise<void>((resolve) => {
+          const origOnStop = recorder.onstop;
+          recorder.onstop = (ev) => {
+            if (typeof origOnStop === "function") origOnStop.call(recorder, ev);
+            resolve();
+          };
+          try { recorder.stop(); } catch { resolve(); }
+          // Safety timeout – don't wait forever
+          setTimeout(resolve, 1000);
+        });
       }
     }
 
@@ -332,6 +344,8 @@ export function VoiceRecorder({
     analyserRef.current = null;
     setWaveformLevels(Array(20).fill(0.1));
     setRmsDb(-Infinity);
+
+    return recorderDone;
   }, []);
 
   const isListeningRef = useRef(false);
@@ -366,12 +380,20 @@ export function VoiceRecorder({
       );
 
       // If native STT returned nothing useful, try backend Whisper fallback
-      if ((backendOnlyModeRef.current || transcript.length <= 2) && recordedAudioBlobRef.current?.size) {
+      const shouldFallback = backendOnlyModeRef.current || transcript.length <= 2;
+      const hasBlob = recordedAudioBlobRef.current && recordedAudioBlobRef.current.size > 0;
+
+      if (shouldFallback && hasBlob) {
         setSttFallbackState("switching");
         setSttBanner(SWITCHING_TO_BACKUP_MSG);
-        logEvent("fallback", networkErrorTriggeredRef.current ? "onerror:network → backend" : "empty transcript → backend");
+        const reason = networkErrorTriggeredRef.current
+          ? "onerror:network → backend"
+          : hadAnyAudioRef.current
+            ? `audio detected (${signalDurationRef.current.toFixed(0)}ms signal), empty transcript → backend`
+            : "empty transcript → backend";
+        logEvent("fallback", reason);
 
-        const backendTranscript = await transcribeWithBackendFallback(recordedAudioBlobRef.current);
+        const backendTranscript = await transcribeWithBackendFallback(recordedAudioBlobRef.current!);
         if (backendTranscript && backendTranscript.length > 2) {
           transcript = backendTranscript;
           setDebugTranscript(backendTranscript);
@@ -382,6 +404,8 @@ export function VoiceRecorder({
           setSttFallbackState("failed");
           setSttBanner("Backup transcription returned no result.");
         }
+      } else if (shouldFallback && !hasBlob) {
+        logEvent("fallback-skip", "no audio blob available for backend fallback");
       }
 
       setIsTranscribing(false);
@@ -396,7 +420,10 @@ export function VoiceRecorder({
 
       sessionFailedRef.current = true;
       setSttFallbackState("failed");
-      setSttBanner(UNSUPPORTED_STT_MESSAGE);
+      // Don't show "unsupported" if audio was detected — the issue is STT, not the mic
+      setSttBanner(hadAnyAudioRef.current
+        ? "Speech was detected but transcription failed. Try again or switch to Text Mode."
+        : UNSUPPORTED_STT_MESSAGE);
       return false;
     },
     [
@@ -561,13 +588,22 @@ export function VoiceRecorder({
 
       if (stopRequestedRef.current || sessionFailedRef.current) return;
 
+      // Auto-trigger backend fallback if audio was detected but no transcript
+      const duration = Math.max(1, (Date.now() - startTimeRef.current) / 1000);
+      const hasTranscript = transcriptRef.current.trim().length > 2;
+      if (!hasTranscript && hadAnyAudioRef.current && duration > 2) {
+        backendOnlyModeRef.current = true;
+        logEvent("auto-fallback", `audio detected (${signalDurationRef.current.toFixed(0)}ms signal), no transcript after ${duration.toFixed(1)}s`);
+      }
+
       isListeningRef.current = false;
       setIsRecording(false);
       recognitionRef.current = null;
-      stopWaveform();
 
-      const duration = Math.max(1, (Date.now() - startTimeRef.current) / 1000);
-      void finalizeTranscript(duration);
+      // Wait for MediaRecorder blob before finalizing
+      stopWaveform().then(() => {
+        void finalizeTranscript(duration);
+      });
     };
 
     recognitionRef.current = recognition;
@@ -580,8 +616,16 @@ export function VoiceRecorder({
 
       logEvent("health-check", `No onspeechstart/onresult within ${HEALTH_CHECK_TIMEOUT_MS / 1000}s`);
       console.error("[VoiceRecorder] STT health check failed: no speech events");
-      toast.error("Speech engine unavailable / blocked");
-      setSttBanner(UNSUPPORTED_STT_MESSAGE);
+      
+      // Don't show "No speech detected" if audio energy was present
+      if (hadAnyAudioRef.current) {
+        backendOnlyModeRef.current = true;
+        logEvent("auto-fallback", "health-check: audio energy detected, STT engine failed");
+        setSttBanner(SWITCHING_TO_BACKUP_MSG);
+      } else {
+        toast.error("Speech engine unavailable / blocked");
+        setSttBanner(UNSUPPORTED_STT_MESSAGE);
+      }
 
       stopRequestedRef.current = true;
       isListeningRef.current = false;
@@ -591,15 +635,12 @@ export function VoiceRecorder({
       const activeRecognition = recognitionRef.current;
       recognitionRef.current = null;
       if (activeRecognition) {
-        try {
-          activeRecognition.stop();
-        } catch {
-          // ignore stop race
-        }
+        try { activeRecognition.stop(); } catch { /* ignore */ }
       }
 
-      stopWaveform();
-      void finalizeTranscript(duration);
+      stopWaveform().then(() => {
+        void finalizeTranscript(duration);
+      });
     }, HEALTH_CHECK_TIMEOUT_MS);
 
     // CRITICAL: start() must be called directly in user gesture context
@@ -628,20 +669,23 @@ export function VoiceRecorder({
     setIsRecording(false);
     setDebugSpeechDuration(Math.round(duration * 10) / 10);
 
-    stopWaveform();
+    // Auto-trigger backend fallback if audio was detected but no transcript
+    const hasTranscript = transcriptRef.current.trim().length > 2;
+    if (!hasTranscript && hadAnyAudioRef.current && duration > 2) {
+      backendOnlyModeRef.current = true;
+      logEvent("auto-fallback", `manual stop: audio detected, no transcript after ${duration.toFixed(1)}s`);
+    }
 
     const rec = recognitionRef.current;
     recognitionRef.current = null;
     if (rec) {
-      try {
-        rec.stop();
-      } catch {
-        // already stopped
-      }
+      try { rec.stop(); } catch { /* already stopped */ }
     }
 
+    // Wait for MediaRecorder blob before finalizing
+    await stopWaveform();
     await finalizeTranscript(duration);
-  }, [clearHealthCheck, finalizeTranscript, stopWaveform]);
+  }, [clearHealthCheck, finalizeTranscript, stopWaveform, logEvent]);
 
   const formatTime = (s: number) => {
     const mins = Math.floor(s / 60);
