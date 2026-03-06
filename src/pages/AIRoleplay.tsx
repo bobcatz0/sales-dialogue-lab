@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Copy, UserCheck, MessageSquare, ShieldCheck, Clock, PhoneCall } from "lucide-react";
+import { Copy, UserCheck, MessageSquare, ShieldCheck, Clock, PhoneCall, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 
 const prompts = [
@@ -55,6 +56,7 @@ Respond realistically to follow-up attempts.`,
 
 const AIRoleplayPage = () => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
@@ -146,6 +148,19 @@ const AIRoleplayPage = () => {
                 >
                   <Copy className="h-3.5 w-3.5" />
                   {copiedIndex === i ? "Copied!" : "Copy"}
+                </button>
+              </div>
+
+              <div className="mt-6 rounded-lg bg-primary/5 border border-primary/10 p-5 flex items-center justify-between gap-4 flex-wrap">
+                <p className="text-sm text-foreground">
+                  Ready to practice? Try this scenario in the AI simulator.
+                </p>
+                <button
+                  onClick={() => navigate(`/practice?scenario=${encodeURIComponent(p.title)}`)}
+                  className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-5 py-2 text-sm font-semibold hover:bg-primary/90 transition-colors shrink-0"
+                >
+                  Practice This Scenario
+                  <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             </motion.div>

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Lightbulb, Shield, Zap } from "lucide-react";
+import { Lightbulb, Shield, Zap, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const frameworks = [
   {
@@ -41,6 +42,7 @@ const frameworks = [
 ];
 
 const FrameworksPage = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-24">
@@ -97,6 +99,19 @@ const FrameworksPage = () => {
                 <p className="text-sm text-muted-foreground italic whitespace-pre-line">
                   {fw.example}
                 </p>
+              </div>
+
+              <div className="mt-6 rounded-lg bg-primary/5 border border-primary/10 p-5 flex items-center justify-between gap-4 flex-wrap">
+                <p className="text-sm text-foreground">
+                  Ready to practice? Try this scenario in the AI simulator.
+                </p>
+                <button
+                  onClick={() => navigate(`/practice?scenario=${encodeURIComponent(fw.title)}`)}
+                  className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-5 py-2 text-sm font-semibold hover:bg-primary/90 transition-colors shrink-0"
+                >
+                  Practice This Scenario
+                  <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
             </motion.div>
           ))}
