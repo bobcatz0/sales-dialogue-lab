@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Phone, Search, RotateCcw } from "lucide-react";
+import { Phone, Search, RotateCcw, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const scripts = [
   {
@@ -117,6 +118,7 @@ const scripts = [
 ];
 
 const ScriptsSection = () => {
+  const navigate = useNavigate();
   return (
     <section id="scripts" className="py-24">
       <div className="container mx-auto px-6">
@@ -182,6 +184,19 @@ const ScriptsSection = () => {
                   <span className="font-medium text-secondary-foreground">Common Mistake:</span>{" "}
                   {script.commonMistake}
                 </p>
+              </div>
+
+              <div className="mt-6 rounded-lg bg-primary/5 border border-primary/10 p-5 flex items-center justify-between gap-4 flex-wrap">
+                <p className="text-sm text-foreground">
+                  Ready to practice? Try this scenario in the AI simulator.
+                </p>
+                <button
+                  onClick={() => navigate(`/practice?scenario=${encodeURIComponent(script.title)}`)}
+                  className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-5 py-2 text-sm font-semibold hover:bg-primary/90 transition-colors shrink-0"
+                >
+                  Practice This Scenario
+                  <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
             </motion.div>
           ))}
