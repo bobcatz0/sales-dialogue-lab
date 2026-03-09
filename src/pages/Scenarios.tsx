@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Phone, Building2, ShieldAlert, Users, Cpu, RotateCcw, ArrowRight, Zap } from "lucide-react";
+import { Phone, Building2, ShieldAlert, Users, Cpu, RotateCcw, ArrowRight, Zap, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/landing/Navbar";
