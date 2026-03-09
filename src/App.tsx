@@ -12,6 +12,7 @@ import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 import DrillLibrary from "./pages/DrillLibrary";
 import Scenarios from "./pages/Scenarios";
+import Progress from "./pages/Progress";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 
 const queryClient = new QueryClient();
