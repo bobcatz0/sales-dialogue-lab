@@ -6,7 +6,7 @@ const navLinks = [
   { label: "Scenarios", href: "/scenarios" },
   { label: "Frameworks", href: "/frameworks" },
   { label: "Drills", href: "/drills" },
-  { label: "Progress", href: "/leaderboard" },
+  { label: "Progress", href: "/progress" },
 ];
 
 const Navbar = () => {
