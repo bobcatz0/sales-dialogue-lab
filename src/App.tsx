@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import DrillLibrary from "./pages/DrillLibrary";
 import Scenarios from "./pages/Scenarios";
 import Progress from "./pages/Progress";
+import Packs from "./pages/Packs";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 
 const queryClient = new QueryClient();
