@@ -171,6 +171,23 @@ export function FeedbackPanel({
   const interview = isInterviewRank(feedback.rank);
   const skills = feedback.skillBreakdown || [];
   const frm = feedback.finalRoundMetrics;
+  const [progressUpdated, setProgressUpdated] = useState(false);
+
+  // Update skill progress on mount
+  useEffect(() => {
+    if (!progressUpdated) {
+      updateProgress(skills, feedback.score);
+      setProgressUpdated(true);
+      toast("Progress updated.", {
+        duration: 2000,
+        icon: <BarChart3 className="h-4 w-4 text-primary" />,
+        action: {
+          label: "View Progress",
+          onClick: () => { window.location.href = "/progress"; },
+        },
+      });
+    }
+  }, [feedback, skills, progressUpdated]);
 
   const handleDownload = useCallback(() => {
     downloadPDF(feedback, alias ?? null);
