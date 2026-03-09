@@ -57,7 +57,7 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.25 }}
             className="mx-auto mt-6 max-w-xl text-lg md:text-xl text-muted-foreground leading-relaxed"
           >
-            Practice cold calls, discovery, and objection handling with AI buyers that push back — so real prospects don't catch you off guard.
+            Practice cold calls, discovery, interviews, and objection handling with AI buyers that push back — so real prospects don't catch you off guard.
           </motion.p>
 
           {/* CTAs */}
