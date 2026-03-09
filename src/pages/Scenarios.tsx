@@ -33,10 +33,11 @@ const SCENARIOS: Scenario[] = [
     env: "interview",
     role: "hiring-manager",
     duration: "~4 min",
+    framework: { id: "star", label: "STAR Method" },
   },
   {
     id: "discovery-call",
-    title: "Discovery Call",
+    title: "SaaS Discovery Call",
     subtitle: "Uncover pain, qualify the deal",
     description: "A guarded B2B prospect who won't volunteer information. You need to ask the right questions.",
     whatYouPractice: ["Open-ended questioning", "Active listening", "Qualifying budget and timeline"],
@@ -46,6 +47,7 @@ const SCENARIOS: Scenario[] = [
     env: "cold-call",
     role: "b2b-prospect",
     duration: "~5 min",
+    framework: { id: "bant", label: "BANT Framework" },
   },
   {
     id: "objection-handling",
@@ -72,6 +74,7 @@ const SCENARIOS: Scenario[] = [
     env: "enterprise",
     role: "decision-maker",
     duration: "~5 min",
+    framework: { id: "meddic", label: "MEDDIC Framework" },
   },
   {
     id: "technical-eval",
@@ -114,7 +117,6 @@ const SCENARIOS: Scenario[] = [
     comingSoon: true,
   },
 ];
-
 const DIFFICULTY_COLORS = {
   Beginner: "bg-green-500/10 text-green-400 border-green-500/20",
   Intermediate: "bg-orange-500/10 text-orange-400 border-orange-500/20",
