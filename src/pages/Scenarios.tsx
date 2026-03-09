@@ -134,7 +134,7 @@ const Scenarios = () => {
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary mb-6">
             <Zap className="h-3 w-3" />
-            6 scenarios · New added regularly
+            7 scenarios · New added regularly
           </div>
           <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
             Choose Your{" "}
