@@ -44,7 +44,7 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-heading text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl"
           >
-            Practice sales conversations
+            Practice real sales scenarios
             <br />
             <span className="text-gradient">before the real call.</span>
           </motion.h1>
