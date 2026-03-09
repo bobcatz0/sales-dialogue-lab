@@ -559,6 +559,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
           environmentId: selectedEnv,
           resumeHighlights: (selectedEnv === "interview" && resumeHighlights.trim()) ? resumeHighlights.trim() : undefined,
           evaluatorStyle: selectedEnv === "interview" ? evaluatorStyleRef.current : undefined,
+          frameworkId: getFrameworkForSession(selectedEnv, activeRole.id),
         }),
       });
 
