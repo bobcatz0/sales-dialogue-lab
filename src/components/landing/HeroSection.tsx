@@ -44,9 +44,10 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-heading text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl"
           >
-            Stop losing deals.
+            Practice sales calls
             <br />
-            <span className="text-gradient">Start rehearsing.</span>
+            and interviews{" "}
+            <span className="text-gradient">before the real thing.</span>
           </motion.h1>
 
           {/* Subhead */}
@@ -56,7 +57,7 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.25 }}
             className="mx-auto mt-6 max-w-xl text-lg md:text-xl text-muted-foreground leading-relaxed"
           >
-            Practice cold calls, discovery, and objection handling with AI buyers that push back — so real prospects don't catch you off guard.
+            Practice cold calls, discovery, interviews, and objection handling with AI buyers that push back — so real prospects don't catch you off guard.
           </motion.p>
 
           {/* CTAs */}

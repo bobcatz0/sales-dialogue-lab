@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Phone, Building2, ShieldAlert, Users, Cpu, RotateCcw, ArrowRight, Zap } from "lucide-react";
+import { Phone, Building2, ShieldAlert, Users, Cpu, RotateCcw, ArrowRight, Zap, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/landing/Navbar";
@@ -44,6 +44,19 @@ const SCENARIOS: Scenario[] = [
     env: "cold-call",
     role: "b2b-prospect",
     duration: "~5 min",
+  },
+  {
+    id: "interview-pressure",
+    title: "Interview Pressure Round",
+    subtitle: "Prove yourself under scrutiny",
+    description: "A hiring manager tests your experience, metrics, and thinking under pressure.",
+    whatYouPractice: ["Structured responses", "Metric-driven storytelling", "Composure under pressure"],
+    difficulty: "Beginner",
+    icon: Briefcase,
+    color: "text-amber-400",
+    env: "interview",
+    role: "hiring-manager",
+    duration: "~4 min",
   },
   {
     id: "objection-handling",
