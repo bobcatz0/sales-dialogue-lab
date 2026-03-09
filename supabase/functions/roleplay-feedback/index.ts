@@ -300,6 +300,23 @@ When recoveryAssessment.recovered is false, populate "criticalWeakness" with:
 - "correctiveExample": A concrete, realistic example answer the candidate should have given. Make it specific to their context.
 When recovery succeeded, set "criticalWeakness" to null.
 ` : ""}
+
+ANSWER COMPARISON ANALYSIS:
+Identify the 2-3 most important exchanges. For each, provide:
+- "question": The question or challenge the evaluator posed.
+- "userAnswer": The key sentence from the user's response (abbreviated).
+- "idealAnswer": What a strong candidate would have said (1-2 sentences, concrete and specific).
+- "gap": One sentence explaining what was missing or weak.
+If the user's answer was strong, the gap should note what made it effective. Include at least one weak and one strong comparison if possible.
+
+TIMESTAMPED MOMENTS:
+Review the conversation exchange by exchange (1-based index). Flag 2-4 notable moments:
+- "exchangeIndex": The 1-based index of the user's response in the conversation.
+- "label": One of "weak", "missed-opportunity", or "strong".
+- "quote": The exact key sentence from the user.
+- "issue": One sentence explaining why this moment was flagged.
+Distribute labels — include at least one "weak" or "missed-opportunity" and at least one "strong" moment if they exist.
+
 TONE: Strictly evaluative. Zero motivational language. Zero praise. No "Great job!", "Keep it up!", "Well done!", "You did well.", "Nice work", "Strong effort", or any soft encouragement. No hedging language like "You might want to consider..." — be direct: "This was weak because..." Write like a senior performance analyst delivering a final debrief — neutral, precise, referencing exact moments. Every sentence should make the user feel cognitively sharper, not emotionally validated.
 ${resumeHighlights ? `
 RESUME ALIGNMENT ANALYSIS:
