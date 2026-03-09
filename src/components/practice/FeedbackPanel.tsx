@@ -295,6 +295,15 @@ export function FeedbackPanel({
           </div>
         )}
 
+        {/* Framework Rubric Scores */}
+        <RubricScoresSection scores={feedback.rubricScores || []} frameworkId={feedback.frameworkId} />
+
+        {/* Timestamped Transcript Highlights */}
+        <TimestampedMomentsSection moments={feedback.timestampedMoments || []} />
+
+        {/* Answer vs Ideal Comparison */}
+        <AnswerComparisonSection comparisons={feedback.answerComparisons || []} />
+
         {/* Strongest Moment */}
         {feedback.bestMoment && (
           <div className="bg-muted/40 rounded-lg p-3 border border-border">
