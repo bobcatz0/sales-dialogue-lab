@@ -17,6 +17,7 @@ interface Scenario {
   role: string;
   duration: string;
   comingSoon?: boolean;
+  framework?: { id: string; label: string };
 }
 
 const SCENARIOS: Scenario[] = [
