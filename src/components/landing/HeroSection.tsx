@@ -98,7 +98,7 @@ const HeroSection = () => {
           {[
             { icon: Mic, label: "Voice & Text", desc: "Practice by speaking or typing" },
             { icon: BarChart3, label: "Scored 0–100", desc: "Instant performance breakdown" },
-            { icon: Zap, label: "AI Feedback", desc: "Actionable tips after every session" },
+            { icon: Zap, label: "Smart Feedback", desc: "Actionable tips after every session" },
           ].map((item, i) => (
             <div
               key={item.label}
