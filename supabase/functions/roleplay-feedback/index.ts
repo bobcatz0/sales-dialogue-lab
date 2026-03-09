@@ -112,13 +112,32 @@ Return a JSON object with this EXACT structure — nothing else:
     "correctiveExample": "<1 sentence: a concrete corrective answer the candidate could have given — e.g. 'At that time, I was averaging 95 calls per week, which increased to 120 after restructuring my call blocks.'>"
   }` : ""}${isFinalRound ? `,
   "finalRoundMetrics": {
-    "pressureResilience": <0-100: how well the candidate maintained performance quality when challenged or pressured>,
-    "recoveryStrength": <0-100: how effectively the candidate improved answers after being challenged on weak spots>,
-    "composure": <0-100: how professional and steady the candidate remained throughout — no defensiveness, no rambling under stress>,
-    "performanceDeclined": <true if the candidate's answer quality noticeably dropped in the second half of the session compared to the first half>
+    "pressureResilience": <0-100>,
+    "recoveryStrength": <0-100>,
+    "composure": <0-100>,
+    "performanceDeclined": <true|false>
   }` : ""}${isInterview ? `,
-  "pacingNote": <if any user responses were excessively long or rambling (would take ${isFinalRound ? "35+" : "38+"} seconds to speak), set to "Pacing Adjustment Needed: Responses exceeded optimal interview length." Otherwise set to null>` : ""}
+  "pacingNote": <string|null>` : ""}${fw !== "none" ? `,
+  "rubricScores": [{"criterion": "<name>", "weight": "<pct>", "score": <0-100>, "note": "<assessment>"}]` : ""},
+  "answerComparisons": [
+    {
+      "question": "<the question or challenge posed>",
+      "userAnswer": "<exact quote of user's answer — abbreviated to key sentence>",
+      "idealAnswer": "<what a strong answer would sound like — 1-2 sentences>",
+      "gap": "<1 sentence: what was missing or weak>"
+    }
+  ],
+  "timestampedMoments": [
+    {
+      "exchangeIndex": <1-based index of the exchange in the conversation>,
+      "label": "<weak|missed-opportunity|strong>",
+      "quote": "<exact user quote>",
+      "issue": "<1 sentence: why this was flagged>"
+    }
+  ]
 }
+
+${frameworkRubricBlock}
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
 ${evaluatorStyle && isInterview ? `
