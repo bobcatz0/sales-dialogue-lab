@@ -4,13 +4,13 @@ import { PhoneCall, FileText, LayoutGrid, Shield, Repeat, Brain } from "lucide-r
 const features = [
   {
     icon: PhoneCall,
-    title: "Realistic AI Buyers",
-    description: "8+ buyer personas with distinct personalities, objection styles, and industry context.",
+    title: "Realistic Buyer Personas",
+    description: "8+ buyer personas with distinct personalities, objection styles, and industry context — powered by AI.",
   },
   {
     icon: Brain,
-    title: "Instant AI Feedback",
-    description: "Get scored 0–100 with specific coaching on tone, technique, and conversation flow.",
+    title: "Instant Scored Feedback",
+    description: "Get scored 0–100 with specific coaching on tone, technique, and conversation flow after every session.",
   },
   {
     icon: FileText,

@@ -34,7 +34,7 @@ const HeroSection = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
             </span>
-            AI-Powered Sales Rehearsal
+            Sales Conversation Practice
           </motion.div>
 
           {/* Headline */}
@@ -44,10 +44,9 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-heading text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl"
           >
-            Practice sales calls
+            Practice sales conversations
             <br />
-            and interviews{" "}
-            <span className="text-gradient">before the real thing.</span>
+            <span className="text-gradient">before the real call.</span>
           </motion.h1>
 
           {/* Subhead */}
@@ -57,7 +56,7 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.25 }}
             className="mx-auto mt-6 max-w-xl text-lg md:text-xl text-muted-foreground leading-relaxed"
           >
-            Practice cold calls, discovery, interviews, and objection handling with AI buyers that push back — so real prospects don't catch you off guard.
+            Roleplay interviews, discovery calls, and objections in realistic scenarios — and get instant feedback to improve faster.
           </motion.p>
 
           {/* CTAs */}
@@ -85,7 +84,7 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="mt-12 text-sm text-muted-foreground"
           >
-            No signup required · Free to use · Instant AI feedback
+            No signup required · 3–5 minute scenarios · Instant feedback report
           </motion.div>
         </div>
 
@@ -99,7 +98,7 @@ const HeroSection = () => {
           {[
             { icon: Mic, label: "Voice & Text", desc: "Practice by speaking or typing" },
             { icon: BarChart3, label: "Scored 0–100", desc: "Instant performance breakdown" },
-            { icon: Zap, label: "AI Feedback", desc: "Actionable tips after every session" },
+            { icon: Zap, label: "Smart Feedback", desc: "Actionable tips after every session" },
           ].map((item, i) => (
             <div
               key={item.label}
