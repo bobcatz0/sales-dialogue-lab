@@ -7,6 +7,7 @@ import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRound
 import { ShareableSummary } from "./ShareableSummary";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
+import { RubricScoresSection, AnswerComparisonSection, TimestampedMomentsSection } from "./FrameworkFeedback";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
 
@@ -293,6 +294,15 @@ export function FeedbackPanel({
             </div>
           </div>
         )}
+
+        {/* Framework Rubric Scores */}
+        <RubricScoresSection scores={feedback.rubricScores || []} frameworkId={feedback.frameworkId} />
+
+        {/* Timestamped Transcript Highlights */}
+        <TimestampedMomentsSection moments={feedback.timestampedMoments || []} />
+
+        {/* Answer vs Ideal Comparison */}
+        <AnswerComparisonSection comparisons={feedback.answerComparisons || []} />
 
         {/* Strongest Moment */}
         {feedback.bestMoment && (

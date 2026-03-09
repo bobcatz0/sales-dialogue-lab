@@ -87,6 +87,15 @@ import {
   captureFeedbackSignal,
 } from "@/components/practice/signalCapture";
 
+// --- Framework mapping ---
+
+function getFrameworkForSession(envId: string, roleId: string): string {
+  if (envId === "interview" && roleId === "hiring-manager") return "star";
+  if (envId === "cold-call" && roleId === "b2b-prospect") return "bant";
+  if (envId === "enterprise" && roleId === "decision-maker") return "meddic";
+  return "none";
+}
+
 // --- Streaming ---
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-chat`;
@@ -559,6 +568,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
           environmentId: selectedEnv,
           resumeHighlights: (selectedEnv === "interview" && resumeHighlights.trim()) ? resumeHighlights.trim() : undefined,
           evaluatorStyle: selectedEnv === "interview" ? evaluatorStyleRef.current : undefined,
+          frameworkId: getFrameworkForSession(selectedEnv, activeRole.id),
         }),
       });
 

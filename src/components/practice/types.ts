@@ -10,6 +10,29 @@ export interface SkillScore {
 
 export type EvaluatorStyle = "analytical" | "results-oriented" | "behavioral";
 
+export type FrameworkId = "bant" | "meddic" | "star" | "spin" | "none";
+
+export interface RubricScore {
+  criterion: string;
+  weight: string;
+  score: number;
+  note: string;
+}
+
+export interface AnswerComparison {
+  question: string;
+  userAnswer: string;
+  idealAnswer: string;
+  gap: string;
+}
+
+export interface TimestampedMoment {
+  exchangeIndex: number;
+  label: string;
+  quote: string;
+  issue: string;
+}
+
 export interface Feedback {
   score: number;
   rank: string;
@@ -31,6 +54,10 @@ export interface Feedback {
   criticalWeakness?: CriticalWeakness;
   finalRoundMetrics?: FinalRoundMetrics;
   pacingNote?: string;
+  frameworkId?: FrameworkId;
+  rubricScores?: RubricScore[];
+  answerComparisons?: AnswerComparison[];
+  timestampedMoments?: TimestampedMoment[];
 }
 
 export interface FinalRoundMetrics {

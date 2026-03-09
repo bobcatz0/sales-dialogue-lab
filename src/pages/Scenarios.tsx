@@ -17,6 +17,7 @@ interface Scenario {
   role: string;
   duration: string;
   comingSoon?: boolean;
+  framework?: { id: string; label: string };
 }
 
 const SCENARIOS: Scenario[] = [
@@ -32,10 +33,11 @@ const SCENARIOS: Scenario[] = [
     env: "interview",
     role: "hiring-manager",
     duration: "~4 min",
+    framework: { id: "star", label: "STAR Method" },
   },
   {
     id: "discovery-call",
-    title: "Discovery Call",
+    title: "SaaS Discovery Call",
     subtitle: "Uncover pain, qualify the deal",
     description: "A guarded B2B prospect who won't volunteer information. You need to ask the right questions.",
     whatYouPractice: ["Open-ended questioning", "Active listening", "Qualifying budget and timeline"],
@@ -45,6 +47,7 @@ const SCENARIOS: Scenario[] = [
     env: "cold-call",
     role: "b2b-prospect",
     duration: "~5 min",
+    framework: { id: "bant", label: "BANT Framework" },
   },
   {
     id: "objection-handling",
@@ -71,6 +74,7 @@ const SCENARIOS: Scenario[] = [
     env: "enterprise",
     role: "decision-maker",
     duration: "~5 min",
+    framework: { id: "meddic", label: "MEDDIC Framework" },
   },
   {
     id: "technical-eval",
@@ -113,7 +117,6 @@ const SCENARIOS: Scenario[] = [
     comingSoon: true,
   },
 ];
-
 const DIFFICULTY_COLORS = {
   Beginner: "bg-green-500/10 text-green-400 border-green-500/20",
   Intermediate: "bg-orange-500/10 text-orange-400 border-orange-500/20",
@@ -163,7 +166,12 @@ const Scenarios = () => {
                   <div className={`h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0 ${scenario.color}`}>
                     <Icon className="h-5 w-5" />
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    {scenario.framework && (
+                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border border-primary/20 bg-primary/5 text-primary">
+                        {scenario.framework.label}
+                      </span>
+                    )}
                     {isComingSoon && (
                       <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border border-muted-foreground/20 bg-muted text-muted-foreground flex items-center gap-1">
                         <Mic className="h-2.5 w-2.5" />

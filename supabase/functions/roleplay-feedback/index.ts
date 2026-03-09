@@ -12,12 +12,36 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, roleTitle, environmentId, resumeHighlights, evaluatorStyle } = await req.json();
+    const { messages, roleTitle, environmentId, resumeHighlights, evaluatorStyle, frameworkId } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const isInterview = environmentId === "interview" || environmentId === "final-round";
     const isFinalRound = environmentId === "final-round";
+    const fw = frameworkId || "none";
+
+    const frameworkRubricBlock = fw === "none" ? "" : `
+FRAMEWORK-SPECIFIC RUBRIC — "${fw.toUpperCase()}":
+${fw === "star" ? `This session uses the STAR Method. Evaluate each answer against these criteria:
+- Situation (20%): Did the candidate set clear context? Specific company, role, timeframe?
+- Task (20%): Was the challenge or objective clearly articulated?
+- Action (30%): Did the candidate describe THEIR specific actions (not the team's)?
+- Result (30%): Were outcomes quantified with metrics, impact, or learning?
+Score each criterion 0-100. A missing component should score 0-20 for that criterion.` : ""}${fw === "bant" ? `This session uses the BANT Framework. Evaluate the rep's discovery against:
+- Budget (25%): Did the rep uncover budget range, approval process, or fiscal constraints?
+- Authority (25%): Did the rep identify the decision maker and buying process?
+- Need (30%): Did the rep surface specific pain points and business impact?
+- Timeline (20%): Did the rep establish urgency, deadlines, or evaluation timeline?
+Score each criterion 0-100. Unasked dimensions should score 0-15.` : ""}${fw === "meddic" ? `This session uses the MEDDIC Framework. Evaluate against:
+- Metrics (20%): Did the rep quantify business impact or ROI?
+- Economic Buyer (15%): Did the rep identify the economic decision maker?
+- Decision Criteria (20%): Did the rep understand how the buyer evaluates solutions?
+- Decision Process (15%): Did the rep map the buying process and stakeholders?
+- Identify Pain (20%): Did the rep uncover specific, compelling pain?
+- Champion (10%): Did the rep arm the internal advocate with positioning language?
+Score each criterion 0-100.` : ""}
+Include a "rubricScores" array in the output with objects: {"criterion": "<name>", "weight": "<percentage>", "score": <0-100>, "note": "<1 sentence assessment>"}.
+`;
 
     const interviewScoringBlock = `
 INTERVIEW-SPECIFIC SCORING CRITERIA (use these weights):
@@ -49,6 +73,7 @@ SCORING RULES:
 Return a JSON object with this EXACT structure — nothing else:
 {
   "score": <number 0-100>,
+  "frameworkId": "${fw}",
   "rank": "<rank string>",
   "peakDifficulty": <1 | 2 | 3>,
   "bestMoment": "<exact quote>",
@@ -88,13 +113,32 @@ Return a JSON object with this EXACT structure — nothing else:
     "correctiveExample": "<1 sentence: a concrete corrective answer the candidate could have given — e.g. 'At that time, I was averaging 95 calls per week, which increased to 120 after restructuring my call blocks.'>"
   }` : ""}${isFinalRound ? `,
   "finalRoundMetrics": {
-    "pressureResilience": <0-100: how well the candidate maintained performance quality when challenged or pressured>,
-    "recoveryStrength": <0-100: how effectively the candidate improved answers after being challenged on weak spots>,
-    "composure": <0-100: how professional and steady the candidate remained throughout — no defensiveness, no rambling under stress>,
-    "performanceDeclined": <true if the candidate's answer quality noticeably dropped in the second half of the session compared to the first half>
+    "pressureResilience": <0-100>,
+    "recoveryStrength": <0-100>,
+    "composure": <0-100>,
+    "performanceDeclined": <true|false>
   }` : ""}${isInterview ? `,
-  "pacingNote": <if any user responses were excessively long or rambling (would take ${isFinalRound ? "35+" : "38+"} seconds to speak), set to "Pacing Adjustment Needed: Responses exceeded optimal interview length." Otherwise set to null>` : ""}
+  "pacingNote": <string|null>` : ""}${fw !== "none" ? `,
+  "rubricScores": [{"criterion": "<name>", "weight": "<pct>", "score": <0-100>, "note": "<assessment>"}]` : ""},
+  "answerComparisons": [
+    {
+      "question": "<the question or challenge posed>",
+      "userAnswer": "<exact quote of user's answer — abbreviated to key sentence>",
+      "idealAnswer": "<what a strong answer would sound like — 1-2 sentences>",
+      "gap": "<1 sentence: what was missing or weak>"
+    }
+  ],
+  "timestampedMoments": [
+    {
+      "exchangeIndex": <1-based index of the exchange in the conversation>,
+      "label": "<weak|missed-opportunity|strong>",
+      "quote": "<exact user quote>",
+      "issue": "<1 sentence: why this was flagged>"
+    }
+  ]
 }
+
+${frameworkRubricBlock}
 
 ${isInterview ? interviewScoringBlock : standardScoringBlock}
 ${evaluatorStyle && isInterview ? `
@@ -256,6 +300,23 @@ When recoveryAssessment.recovered is false, populate "criticalWeakness" with:
 - "correctiveExample": A concrete, realistic example answer the candidate should have given. Make it specific to their context.
 When recovery succeeded, set "criticalWeakness" to null.
 ` : ""}
+
+ANSWER COMPARISON ANALYSIS:
+Identify the 2-3 most important exchanges. For each, provide:
+- "question": The question or challenge the evaluator posed.
+- "userAnswer": The key sentence from the user's response (abbreviated).
+- "idealAnswer": What a strong candidate would have said (1-2 sentences, concrete and specific).
+- "gap": One sentence explaining what was missing or weak.
+If the user's answer was strong, the gap should note what made it effective. Include at least one weak and one strong comparison if possible.
+
+TIMESTAMPED MOMENTS:
+Review the conversation exchange by exchange (1-based index). Flag 2-4 notable moments:
+- "exchangeIndex": The 1-based index of the user's response in the conversation.
+- "label": One of "weak", "missed-opportunity", or "strong".
+- "quote": The exact key sentence from the user.
+- "issue": One sentence explaining why this moment was flagged.
+Distribute labels — include at least one "weak" or "missed-opportunity" and at least one "strong" moment if they exist.
+
 TONE: Strictly evaluative. Zero motivational language. Zero praise. No "Great job!", "Keep it up!", "Well done!", "You did well.", "Nice work", "Strong effort", or any soft encouragement. No hedging language like "You might want to consider..." — be direct: "This was weak because..." Write like a senior performance analyst delivering a final debrief — neutral, precise, referencing exact moments. Every sentence should make the user feel cognitively sharper, not emotionally validated.
 ${resumeHighlights ? `
 RESUME ALIGNMENT ANALYSIS:
