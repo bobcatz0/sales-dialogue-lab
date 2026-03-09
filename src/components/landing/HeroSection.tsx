@@ -34,7 +34,7 @@ const HeroSection = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
             </span>
-            Sales Conversation Practice
+            Sales Training Simulator
           </motion.div>
 
           {/* Headline */}
@@ -44,7 +44,7 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-heading text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl"
           >
-            Practice sales conversations
+            Practice real sales scenarios
             <br />
             <span className="text-gradient">before the real call.</span>
           </motion.h1>
@@ -56,7 +56,7 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.25 }}
             className="mx-auto mt-6 max-w-xl text-lg md:text-xl text-muted-foreground leading-relaxed"
           >
-            Roleplay interviews, discovery calls, and objections in realistic scenarios — and get instant feedback to improve faster.
+            Train like a sales rep before the real interview. Framework-scored simulations for cold calls, discovery, and objection handling.
           </motion.p>
 
           {/* CTAs */}
@@ -96,9 +96,9 @@ const HeroSection = () => {
           className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto"
         >
           {[
-            { icon: Mic, label: "Voice & Text", desc: "Practice by speaking or typing" },
-            { icon: BarChart3, label: "Scored 0–100", desc: "Instant performance breakdown" },
-            { icon: Zap, label: "Smart Feedback", desc: "Actionable tips after every session" },
+            { icon: Mic, label: "Voice & Text", desc: "Simulate real conversations" },
+            { icon: BarChart3, label: "Framework Scoring", desc: "BANT · MEDDIC · STAR rubrics" },
+            { icon: Zap, label: "Instant Debrief", desc: "Ideal answers & gap analysis" },
           ].map((item, i) => (
             <div
               key={item.label}

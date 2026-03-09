@@ -20,12 +20,12 @@ const CTASection = () => {
 
           <div className="relative z-10">
             <h2 className="font-heading text-3xl font-bold md:text-5xl leading-tight">
-              Your next interview is coming.
+              Your next call is coming.
               <br />
-              <span className="text-gradient">Are you ready?</span>
+              <span className="text-gradient">Train before it happens.</span>
             </h2>
             <p className="mt-5 text-muted-foreground max-w-md mx-auto text-lg">
-              Run a mock SDR interview right now. Get scored. Know exactly where you stand.
+              Run a framework-scored simulation right now. BANT, MEDDIC, or STAR — know exactly where you stand.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button variant="hero" size="lg" className="gap-2 px-10 py-6 text-lg" asChild>

@@ -140,11 +140,11 @@ const Scenarios = () => {
             7 scenarios · New added regularly
           </div>
           <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-            Choose Your{" "}
-            <span className="text-gradient">Scenario</span>
+            Sales Training{" "}
+            <span className="text-gradient">Scenarios</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Each scenario puts you in a real sales situation with a different buyer personality. Practice, get scored, repeat.
+            Each scenario simulates a real sales situation scored with professional frameworks. Practice, get evaluated, improve.
           </p>
         </motion.div>
 
