@@ -18,6 +18,30 @@ serve(async (req) => {
 
     const isInterview = environmentId === "interview" || environmentId === "final-round";
     const isFinalRound = environmentId === "final-round";
+    const fw = frameworkId || "none";
+
+    const frameworkRubricBlock = fw === "none" ? "" : `
+FRAMEWORK-SPECIFIC RUBRIC — "${fw.toUpperCase()}":
+${fw === "star" ? `This session uses the STAR Method. Evaluate each answer against these criteria:
+- Situation (20%): Did the candidate set clear context? Specific company, role, timeframe?
+- Task (20%): Was the challenge or objective clearly articulated?
+- Action (30%): Did the candidate describe THEIR specific actions (not the team's)?
+- Result (30%): Were outcomes quantified with metrics, impact, or learning?
+Score each criterion 0-100. A missing component should score 0-20 for that criterion.` : ""}${fw === "bant" ? `This session uses the BANT Framework. Evaluate the rep's discovery against:
+- Budget (25%): Did the rep uncover budget range, approval process, or fiscal constraints?
+- Authority (25%): Did the rep identify the decision maker and buying process?
+- Need (30%): Did the rep surface specific pain points and business impact?
+- Timeline (20%): Did the rep establish urgency, deadlines, or evaluation timeline?
+Score each criterion 0-100. Unasked dimensions should score 0-15.` : ""}${fw === "meddic" ? `This session uses the MEDDIC Framework. Evaluate against:
+- Metrics (20%): Did the rep quantify business impact or ROI?
+- Economic Buyer (15%): Did the rep identify the economic decision maker?
+- Decision Criteria (20%): Did the rep understand how the buyer evaluates solutions?
+- Decision Process (15%): Did the rep map the buying process and stakeholders?
+- Identify Pain (20%): Did the rep uncover specific, compelling pain?
+- Champion (10%): Did the rep arm the internal advocate with positioning language?
+Score each criterion 0-100.` : ""}
+Include a "rubricScores" array in the output with objects: {"criterion": "<name>", "weight": "<percentage>", "score": <0-100>, "note": "<1 sentence assessment>"}.
+`;
 
     const interviewScoringBlock = `
 INTERVIEW-SPECIFIC SCORING CRITERIA (use these weights):
