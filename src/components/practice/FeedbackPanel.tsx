@@ -544,7 +544,7 @@ export function FeedbackPanel({
         )}
 
         {/* Actions */}
-        {interview && feedback.score < 60 && onStartDrill ? (
+        {interview && feedback.score < 80 && onStartDrill ? (
           <div className="space-y-2 pt-1">
             <div className="rounded-lg p-3 bg-muted/50 border border-border">
               <p className="text-[11px] font-medium text-foreground text-center">
