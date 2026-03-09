@@ -149,22 +149,31 @@ const Scenarios = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
           {SCENARIOS.map((scenario, i) => {
             const Icon = scenario.icon;
+            const isComingSoon = scenario.comingSoon;
             return (
               <motion.div
                 key={scenario.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.07 }}
-                className="card-elevated p-5 flex flex-col gap-4 hover:border-primary/30 transition-all duration-200 group"
+                className={`card-elevated p-5 flex flex-col gap-4 transition-all duration-200 group ${isComingSoon ? "opacity-50 pointer-events-none" : "hover:border-primary/30"}`}
               >
                 {/* Top row */}
                 <div className="flex items-start justify-between gap-2">
                   <div className={`h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0 ${scenario.color}`}>
                     <Icon className="h-5 w-5" />
                   </div>
-                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${DIFFICULTY_COLORS[scenario.difficulty]}`}>
-                    {scenario.difficulty}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {isComingSoon && (
+                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border border-muted-foreground/20 bg-muted text-muted-foreground flex items-center gap-1">
+                        <Mic className="h-2.5 w-2.5" />
+                        Voice simulation
+                      </span>
+                    )}
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${DIFFICULTY_COLORS[scenario.difficulty]}`}>
+                      {scenario.difficulty}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Title */}
@@ -193,16 +202,27 @@ const Scenarios = () => {
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-1 border-t border-border/50">
                   <span className="text-[11px] text-muted-foreground/60">{scenario.duration}</span>
-                  <Button
-                    variant="hero"
-                    size="sm"
-                    className="h-8 text-xs gap-1.5 group-hover:gap-2 transition-all"
-                    asChild
-                  >
-                    <a href={`/practice?env=${scenario.env}&role=${scenario.role}`}>
-                      Start <ArrowRight className="h-3 w-3" />
-                    </a>
-                  </Button>
+                  {isComingSoon ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs cursor-not-allowed opacity-70"
+                      disabled
+                    >
+                      Coming Soon
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="hero"
+                      size="sm"
+                      className="h-8 text-xs gap-1.5 group-hover:gap-2 transition-all"
+                      asChild
+                    >
+                      <a href={`/practice?env=${scenario.env}&role=${scenario.role}`}>
+                        Start <ArrowRight className="h-3 w-3" />
+                      </a>
+                    </Button>
+                  )}
                 </div>
               </motion.div>
             );
