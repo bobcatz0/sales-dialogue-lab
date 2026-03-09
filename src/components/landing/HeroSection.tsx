@@ -96,9 +96,9 @@ const HeroSection = () => {
           className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto"
         >
           {[
-            { icon: Mic, label: "Voice & Text", desc: "Practice by speaking or typing" },
-            { icon: BarChart3, label: "Scored 0–100", desc: "Instant performance breakdown" },
-            { icon: Zap, label: "Smart Feedback", desc: "Actionable tips after every session" },
+            { icon: Mic, label: "Voice & Text", desc: "Simulate real conversations" },
+            { icon: BarChart3, label: "Framework Scoring", desc: "BANT · MEDDIC · STAR rubrics" },
+            { icon: Zap, label: "Instant Debrief", desc: "Ideal answers & gap analysis" },
           ].map((item, i) => (
             <div
               key={item.label}
