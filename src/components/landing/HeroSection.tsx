@@ -44,9 +44,10 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-heading text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl"
           >
-            Stop losing deals.
+            Practice sales calls
             <br />
-            <span className="text-gradient">Start rehearsing.</span>
+            and interviews{" "}
+            <span className="text-gradient">before the real thing.</span>
           </motion.h1>
 
           {/* Subhead */}
