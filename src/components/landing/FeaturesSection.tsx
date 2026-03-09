@@ -9,8 +9,8 @@ const features = [
   },
   {
     icon: Brain,
-    title: "Instant AI Feedback",
-    description: "Get scored 0–100 with specific coaching on tone, technique, and conversation flow.",
+    title: "Instant Scored Feedback",
+    description: "Get scored 0–100 with specific coaching on tone, technique, and conversation flow after every session.",
   },
   {
     icon: FileText,
