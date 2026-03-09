@@ -73,6 +73,7 @@ SCORING RULES:
 Return a JSON object with this EXACT structure — nothing else:
 {
   "score": <number 0-100>,
+  "frameworkId": "${fw}",
   "rank": "<rank string>",
   "peakDifficulty": <1 | 2 | 3>,
   "bestMoment": "<exact quote>",
