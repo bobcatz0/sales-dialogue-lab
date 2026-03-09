@@ -56,7 +56,7 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.25 }}
             className="mx-auto mt-6 max-w-xl text-lg md:text-xl text-muted-foreground leading-relaxed"
           >
-            Roleplay interviews, discovery calls, and objections in realistic scenarios — and get instant feedback to improve faster.
+            Train like a sales rep before the real interview. Framework-scored simulations for cold calls, discovery, and objection handling.
           </motion.p>
 
           {/* CTAs */}
