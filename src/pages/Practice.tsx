@@ -239,14 +239,21 @@ const PracticePage = () => {
   const isColdCall = selectedEnv === "cold-call";
 
   const handleStart = async (id: string, sdrRound?: SDRRound) => {
-    // Voice modes require mic — request permission on user gesture
+    // When starting an SDR round, override the environment to match the round type
+    if (sdrRound) {
+      const roundEnv: EnvironmentId = sdrRound.id === "cold-call-sim" ? "cold-call" : "interview";
+      setSelectedEnv(roundEnv);
+    }
+
+    // Determine if this specific session is a cold call
     const isSDRColdCall = sdrRound?.id === "cold-call-sim";
-    const needsMic = coldCallTextMode ? false : (isColdCall || isSDRColdCall || voice.voiceMode);
+    const isThisColdCall = sdrRound ? isSDRColdCall : isColdCall;
+    const needsMic = coldCallTextMode ? false : (isThisColdCall || isSDRColdCall || voice.voiceMode);
     if (needsMic) {
       const granted = await mic.requestMic();
       if (!granted) {
         // For cold call / SDR cold call, allow text-mode fallback (handled by UI below)
-        if ((isColdCall || isSDRColdCall) && (mic.status === "no-device" || mic.status === "blocked")) {
+        if ((isThisColdCall || isSDRColdCall) && (mic.status === "no-device" || mic.status === "blocked")) {
           setShowTextModeFallback(true);
           return;
         }
@@ -259,7 +266,7 @@ const PracticePage = () => {
         }
         return;
       }
-      if (isColdCall || isSDRColdCall) voice.setVoiceMode(true);
+      if (isThisColdCall || isSDRColdCall) voice.setVoiceMode(true);
     }
     // Track resume skip for interview mode
     if (selectedEnv === "interview" && !resumeHighlights.trim()) {
@@ -290,12 +297,12 @@ const PracticePage = () => {
     evaluatorStyleRef.current = styles[Math.floor(Math.random() * styles.length)];
     const role = roles.find((r) => r.id === id);
     if (role) {
-      const openingText = isColdCall
+      const openingText = isThisColdCall
         ? `[${role.title}] — Incoming call. Line is live.`
         : `[${role.title}] — Ready. Begin when you are.`;
       setMessages([{ role: "prospect", text: openingText }]);
       // In cold call, AI speaks the opening
-      if (isColdCall) {
+      if (isThisColdCall) {
         voice.speakAIMessage(openingText);
       }
     }
