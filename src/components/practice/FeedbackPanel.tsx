@@ -7,6 +7,7 @@ import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRound
 import { ShareableSummary } from "./ShareableSummary";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
+import { RubricScoresSection, AnswerComparisonSection, TimestampedMomentsSection } from "./FrameworkFeedback";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
 
