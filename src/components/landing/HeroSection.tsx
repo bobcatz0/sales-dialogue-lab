@@ -84,7 +84,7 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="mt-12 text-sm text-muted-foreground"
           >
-            No signup required · Free to use · Instant AI feedback
+            No signup required · 3–5 minute scenarios · Instant feedback report
           </motion.div>
         </div>
 
