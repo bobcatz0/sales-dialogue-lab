@@ -1,88 +1,118 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Phone, MessageSquare, Star } from "lucide-react";
+import { ArrowRight, Mic, BarChart3, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import heroBg from "@/assets/hero-bg.jpg";
-
-const SCENARIO_PILLS = [
-  { label: "Cold Call", color: "text-blue-400 border-blue-400/20 bg-blue-400/5" },
-  { label: "Discovery", color: "text-green-400 border-green-400/20 bg-green-400/5" },
-  { label: "Objection Handling", color: "text-orange-400 border-orange-400/20 bg-orange-400/5" },
-  { label: "Executive Pitch", color: "text-purple-400 border-purple-400/20 bg-purple-400/5" },
-];
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-      {/* Background image */}
-      <div className="absolute inset-0">
-        <img src={heroBg} alt="" className="w-full h-full object-cover opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16">
+      {/* Animated background grid */}
+      <div className="absolute inset-0 opacity-[0.03]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
       </div>
 
-      <div className="container relative z-10 mx-auto px-6 py-24 text-center">
+      {/* Glow orbs */}
+      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px]" />
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-primary/3 blur-[100px]" />
+
+      <div className="container relative z-10 mx-auto px-6 py-20">
+        <div className="mx-auto max-w-4xl text-center">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary font-medium"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+            </span>
+            AI-Powered Sales Rehearsal
+          </motion.div>
+
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="font-heading text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl"
+          >
+            Stop losing deals.
+            <br />
+            <span className="text-gradient">Start rehearsing.</span>
+          </motion.h1>
+
+          {/* Subhead */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            className="mx-auto mt-6 max-w-xl text-lg md:text-xl text-muted-foreground leading-relaxed"
+          >
+            Practice cold calls, discovery, and objection handling with AI buyers that push back — so real prospects don't catch you off guard.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-10 flex items-center justify-center gap-4 flex-wrap"
+          >
+            <Button variant="hero" size="lg" className="gap-2 text-base px-8 py-6 text-lg" asChild>
+              <a href="/scenarios">
+                Start Free Rehearsal
+                <ArrowRight className="h-5 w-5" />
+              </a>
+            </Button>
+            <Button variant="outline" size="lg" className="gap-2 text-base px-8 py-6 border-border/60 hover:border-primary/40" asChild>
+              <a href="#how-it-works">See How It Works</a>
+            </Button>
+          </motion.div>
+
+          {/* Trust indicators */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="mt-12 text-sm text-muted-foreground"
+          >
+            No signup required · Free to use · Instant AI feedback
+          </motion.div>
+        </div>
+
+        {/* Floating feature pills */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="mx-auto max-w-3xl"
+          transition={{ duration: 0.7, delay: 0.7 }}
+          className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto"
         >
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary">
-            <Phone className="h-3 w-3" />
-            Duolingo for sales conversations
-          </div>
-
-          <h1 className="font-heading text-5xl font-bold leading-tight tracking-tight md:text-7xl">
-            Practice Sales Calls{" "}
-            <span className="text-gradient">With AI Buyers.</span>
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
-            Choose a scenario. Have a real conversation. Get scored instantly.
-            Improve with every rep.
-          </p>
-
-          {/* Scenario pills */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-            {SCENARIO_PILLS.map((pill) => (
-              <span
-                key={pill.label}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${pill.color}`}
-              >
-                <MessageSquare className="h-3 w-3" />
-                {pill.label}
-              </span>
-            ))}
-          </div>
-
-          <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
-            <Button variant="hero" size="lg" className="gap-2 text-base px-8 py-6" asChild>
-              <a href="/scenarios">Browse Scenarios <ArrowRight className="h-4 w-4" /></a>
-            </Button>
-            <Button variant="outline" size="lg" className="gap-2 text-base px-8 py-6" asChild>
-              <a href="/practice">Full Practice Mode</a>
-            </Button>
-          </div>
-
-          <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
-            <div className="flex flex-col items-center">
-              <span className="text-2xl font-bold text-foreground font-heading">6</span>
-              <span>Buyer Scenarios</span>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="flex flex-col items-center">
-              <span className="text-2xl font-bold text-foreground font-heading">AI</span>
-              <span>Real-time Feedback</span>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1">
-                <Star className="h-5 w-5 fill-foreground text-foreground" />
-                <Star className="h-5 w-5 fill-foreground text-foreground" />
-                <Star className="h-5 w-5 fill-foreground text-foreground" />
+          {[
+            { icon: Mic, label: "Voice & Text", desc: "Practice by speaking or typing" },
+            { icon: BarChart3, label: "Scored 0–100", desc: "Instant performance breakdown" },
+            { icon: Zap, label: "AI Feedback", desc: "Actionable tips after every session" },
+          ].map((item, i) => (
+            <div
+              key={item.label}
+              className="card-elevated px-5 py-4 flex items-center gap-4 hover:border-primary/20 transition-colors"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <item.icon className="h-5 w-5" />
               </div>
-              <span>Scored 0–100</span>
+              <div>
+                <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                <p className="text-xs text-muted-foreground">{item.desc}</p>
+              </div>
             </div>
-          </div>
+          ))}
         </motion.div>
       </div>
     </section>
