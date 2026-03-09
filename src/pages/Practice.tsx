@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -168,8 +168,11 @@ async function streamChat({
 // --- Page ---
 
 const PracticePage = () => {
-  const [selectedEnv, setSelectedEnv] = useState<EnvironmentId | null>("interview");
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const paramEnv = searchParams.get("env") as EnvironmentId | null;
+  const paramRole = searchParams.get("role");
+  const [selectedEnv, setSelectedEnv] = useState<EnvironmentId | null>(paramEnv || "interview");
+  const [selectedRole, setSelectedRole] = useState<string | null>(paramRole || null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
