@@ -1491,7 +1491,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           if (selectedRole) handleStart(selectedRole);
                         }}
                         onStartDrill={
-                          (selectedEnv === "interview" || selectedEnv === "final-round") && feedback.score < 60
+                          (selectedEnv === "interview" || selectedEnv === "final-round") && feedback.score < 80
                             ? () => setActiveDrill(getDrillForWeakness(feedback.skillBreakdown))
                             : undefined
                         }
