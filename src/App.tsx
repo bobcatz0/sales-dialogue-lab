@@ -11,6 +11,7 @@ import Practice from "./pages/Practice";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 import DrillLibrary from "./pages/DrillLibrary";
+import Scenarios from "./pages/Scenarios";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/practice" element={<Practice />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/drills" element={<DrillLibrary />} />
+          <Route path="/scenarios" element={<Scenarios />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
