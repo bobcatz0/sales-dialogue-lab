@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
+import { ScorecardShare } from "./ScorecardShare";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection, TimestampedMomentsSection } from "./FrameworkFeedback";
@@ -157,6 +158,7 @@ export function FeedbackPanel({
   voiceMetrics,
   voiceFeedbackLines,
   voiceScoreAdjustment,
+  scenarioTitle,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
@@ -168,6 +170,7 @@ export function FeedbackPanel({
   voiceMetrics?: VoiceMetrics;
   voiceFeedbackLines?: string[];
   voiceScoreAdjustment?: number;
+  scenarioTitle?: string;
 }) {
   const interview = isInterviewRank(feedback.rank);
   const skills = feedback.skillBreakdown || [];
@@ -610,6 +613,14 @@ export function FeedbackPanel({
           <Download className="h-3 w-3 mr-1.5" />
           Download Full Report
         </Button>
+
+        {/* Scorecard — always shown for valid sessions */}
+        <ScorecardShare
+          feedback={feedback}
+          scenarioTitle={scenarioTitle || feedback.rank}
+          alias={alias ?? null}
+          isValidSession={!!isValidSession}
+        />
 
         {/* Shareable summary — interview only */}
         {interview && (

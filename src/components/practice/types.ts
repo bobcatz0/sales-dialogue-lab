@@ -95,4 +95,7 @@ export interface SessionRecord {
   date: string;
   messageCount: number;
   skillBreakdown?: SkillScore[];
+  frameworkId?: FrameworkId;
+  rubricScores?: RubricScore[];
+  scenarioTitle?: string;
 }
