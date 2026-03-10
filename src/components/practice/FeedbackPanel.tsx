@@ -158,6 +158,7 @@ export function FeedbackPanel({
   voiceMetrics,
   voiceFeedbackLines,
   voiceScoreAdjustment,
+  scenarioTitle,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
@@ -169,6 +170,7 @@ export function FeedbackPanel({
   voiceMetrics?: VoiceMetrics;
   voiceFeedbackLines?: string[];
   voiceScoreAdjustment?: number;
+  scenarioTitle?: string;
 }) {
   const interview = isInterviewRank(feedback.rank);
   const skills = feedback.skillBreakdown || [];
