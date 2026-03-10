@@ -614,6 +614,14 @@ export function FeedbackPanel({
           Download Full Report
         </Button>
 
+        {/* Scorecard — always shown for valid sessions */}
+        <ScorecardShare
+          feedback={feedback}
+          scenarioTitle={scenarioTitle || feedback.rank}
+          alias={alias ?? null}
+          isValidSession={!!isValidSession}
+        />
+
         {/* Shareable summary — interview only */}
         {interview && (
           <ShareableSummary
