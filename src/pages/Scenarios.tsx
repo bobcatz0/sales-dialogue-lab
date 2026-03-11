@@ -197,6 +197,11 @@ const Scenarios = () => {
                   {scenario.description}
                 </p>
 
+                {/* Metadata tags */}
+                <p className="text-xs text-muted-foreground">
+                  {scenario.difficulty} • {scenario.duration}{scenario.framework ? ` • ${scenario.framework.label}` : ""}
+                </p>
+
                 {/* What you practice */}
                 <div className="space-y-1">
                   {scenario.whatYouPractice.map((skill) => (
