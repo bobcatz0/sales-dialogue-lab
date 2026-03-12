@@ -118,6 +118,9 @@ export default function ScorecardPage() {
   const weakestSkill = rubric.length > 0
     ? rubric.reduce((min, r) => r.score < min.score ? r : min, rubric[0])
     : null;
+  const strongestSkill = rubric.length > 0
+    ? rubric.reduce((max, r) => r.score > max.score ? r : max, rubric[0])
+    : null;
   const rankTier = scorecard.elo != null ? getEloRank(scorecard.elo) : null;
   const formattedDate = new Date(scorecard.created_at).toLocaleDateString("en-US", {
     month: "long",
