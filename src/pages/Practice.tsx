@@ -8,9 +8,21 @@ import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/landing/Navbar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { syncEloAfterSession, type EloSyncResult } from "@/lib/eloSync";
 import { RankUpCelebration } from "@/components/practice/RankUpCelebration";
 import { useAuth } from "@/hooks/useAuth";
+import { PromotionBanner } from "@/components/practice/PromotionBanner";
+import { PromotionResultModal } from "@/components/practice/PromotionResult";
+import {
+  getPromotionEligibility,
+  loadLastFailedPromotion,
+  recordPromotionAttempt,
+  getPromotionPrompt,
+  PROMO_PASS_SCORE,
+  type PromotionEligibility,
+  type PromotionResult,
+} from "@/components/practice/promotionMatch";
 
 import { roles } from "@/components/practice/roleData";
 import type { ChatMessage, Feedback, SessionRecord, EvaluatorStyle } from "@/components/practice/types";
@@ -181,6 +193,7 @@ async function streamChat({
 // --- Page ---
 
 const PracticePage = () => {
+  const { user, profile, refreshProfile } = useAuth();
   const [searchParams] = useSearchParams();
   const paramEnv = searchParams.get("env") as EnvironmentId | null;
   const paramRole = searchParams.get("role");
@@ -195,6 +208,10 @@ const PracticePage = () => {
   const [lastPoints, setLastPoints] = useState<number | null>(null);
   const [eloDelta, setEloDelta] = useState<number | null>(null);
   const [rankUpData, setRankUpData] = useState<EloSyncResult | null>(null);
+  const [promoEligibility, setPromoEligibility] = useState<PromotionEligibility | null>(null);
+  const [isPromotionMatch, setIsPromotionMatch] = useState(false);
+  const [promoResult, setPromoResult] = useState<PromotionResult | null>(null);
+  const [showPromoResult, setShowPromoResult] = useState(false);
   const [progression, setProgression] = useState(() => loadProgression());
   const [unlockQueue, setUnlockQueue] = useState<{ id: string; label: string; description: string }[]>([]);
   const [alias, setAlias] = useState<string | null>(() => loadAlias());
@@ -236,6 +253,25 @@ const PracticePage = () => {
   const filteredRoles = activeEnv
     ? roles.filter((r) => activeEnv.personaIds.includes(r.id))
     : [];
+
+  // Check promotion eligibility when profile/env changes
+  useEffect(() => {
+    if (!profile || !user) {
+      setPromoEligibility(null);
+      return;
+    }
+    const checkPromo = async () => {
+      const elig = getPromotionEligibility(profile.elo, null);
+      if (elig.nextRank && elig.eloNeeded <= 100) {
+        const lastFail = await loadLastFailedPromotion(user.id, elig.nextRank);
+        const finalElig = getPromotionEligibility(profile.elo, lastFail);
+        setPromoEligibility(finalElig);
+      } else {
+        setPromoEligibility(elig);
+      }
+    };
+    checkPromo();
+  }, [profile?.elo, user?.id, selectedEnv]);
 
   // Load history on mount
   useEffect(() => {
@@ -469,7 +505,8 @@ You have been assigned the "${evaluatorStyleRef.current}" evaluation style for t
 ${evaluatorStyleRef.current === "analytical" ? `ANALYTICAL EVALUATOR: You focus heavily on metrics, data, and structured thinking. Penalize vague claims strongly — ask "What were the numbers?", "How did you measure that?", "What was the baseline?" Reward quantified results and logical frameworks. Less interested in storytelling, more interested in evidence.` : ""}${evaluatorStyleRef.current === "results-oriented" ? `RESULTS-ORIENTED EVALUATOR: You focus on outcomes and impact. Less patient with long explanations — if an answer runs past 3 sentences without stating the result, interrupt: "What was the outcome?", "Bottom line — what happened?" Reward concise, outcome-driven answers. Care about what changed, not what was attempted.` : ""}${evaluatorStyleRef.current === "behavioral" ? `BEHAVIORAL EVALUATOR: You focus on ownership, accountability, and learning. Penalize blame-shifting — if the candidate says "the team" or "we" without specifying their role, push: "What was your direct contribution?", "That sounds like a team effort — what did you personally do?" Reward reflection, improvement insights, and honest self-assessment.` : ""}
 This evaluation style should subtly influence your questions and reactions. Do NOT announce or reference it. Stay professional — no hostility, no sarcasm, no unfair judgment.` : "";
     const personalityAddendum = isInterviewLike ? `\n\n${getPersonalityPrompt(personalityRef.current)}` : "";
-    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + weakSpotAddendum + evaluatorAddendum + personalityAddendum + pressureAddendum;
+    const promotionAddendum = isPromotionMatch && promoEligibility?.nextRank ? getPromotionPrompt(promoEligibility.nextRank) : "";
+    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + weakSpotAddendum + evaluatorAddendum + personalityAddendum + promotionAddendum + pressureAddendum;
 
     let prospectText = "";
 
@@ -606,12 +643,49 @@ This evaluation style should subtly influence your questions and reactions. Do N
       setHistory(updated);
 
       // Sync ELO to database if logged in
-      syncEloAfterSession(data.score).then((result) => {
+      syncEloAfterSession(data.score).then(async (result) => {
         if (result) {
           setEloDelta(result.delta);
+
+          // Handle promotion match result
+          if (isPromotionMatch && promoEligibility?.nextRank && user) {
+            const passed = data.score >= PROMO_PASS_SCORE;
+            await recordPromotionAttempt(
+              user.id,
+              promoEligibility.nextRank,
+              result.oldElo,
+              data.score,
+              passed
+            );
+
+            if (passed) {
+              // Boost ELO to tier minimum if not already there
+              const targetMin = promoEligibility.nextThreshold;
+              if (result.newElo < targetMin) {
+                const { data: profileData } = await supabase
+                  .from("profiles")
+                  .update({ elo: targetMin, updated_at: new Date().toISOString() })
+                  .eq("id", user.id)
+                  .select("elo")
+                  .single();
+                if (profileData) {
+                  result.newElo = profileData.elo;
+                  result.newRank = promoEligibility.nextRank;
+                  result.rankedUp = true;
+                }
+              }
+              setPromoResult({ passed: true, sessionScore: data.score, targetRank: promoEligibility.nextRank, newElo: result.newElo });
+            } else {
+              setPromoResult({ passed: false, sessionScore: data.score, targetRank: promoEligibility.nextRank });
+            }
+            setShowPromoResult(true);
+            setIsPromotionMatch(false);
+            refreshProfile();
+          }
+
           if (result.rankedUp) {
             setRankUpData(result);
-          } else {
+          } else if (!isPromotionMatch) {
             toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
           }
         }
@@ -1025,6 +1099,23 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     {currentRank}
                   </Badge>
                 </div>
+
+                {/* Promotion Banner */}
+                {promoEligibility && (selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
+                  <PromotionBanner
+                    eligibility={promoEligibility}
+                    onStartPromotion={() => {
+                      setIsPromotionMatch(true);
+                      personalityRef.current = "pressure";
+                      setSelectedPersonality("pressure");
+                      // Auto-select hiring manager for promotion matches
+                      const hiringManager = filteredRoles.find(r => r.id === "hiring-manager");
+                      if (hiringManager) {
+                        handleStart(hiringManager.id);
+                      }
+                    }}
+                  />
+                )}
 
                 {/* Interviewer Personality Selector */}
                 {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
@@ -1723,6 +1814,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
           onClose={() => setRankUpData(null)}
         />
       )}
+
+      {/* Promotion Result */}
+      <PromotionResultModal
+        open={showPromoResult}
+        result={promoResult}
+        onClose={() => {
+          setShowPromoResult(false);
+          setPromoResult(null);
+          refreshProfile();
+        }}
+      />
     </>
   );
 };

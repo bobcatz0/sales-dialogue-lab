@@ -71,6 +71,36 @@ export type Database = {
         }
         Relationships: []
       }
+      promotion_attempts: {
+        Row: {
+          created_at: string
+          elo_at_attempt: number
+          id: string
+          passed: boolean
+          session_score: number
+          target_rank: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          elo_at_attempt: number
+          id?: string
+          passed?: boolean
+          session_score: number
+          target_rank: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          elo_at_attempt?: number
+          id?: string
+          passed?: boolean
+          session_score?: number
+          target_rank?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
