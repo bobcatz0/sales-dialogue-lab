@@ -788,6 +788,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
   const hasEnoughMessages = messages.filter((m) => m.role === "user").length >= 2;
 
   return (
+    <>
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 md:px-6 pt-24 pb-12">
