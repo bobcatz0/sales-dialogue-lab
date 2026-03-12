@@ -99,6 +99,7 @@ function ConfettiBurst() {
 export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession, elo, eloDelta }: ScorecardShareProps) {
   const [showCard, setShowCard] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [imageCopied, setImageCopied] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [discordWebhook, setDiscordWebhook] = useState(() => loadDiscordWebhook());
   const [showDiscordSetup, setShowDiscordSetup] = useState(false);
