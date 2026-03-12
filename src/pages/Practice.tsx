@@ -1663,27 +1663,35 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 ) : (
                   /* Text Mode: standard input */
                   <>
-                    <div className="flex gap-1.5 sm:gap-2">
-                      <Input
+                    <div className="flex gap-1.5 sm:gap-2 items-end">
+                      <Textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Type…"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                        placeholder="Type your response… (Shift+Enter for new line)"
                         disabled={!selectedRole || isLoading}
-                        className="flex-1 h-9 text-sm"
+                        className="flex-1 min-h-[80px] max-h-[200px] text-sm resize-none"
+                        rows={3}
                       />
-                      <VoiceInputButton
-                        onTranscript={(text) => setInput((prev) => (prev ? prev + " " + text : text))}
-                        disabled={!selectedRole || isLoading}
-                      />
-                      <Button
-                        onClick={handleSend}
-                        disabled={!selectedRole || !input.trim() || isLoading}
-                        size="icon"
-                        className="h-9 w-9 shrink-0"
-                      >
-                        <Send className="h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex flex-col gap-1.5 shrink-0">
+                        <VoiceInputButton
+                          onTranscript={(text) => setInput((prev) => (prev ? prev + " " + text : text))}
+                          disabled={!selectedRole || isLoading}
+                        />
+                        <Button
+                          onClick={handleSend}
+                          disabled={!selectedRole || !input.trim() || isLoading}
+                          size="icon"
+                          className="h-9 w-9 shrink-0"
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex gap-1.5 sm:gap-2 mt-2">
                       <Button
