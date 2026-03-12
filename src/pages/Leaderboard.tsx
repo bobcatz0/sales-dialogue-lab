@@ -229,7 +229,7 @@ function NearYouSection({
               <motion.div
                 initial={{ width: 0 }}
                 animate={{
-                  width: `${Math.min(100, ((userElo - ELO_RANKS[currentRankIdx].min) / (nextRank.min - ELO_RANKS[currentRankIdx].min)) * 100)}%`,
+                  width: `${Math.min(100, ((userElo - ranks[currentRankIdx].min) / (nextRank.min - ranks[currentRankIdx].min)) * 100)}%`,
                 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
                 className="h-full rounded-full bg-primary"
