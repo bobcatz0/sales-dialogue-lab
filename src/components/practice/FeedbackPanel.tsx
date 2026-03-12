@@ -160,6 +160,7 @@ export function FeedbackPanel({
   voiceFeedbackLines,
   voiceScoreAdjustment,
   scenarioTitle,
+  eloDelta,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
