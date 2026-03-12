@@ -10,6 +10,7 @@ import { getDrillStats } from "@/components/practice/drillTracking";
 import { loadHistory } from "@/components/practice/sessionStorage";
 import { useAuth } from "@/hooks/useAuth";
 import { EvaluatorBadge, EvaluatorReputation } from "./EvaluatorBadges";
+import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
