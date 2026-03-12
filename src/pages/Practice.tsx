@@ -1199,7 +1199,12 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           size="sm"
                           variant={isActive ? "default" : "outline"}
                           className="shrink-0 text-xs h-8"
-                          onClick={() => unlocked && handleStart(role.id)}
+                          onClick={() => {
+                            if (unlocked) {
+                              setPendingStartId(role.id);
+                              setShowBriefing(true);
+                            }
+                          }}
                           disabled={!unlocked}
                         >
                           {!unlocked ? "Locked" : isActive ? "Active" : "Start"}
