@@ -120,6 +120,9 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
   const weakestSkill = rubric.length > 0
     ? rubric.reduce((min, r) => r.score < min.score ? r : min, rubric[0])
     : null;
+  const strongestSkill = rubric.length > 0
+    ? rubric.reduce((max, r) => r.score > max.score ? r : max, rubric[0])
+    : null;
   const rankTier = elo != null ? getEloRank(elo) : null;
   const topPercent = 100 - percentile;
 
@@ -168,6 +171,7 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     frameworkLabel ? `📋 ${frameworkLabel}` : null,
     `📊 Top ${topPercent}%`,
     elo != null ? `⚡ ELO: ${elo}${eloDelta != null ? ` (${eloDelta >= 0 ? "+" : ""}${eloDelta})` : ""} — ${rankTier}` : null,
+    strongestSkill ? `💪 Strongest: ${strongestSkill.criterion} (${strongestSkill.score}/100)` : null,
     weakestSkill ? `⚠️ Focus area: ${weakestSkill.criterion} (${weakestSkill.score}/100)` : null,
     ``,
     `Practice sales scenarios at ${shareUrl}`,
@@ -273,7 +277,7 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
       const scale = 2;
       const width = 600;
       const hasElo = elo != null;
-      const height = 460 + rubric.length * 40 + (hasElo ? 50 : 0);
+      const height = 460 + rubric.length * 40 + (hasElo ? 50 : 0) + (strongestSkill ? 60 : 0) + (weakestSkill ? 60 : 0);
       canvas.width = width * scale;
       canvas.height = height * scale;
       const ctx = canvas.getContext("2d");
@@ -405,6 +409,36 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
         });
       }
 
+      // Strongest skill
+      if (strongestSkill) {
+        y += 8;
+        ctx.fillStyle = "#052e16";
+        ctx.roundRect(32, y - 14, width - 64, 44, 8);
+        ctx.fill();
+        ctx.fillStyle = "#86efac";
+        ctx.font = "600 10px 'Inter', system-ui, sans-serif";
+        ctx.fillText("💪 STRONGEST SKILL", 44, y);
+        ctx.fillStyle = "#f0fdf4";
+        ctx.font = "600 13px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`${strongestSkill.criterion}: ${strongestSkill.score}/100`, 44, y + 18);
+        y += 48;
+      }
+
+      // Weakest skill
+      if (weakestSkill) {
+        y += strongestSkill ? 0 : 8;
+        ctx.fillStyle = "#7f1d1d";
+        ctx.roundRect(32, y - 14, width - 64, 44, 8);
+        ctx.fill();
+        ctx.fillStyle = "#fca5a5";
+        ctx.font = "600 10px 'Inter', system-ui, sans-serif";
+        ctx.fillText("⚠ WEAKEST SKILL", 44, y);
+        ctx.fillStyle = "#fef2f2";
+        ctx.font = "600 13px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`${weakestSkill.criterion}: ${weakestSkill.score}/100`, 44, y + 18);
+        y += 48;
+      }
+
       // Alias
       if (alias) {
         y += 4;
@@ -495,8 +529,21 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
         ctx.fillText(`⚡ ${elo} ELO`, 32, y);
       }
 
-      if (weakestSkill) {
+      if (strongestSkill) {
         y += 28;
+        ctx.fillStyle = "#052e16";
+        ctx.roundRect(32, y - 14, width - 64, 44, 8);
+        ctx.fill();
+        ctx.fillStyle = "#86efac";
+        ctx.font = "600 10px 'Inter', system-ui, sans-serif";
+        ctx.fillText("💪 STRONGEST SKILL", 44, y);
+        ctx.fillStyle = "#f0fdf4";
+        ctx.font = "600 13px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`${strongestSkill.criterion}: ${strongestSkill.score}/100`, 44, y + 18);
+      }
+
+      if (weakestSkill) {
+        y += 28 + (strongestSkill ? 32 : 0);
         ctx.fillStyle = "#7f1d1d";
         ctx.roundRect(32, y - 14, width - 64, 44, 8);
         ctx.fill();
@@ -640,6 +687,19 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Strongest Skill Callout */}
+              {strongestSkill && (
+                <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
+                  <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">
+                    💪 Strongest Skill
+                  </p>
+                  <p className="text-xs font-semibold text-foreground">{strongestSkill.criterion}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Score: {strongestSkill.score}/100{strongestSkill.note ? ` — ${strongestSkill.note}` : ""}
+                  </p>
                 </div>
               )}
 
