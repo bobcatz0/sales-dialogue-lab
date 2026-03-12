@@ -408,6 +408,36 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
         });
       }
 
+      // Strongest skill
+      if (strongestSkill) {
+        y += 8;
+        ctx.fillStyle = "#052e16";
+        ctx.roundRect(32, y - 14, width - 64, 44, 8);
+        ctx.fill();
+        ctx.fillStyle = "#86efac";
+        ctx.font = "600 10px 'Inter', system-ui, sans-serif";
+        ctx.fillText("💪 STRONGEST SKILL", 44, y);
+        ctx.fillStyle = "#f0fdf4";
+        ctx.font = "600 13px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`${strongestSkill.criterion}: ${strongestSkill.score}/100`, 44, y + 18);
+        y += 48;
+      }
+
+      // Weakest skill
+      if (weakestSkill) {
+        y += strongestSkill ? 0 : 8;
+        ctx.fillStyle = "#7f1d1d";
+        ctx.roundRect(32, y - 14, width - 64, 44, 8);
+        ctx.fill();
+        ctx.fillStyle = "#fca5a5";
+        ctx.font = "600 10px 'Inter', system-ui, sans-serif";
+        ctx.fillText("⚠ WEAKEST SKILL", 44, y);
+        ctx.fillStyle = "#fef2f2";
+        ctx.font = "600 13px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`${weakestSkill.criterion}: ${weakestSkill.score}/100`, 44, y + 18);
+        y += 48;
+      }
+
       // Alias
       if (alias) {
         y += 4;
