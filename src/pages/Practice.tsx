@@ -46,6 +46,7 @@ import { useCallTimer } from "@/components/practice/CallTimer";
 import { ENVIRONMENTS, getEnvironment, type EnvironmentId } from "@/components/practice/environments";
 import { getTodayChallenge, checkChallengeCondition, markChallengeCompleted, CHALLENGE_BONUS_POINTS } from "@/components/practice/dailyChallenge";
 import { DailyChallengeCard } from "@/components/practice/DailyChallengeCard";
+import { PERSONALITIES, getPersonalityPrompt, type InterviewerPersonality } from "@/components/practice/interviewerPersonality";
 import {
   SDR_ROUNDS,
   loadSDRTrackProgress,
@@ -209,6 +210,8 @@ const PracticePage = () => {
     try { return localStorage.getItem("salescalls_resume") || ""; } catch { return ""; }
   });
   const evaluatorStyleRef = useRef<EvaluatorStyle>("analytical");
+  const personalityRef = useRef<InterviewerPersonality>("neutral");
+  const [selectedPersonality, setSelectedPersonality] = useState<InterviewerPersonality>("neutral");
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
   const elapsedRef = useRef(0);
@@ -465,7 +468,8 @@ After ANY weak-spot detection (vague, blame-shift, rehearsed, over-explaining), 
 You have been assigned the "${evaluatorStyleRef.current}" evaluation style for this session.
 ${evaluatorStyleRef.current === "analytical" ? `ANALYTICAL EVALUATOR: You focus heavily on metrics, data, and structured thinking. Penalize vague claims strongly — ask "What were the numbers?", "How did you measure that?", "What was the baseline?" Reward quantified results and logical frameworks. Less interested in storytelling, more interested in evidence.` : ""}${evaluatorStyleRef.current === "results-oriented" ? `RESULTS-ORIENTED EVALUATOR: You focus on outcomes and impact. Less patient with long explanations — if an answer runs past 3 sentences without stating the result, interrupt: "What was the outcome?", "Bottom line — what happened?" Reward concise, outcome-driven answers. Care about what changed, not what was attempted.` : ""}${evaluatorStyleRef.current === "behavioral" ? `BEHAVIORAL EVALUATOR: You focus on ownership, accountability, and learning. Penalize blame-shifting — if the candidate says "the team" or "we" without specifying their role, push: "What was your direct contribution?", "That sounds like a team effort — what did you personally do?" Reward reflection, improvement insights, and honest self-assessment.` : ""}
 This evaluation style should subtly influence your questions and reactions. Do NOT announce or reference it. Stay professional — no hostility, no sarcasm, no unfair judgment.` : "";
-    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + weakSpotAddendum + evaluatorAddendum + pressureAddendum;
+    const personalityAddendum = isInterviewLike ? `\n\n${getPersonalityPrompt(personalityRef.current)}` : "";
+    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + weakSpotAddendum + evaluatorAddendum + personalityAddendum + pressureAddendum;
 
     let prospectText = "";
 
@@ -1021,6 +1025,42 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     {currentRank}
                   </Badge>
                 </div>
+
+                {/* Interviewer Personality Selector */}
+                {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                      Interviewer Personality
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {PERSONALITIES.map((p) => {
+                        const isSelected = selectedPersonality === p.id;
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => { personalityRef.current = p.id; setSelectedPersonality(p.id); }}
+                            className={`card-elevated p-3 text-left transition-all duration-200 cursor-pointer ${
+                              isSelected
+                                ? "border-primary/60 shadow-[0_0_16px_hsl(145_72%_50%/0.08)]"
+                                : "hover:border-border/80"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-base">{p.icon}</span>
+                              <span className={`text-xs font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
+                                {p.label}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground leading-relaxed">
+                              {p.description}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-3">
                   {filteredRoles.map((role) => {
                     const isActive = selectedRole === role.id;
@@ -1200,6 +1240,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     <span className="text-xs font-medium text-foreground truncate">
                       {activeRole.title}
                     </span>
+                  )}
+                  {activeRole && (selectedEnv === "interview" || selectedEnv === "final-round") && (
+                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-[18px] shrink-0 border-border text-muted-foreground">
+                      {PERSONALITIES.find(p => p.id === selectedPersonality)?.icon} {PERSONALITIES.find(p => p.id === selectedPersonality)?.label}
+                    </Badge>
                   )}
                   {!activeRole && !activeEnv && (
                     <span className="text-xs text-muted-foreground">Session</span>
