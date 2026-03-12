@@ -502,7 +502,38 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
             </div>
           </div>
 
-          {/* Actions — Download + Copy */}
+          {/* Primary Share Buttons */}
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              size="sm"
+              className="h-9 text-xs gap-1.5 bg-[#0A66C2] hover:bg-[#004182] text-white"
+              onClick={handleShareLinkedIn}
+            >
+              <Linkedin className="h-3.5 w-3.5" />
+              LinkedIn
+            </Button>
+            <Button
+              size="sm"
+              className="h-9 text-xs gap-1.5 bg-foreground hover:bg-foreground/90 text-background"
+              onClick={handleShareX}
+            >
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              Twitter / X
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 text-xs gap-1.5"
+              onClick={handleCopyImage}
+            >
+              {imageCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {imageCopied ? "Copied!" : "Copy Image"}
+            </Button>
+          </div>
+
+          {/* Secondary Actions */}
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -511,7 +542,7 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
               onClick={handleDownloadImage}
             >
               <Download className="h-3 w-3" />
-              Download Image
+              Download
             </Button>
             <Button
               variant="outline"
