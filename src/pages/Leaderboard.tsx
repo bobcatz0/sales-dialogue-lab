@@ -14,6 +14,7 @@ import { EloHistoryChart } from "@/components/practice/EloHistoryChart";
 import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
 import { PlacementProgress, PlacingBadge } from "@/components/practice/PlacementSystem";
 import { PLACEMENT_SESSIONS_REQUIRED } from "@/lib/eloSync";
+import { LiveActivityFeed } from "@/components/LiveActivityFeed";
 
 interface LeaderboardEntry {
   id: string;
