@@ -605,7 +605,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
       syncEloAfterSession(data.score).then((result) => {
         if (result) {
           setEloDelta(result.delta);
-          toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
+          if (result.rankedUp) {
+            setRankUpData(result);
+          } else {
+            toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
+          }
         }
       });
 
