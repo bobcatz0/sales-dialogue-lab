@@ -1546,9 +1546,9 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         </Button>
                       )}
                       <Button
-                        variant={isColdCall ? "destructive" : "outline"}
+                        variant={isReadyForScore ? "hero" : isColdCall ? "destructive" : "outline"}
                         size="sm"
-                        className={`text-xs h-8 ${isColdCall ? "px-6" : ""}`}
+                        className={`text-xs h-8 ${isColdCall && !isReadyForScore ? "px-6" : ""}`}
                         onClick={handleEndSession}
                         disabled={!selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages}
                       >
