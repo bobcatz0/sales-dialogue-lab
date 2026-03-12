@@ -684,6 +684,12 @@ const LeaderboardPage = () => {
             </>
           )}
         </motion.div>
+
+        {/* Live Activity Feed sidebar */}
+        <div className="hidden lg:block sticky top-24 self-start">
+          <LiveActivityFeed />
+        </div>
+        </div>
       </div>
     </div>
   );
