@@ -111,7 +111,7 @@ const LeaderboardPage = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-lg font-heading font-bold text-foreground truncate">
-                  {profile.display_name}
+                  {profile.display_name} <span className={`text-sm ${getRankColor(getEloRank(profile.elo))}`}>[{getEloRank(profile.elo)}]</span>
                 </p>
                 <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                   <span className="text-2xl font-bold font-heading text-foreground">{profile.elo}</span>
@@ -254,8 +254,9 @@ const LeaderboardPage = () => {
                         </div>
                         <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
                           {entry.display_name}
-                          {isCurrentUser && <span className="text-[10px] text-muted-foreground ml-1">(you)</span>}
                         </span>
+                        <span className={`text-[10px] font-bold ${getRankColor(rank)}`}>[{rank}]</span>
+                        {isCurrentUser && <span className="text-[10px] text-muted-foreground">(you)</span>}
                         {entry.is_evaluator && (
                           <ShieldCheck className="h-3.5 w-3.5 text-blue-400 shrink-0" />
                         )}

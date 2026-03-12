@@ -8,6 +8,7 @@ import { ShareableSummary } from "./ShareableSummary";
 import { ScorecardShare } from "./ScorecardShare";
 import { ChallengeButton } from "./ChallengeButton";
 import { HumanReviewedBadge } from "./EvaluatorBadges";
+import { AnimatedScore } from "./AnimatedScore";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
@@ -228,32 +229,47 @@ export function FeedbackPanel({
 
       {/* A. Overall Performance */}
       <div className="flex flex-col items-center py-5 px-4 border-b border-border">
-        <motion.span
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 350, damping: 22, delay: 0.05 }}
+        <AnimatedScore
+          target={feedback.score}
+          delay={0.2}
           className={`text-5xl font-bold font-heading ${getRankColor(feedback.rank)}`}
+        />
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.5 }}
+          className="text-[10px] text-muted-foreground mt-0.5"
         >
-          {feedback.score}
-        </motion.span>
-        <p className="text-[10px] text-muted-foreground mt-0.5">
           {interview ? "Interview Readiness Score" : "Performance Score"}
-        </p>
-        <div className="flex items-center gap-2 mt-1.5 flex-wrap justify-center">
-          <span
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 2.8, type: "spring", stiffness: 300, damping: 20 }}
+          className="flex items-center gap-2 mt-1.5 flex-wrap justify-center"
+        >
+          <motion.span
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 2.9, type: "spring", stiffness: 400, damping: 18 }}
             className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${getRankColor(feedback.rank)} border-current/20`}
           >
             {feedback.rank}
-          </span>
-          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+          </motion.span>
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 3.1 }}
+            className="text-[10px] text-muted-foreground flex items-center gap-0.5"
+          >
             <Gauge className="h-3 w-3" />
             Level {feedback.peakDifficulty ?? 1}
-          </span>
+          </motion.span>
           {eloDelta != null && (
             <motion.span
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
+              initial={{ opacity: 0, scale: 0.8, y: 4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 3.3, type: "spring", stiffness: 300 }}
               className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
                 eloDelta >= 0
                   ? "bg-primary/10 text-primary"
@@ -267,15 +283,20 @@ export function FeedbackPanel({
           {feedback.humanReviewScore != null && (
             <HumanReviewedBadge evaluatorScore={feedback.humanReviewScore} />
           )}
-        </div>
-        <div className="w-full max-w-[200px] h-1 bg-muted rounded-full overflow-hidden mt-3">
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 3.0 }}
+          className="w-full max-w-[200px] h-1 bg-muted rounded-full overflow-hidden mt-3"
+        >
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${feedback.score}%` }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.15 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 3.0 }}
             className={`h-full rounded-full ${getScoreBarColor(feedback.score)}`}
           />
-        </div>
+        </motion.div>
       </div>
 
       <div className="p-5 space-y-5">
