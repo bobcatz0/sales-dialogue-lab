@@ -41,7 +41,7 @@ export async function syncEloAfterSession(sessionScore: number): Promise<EloSync
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("elo, total_sessions, weekly_elo_gain, week_start")
+    .select("elo, total_sessions, weekly_elo_gain, week_start, current_streak, longest_streak, last_session_date")
     .eq("id", user.id)
     .single();
 
