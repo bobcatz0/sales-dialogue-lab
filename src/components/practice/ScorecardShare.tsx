@@ -129,7 +129,11 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
   const scorecardUrl = scorecardId
     ? `${window.location.origin}/scorecard/${scorecardId}`
     : null;
-  const shareUrl = scorecardUrl || "https://sales-dialogue-lab.lovable.app/scenarios";
+  // OG-enriched URL for social sharing (crawlers get meta tags, real users get redirected)
+  const ogShareUrl = scorecardId
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-scorecard?id=${scorecardId}`
+    : null;
+  const shareUrl = ogShareUrl || "https://sales-dialogue-lab.lovable.app/scenarios";
 
   // Save scorecard to DB when card is first shown
   const saveScorecard = useCallback(async () => {
