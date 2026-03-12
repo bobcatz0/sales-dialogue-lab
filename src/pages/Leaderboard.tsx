@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getEloRank, ELO_RANKS } from "@/lib/elo";
+import { EloHistoryChart } from "@/components/practice/EloHistoryChart";
 
 interface LeaderboardEntry {
   id: string;
