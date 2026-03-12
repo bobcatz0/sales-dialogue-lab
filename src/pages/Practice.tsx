@@ -252,6 +252,25 @@ const PracticePage = () => {
     ? roles.filter((r) => activeEnv.personaIds.includes(r.id))
     : [];
 
+  // Check promotion eligibility when profile/env changes
+  useEffect(() => {
+    if (!profile || !user) {
+      setPromoEligibility(null);
+      return;
+    }
+    const checkPromo = async () => {
+      const elig = getPromotionEligibility(profile.elo, null);
+      if (elig.nextRank && elig.eloNeeded <= 100) {
+        const lastFail = await loadLastFailedPromotion(user.id, elig.nextRank);
+        const finalElig = getPromotionEligibility(profile.elo, lastFail);
+        setPromoEligibility(finalElig);
+      } else {
+        setPromoEligibility(elig);
+      }
+    };
+    checkPromo();
+  }, [profile?.elo, user?.id, selectedEnv]);
+
   // Load history on mount
   useEffect(() => {
     setHistory(loadHistory());
