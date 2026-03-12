@@ -17,6 +17,7 @@ interface LeaderboardEntry {
   elo: number;
   total_sessions: number;
   weekly_elo_gain?: number;
+  is_evaluator?: boolean;
 }
 
 function getMedalIcon(index: number) {
