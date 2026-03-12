@@ -1,5 +1,7 @@
-import { motion } from "framer-motion";
-import { Crown, Medal, User } from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import { Crown, Medal, User, TrendingUp } from "lucide-react";
+import { useRef } from "react";
+import { AnimatedCounter } from "./AnimatedStats";
 
 const sampleLeaderboard = [
   { rank: 1, name: "Alex", tier: "Rainmaker", elo: 1620 },
