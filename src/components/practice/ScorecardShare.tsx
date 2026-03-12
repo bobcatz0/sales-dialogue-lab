@@ -696,6 +696,19 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
             </Button>
           </div>
 
+          {/* Copy Link */}
+          {scorecardUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-1.5"
+              onClick={handleCopyLink}
+            >
+              {linkCopied ? <Check className="h-3 w-3" /> : <LinkIcon className="h-3 w-3" />}
+              {linkCopied ? "Link Copied!" : "Copy Scorecard Link"}
+            </Button>
+          )}
+
           {/* Secondary Actions */}
           <div className="flex gap-2">
             <Button
