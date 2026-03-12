@@ -1511,6 +1511,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           markFirstSessionRetried();
                           setFeedback(null);
                           setLastPoints(null);
+                          setEloDelta(null);
                           setLastSessionValid(false);
                           if (selectedRole) handleStart(selectedRole);
                         }}
