@@ -57,6 +57,7 @@ import { buildPressurePrompt, detectCallEnd, detectHardCloseWin, cleanResponseTe
 import { useCallTimer } from "@/components/practice/CallTimer";
 import { ENVIRONMENTS, getEnvironment, type EnvironmentId } from "@/components/practice/environments";
 import { SessionBriefing } from "@/components/practice/SessionBriefing";
+import { detectSoftResponse, buildEnforcementPrompt, MAX_REGEN_ATTEMPTS } from "@/components/practice/softResponseDetector";
 import { getTodayChallenge, checkChallengeCondition, markChallengeCompleted, CHALLENGE_BONUS_POINTS } from "@/components/practice/dailyChallenge";
 import { DailyChallengeCard } from "@/components/practice/DailyChallengeCard";
 import { PERSONALITIES, getPersonalityPrompt, type InterviewerPersonality } from "@/components/practice/interviewerPersonality";
@@ -371,6 +372,7 @@ const PracticePage = () => {
   };
 
   const sendingRef = useRef(false);
+  const regenCountRef = useRef(0);
 
   // Shared send logic for both text and voice modes
   const sendUserMessage = useCallback(async (userText: string) => {
@@ -511,56 +513,84 @@ This evaluation style should subtly influence your questions and reactions. Do N
     const promotionAddendum = isPromotionMatch && promoEligibility?.nextRank ? getPromotionPrompt(promoEligibility.nextRank) : "";
     const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + weakSpotAddendum + evaluatorAddendum + personalityAddendum + promotionAddendum + pressureAddendum;
 
-    let prospectText = "";
+    // Reset regen counter for each new user message
+    regenCountRef.current = 0;
 
-    try {
-      await streamChat({
-        messages: aiMessages,
-        systemPrompt: fullSystemPrompt,
-        onDelta: (chunk) => {
-          prospectText += chunk;
-          const displayText = cleanResponseText(prospectText);
-          setMessages((prev) => {
-            const last = prev[prev.length - 1];
-            if (last?.role === "prospect" && prev.length === newMessages.length + 1) {
-              return prev.map((m, i) =>
-                i === prev.length - 1 ? { ...m, text: displayText } : m
-              );
+    const runGeneration = async (systemPromptOverride?: string) => {
+      let prospectText = "";
+      const promptToUse = systemPromptOverride ?? fullSystemPrompt;
+
+      try {
+        await streamChat({
+          messages: aiMessages,
+          systemPrompt: promptToUse,
+          onDelta: (chunk) => {
+            prospectText += chunk;
+            const displayText = cleanResponseText(prospectText);
+            setMessages((prev) => {
+              const last = prev[prev.length - 1];
+              if (last?.role === "prospect" && prev.length === newMessages.length + 1) {
+                return prev.map((m, i) =>
+                  i === prev.length - 1 ? { ...m, text: displayText } : m
+                );
+              }
+              return [...prev, { role: "prospect", text: displayText }];
+            });
+          },
+          onDone: async () => {
+            const cleanedText = cleanResponseText(prospectText);
+
+            // Soft-response detection: silently re-generate if AI broke character
+            const isInterviewLike = selectedEnv === "interview" || selectedEnv === "final-round";
+            if (isInterviewLike && regenCountRef.current < MAX_REGEN_ATTEMPTS) {
+              const detection = detectSoftResponse(cleanedText);
+              if (detection.isSoft) {
+                console.log("[SoftDetector] Soft response detected:", detection.matchedPatterns, "— regenerating");
+                regenCountRef.current += 1;
+
+                // Remove the soft response from messages
+                setMessages((prev) => prev.filter((_, i) => i < newMessages.length));
+
+                // Re-generate with enforcement prompt
+                const enforcedPrompt = fullSystemPrompt + "\n\n" + buildEnforcementPrompt(detection.matchedPatterns);
+                await runGeneration(enforcedPrompt);
+                return;
+              }
             }
-            return [...prev, { role: "prospect", text: displayText }];
-          });
-        },
-        onDone: () => {
-          setIsLoading(false);
-          sendingRef.current = false;
 
-          // Voice mode: speak the AI response
-          if (voice.voiceMode && prospectText) {
-            voice.speakAIMessage(cleanResponseText(prospectText));
-          }
+            setIsLoading(false);
+            sendingRef.current = false;
 
-          // Check for hard close win
-          if (detectHardCloseWin(prospectText)) {
-            setHardCloseWin(true);
-            toast("Successful next-step commitment detected.", { duration: 3000 });
-          }
+            // Voice mode: speak the AI response
+            if (voice.voiceMode && prospectText) {
+              voice.speakAIMessage(cleanedText);
+            }
 
-          // Check for persona-initiated call end
-          if (detectCallEnd(prospectText) && !callEndTriggeredRef.current) {
-            callEndTriggeredRef.current = true;
-            setSessionActive(false);
-            setTimeout(() => {
-              handleEndSession();
-            }, 1500);
-          }
-        },
-      });
-    } catch (e: any) {
-      console.error(e);
-      sendingRef.current = false;
-      toast.error("Session interruption detected. Please retry.", { duration: 3000 });
-      setIsLoading(false);
-    }
+            // Check for hard close win
+            if (detectHardCloseWin(prospectText)) {
+              setHardCloseWin(true);
+              toast("Successful next-step commitment detected.", { duration: 3000 });
+            }
+
+            // Check for persona-initiated call end
+            if (detectCallEnd(prospectText) && !callEndTriggeredRef.current) {
+              callEndTriggeredRef.current = true;
+              setSessionActive(false);
+              setTimeout(() => {
+                handleEndSession();
+              }, 1500);
+            }
+          },
+        });
+      } catch (e: any) {
+        console.error(e);
+        sendingRef.current = false;
+        toast.error("Session interruption detected. Please retry.", { duration: 3000 });
+        setIsLoading(false);
+      }
+    };
+
+    await runGeneration();
   }, [activeRole, isLoading, messages, timer.elapsed, activeEnv, selectedEnv, resumeHighlights, activeSDRRound, voice]);
 
   const handleSend = async () => {
