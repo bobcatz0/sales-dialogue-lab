@@ -295,6 +295,17 @@ const LeaderboardPage = () => {
             </motion.div>
           )}
 
+          {/* Players Near You + Next Rank + Rival */}
+          {user && profile && userRank !== null && entries.length > 0 && (
+            <NearYouSection
+              entries={entries}
+              userRank={userRank}
+              userId={user.id}
+              userElo={profile.elo}
+              tab={tab}
+            />
+          )}
+
           {/* ELO History Chart */}
           <EloHistoryChart />
 
