@@ -96,6 +96,40 @@ export async function syncEloAfterSession(sessionScore: number): Promise<EloSync
       }),
   ]);
 
+  // Publish activity events (fire-and-forget)
+  if (newRank !== oldRank && newElo > oldElo) {
+    publishActivityEvent({
+      eventType: "rank_up",
+      title: `promoted to ${newRank}`,
+      description: `ELO ${newElo}`,
+      metadata: { oldRank, newRank, elo: newElo },
+    });
+  } else if (delta > 0) {
+    publishActivityEvent({
+      eventType: "elo_gain",
+      title: `gained ${delta} ELO`,
+      description: `Now at ${newElo} ELO`,
+      metadata: { delta, elo: newElo },
+    });
+  }
+
+  if (sessionScore >= 90) {
+    publishActivityEvent({
+      eventType: "high_score",
+      title: `scored ${sessionScore} in a session`,
+      metadata: { score: sessionScore },
+    });
+  }
+
+  if (placementComplete) {
+    publishActivityEvent({
+      eventType: "personal_best",
+      title: `completed placement as ${newRank}`,
+      description: `Calibrated at ${newElo} ELO`,
+      metadata: { rank: newRank, elo: newElo },
+    });
+  }
+
   return {
     newElo,
     oldElo,
