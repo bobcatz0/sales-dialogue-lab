@@ -40,6 +40,7 @@ const App = () => (
             <Route path="/scenarios" element={<Scenarios />} />
             <Route path="/packs" element={<Packs />} />
             <Route path="/progress" element={<Progress />} />
+            <Route path="/expert-challenges" element={<ExpertChallenges />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
