@@ -193,6 +193,7 @@ const PracticePage = () => {
   const [history, setHistory] = useState<SessionRecord[]>([]);
   const [lastPoints, setLastPoints] = useState<number | null>(null);
   const [eloDelta, setEloDelta] = useState<number | null>(null);
+  const [rankUpData, setRankUpData] = useState<EloSyncResult | null>(null);
   const [progression, setProgression] = useState(() => loadProgression());
   const [unlockQueue, setUnlockQueue] = useState<{ id: string; label: string; description: string }[]>([]);
   const [alias, setAlias] = useState<string | null>(() => loadAlias());
