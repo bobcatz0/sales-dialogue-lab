@@ -270,7 +270,9 @@ const LeaderboardPage = () => {
                       #{userRank} {tab === "weekly" ? "this week" : "overall"}
                     </span>
                   )}
-                  <MovementIndicator gain={profile.weekly_elo_gain ?? 0} />
+                  {userRank && entries[userRank - 1] && (
+                    <MovementIndicator gain={entries[userRank - 1].weekly_elo_gain ?? 0} />
+                  )}
                 </div>
               </div>
             </motion.div>
