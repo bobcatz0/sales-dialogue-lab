@@ -536,7 +536,7 @@ const LeaderboardPage = () => {
 
           {/* Rank tiers legend */}
           <div className="flex flex-wrap justify-center gap-2">
-            {ELO_RANKS.map((r) => (
+            {getEloRanks().map((r) => (
               <span key={r.name} className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-muted ${getRankColor(r.name)}`}>
                 {r.name} ({r.min}+)
               </span>
