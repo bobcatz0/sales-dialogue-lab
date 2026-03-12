@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { User, Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2, TrendingUp, ShieldCheck } from "lucide-react";
+import { Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2, TrendingUp, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BADGE_DEFINITIONS, loadEarnedBadges } from "@/components/practice/achievements";
 import type { ConsistencyData } from "@/components/practice/consistencyScoring";
@@ -11,6 +11,7 @@ import { loadHistory } from "@/components/practice/sessionStorage";
 import { useAuth } from "@/hooks/useAuth";
 import { EvaluatorBadge, EvaluatorReputation } from "./EvaluatorBadges";
 import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
+import { UserAvatar } from "@/components/UserAvatar";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
@@ -43,9 +44,13 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
     >
       {/* Header */}
       <div className="flex items-center gap-2">
-        <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center">
-          <User className="h-4 w-4 text-primary" />
-        </div>
+        <UserAvatar
+          avatarUrl={profile?.avatar_url}
+          displayName={alias}
+          elo={profile?.elo ?? 1000}
+          size="sm"
+          showRankBadge={false}
+        />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">{alias}</p>
           <p className="text-[11px] text-muted-foreground">

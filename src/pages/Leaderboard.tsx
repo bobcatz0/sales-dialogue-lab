@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, LogIn, User, Flame, ShieldCheck, Shield } from "lucide-react";
+import { Trophy, Crown, Medal, LogIn, Flame, ShieldCheck, Shield } from "lucide-react";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Link } from "react-router-dom";
+import { EditableProfile } from "@/components/EditableProfile";
 import Navbar from "@/components/landing/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -130,17 +132,15 @@ const LeaderboardPage = () => {
               transition={{ delay: 0.05 }}
               className="card-elevated p-5 flex items-center gap-4"
             >
-              <div className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0 overflow-hidden">
-                {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
-                ) : (
-                  <User className="h-6 w-6 text-primary" />
-                )}
-              </div>
+              <UserAvatar
+                avatarUrl={profile.avatar_url}
+                displayName={profile.display_name}
+                elo={profile.elo}
+                size="lg"
+                showRankBadge={false}
+              />
               <div className="flex-1 min-w-0">
-                <p className="text-lg font-heading font-bold text-foreground truncate">
-                  {profile.display_name} <span className={`text-sm ${getRankColor(getEloRank(profile.elo))}`}>[{getEloRank(profile.elo)}]</span>
-                </p>
+                <EditableProfile />
                 <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                   <span className="text-2xl font-bold font-heading text-foreground">{profile.elo}</span>
                   <Badge variant="outline" className={`text-[10px] font-semibold border-primary/40 ${getRankColor(getEloRank(profile.elo))}`}>
@@ -273,17 +273,15 @@ const LeaderboardPage = () => {
                       </div>
 
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-                          {entry.avatar_url ? (
-                            <img src={entry.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
-                          ) : (
-                            <User className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </div>
-                        <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
-                          {entry.display_name}
-                        </span>
-                        <span className={`text-[10px] font-bold ${getRankColor(rank)}`}>[{rank}]</span>
+                        <UserAvatar
+                          avatarUrl={entry.avatar_url}
+                          displayName={entry.display_name}
+                          elo={entry.elo}
+                          size="sm"
+                          showRankBadge={true}
+                          showName={true}
+                          isHighlighted={isCurrentUser}
+                        />
                         {isCurrentUser && <span className="text-[10px] text-muted-foreground">(you)</span>}
                         {entry.is_evaluator && (
                           <ShieldCheck className="h-3.5 w-3.5 text-blue-400 shrink-0" />
