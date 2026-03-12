@@ -46,6 +46,7 @@ import { useCallTimer } from "@/components/practice/CallTimer";
 import { ENVIRONMENTS, getEnvironment, type EnvironmentId } from "@/components/practice/environments";
 import { getTodayChallenge, checkChallengeCondition, markChallengeCompleted, CHALLENGE_BONUS_POINTS } from "@/components/practice/dailyChallenge";
 import { DailyChallengeCard } from "@/components/practice/DailyChallengeCard";
+import { PERSONALITIES, getPersonalityPrompt, type InterviewerPersonality } from "@/components/practice/interviewerPersonality";
 import {
   SDR_ROUNDS,
   loadSDRTrackProgress,
