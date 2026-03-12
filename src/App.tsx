@@ -33,6 +33,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <RankThresholdsLoader />
       <TooltipProvider>
         <Toaster />
         <Sonner />
