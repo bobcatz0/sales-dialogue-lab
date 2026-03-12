@@ -642,12 +642,49 @@ This evaluation style should subtly influence your questions and reactions. Do N
       setHistory(updated);
 
       // Sync ELO to database if logged in
-      syncEloAfterSession(data.score).then((result) => {
+      syncEloAfterSession(data.score).then(async (result) => {
         if (result) {
           setEloDelta(result.delta);
+
+          // Handle promotion match result
+          if (isPromotionMatch && promoEligibility?.nextRank && user) {
+            const passed = data.score >= PROMO_PASS_SCORE;
+            await recordPromotionAttempt(
+              user.id,
+              promoEligibility.nextRank,
+              result.oldElo,
+              data.score,
+              passed
+            );
+
+            if (passed) {
+              // Boost ELO to tier minimum if not already there
+              const targetMin = promoEligibility.nextThreshold;
+              if (result.newElo < targetMin) {
+                const { data: profileData } = await supabase
+                  .from("profiles")
+                  .update({ elo: targetMin, updated_at: new Date().toISOString() })
+                  .eq("id", user.id)
+                  .select("elo")
+                  .single();
+                if (profileData) {
+                  result.newElo = profileData.elo;
+                  result.newRank = promoEligibility.nextRank;
+                  result.rankedUp = true;
+                }
+              }
+              setPromoResult({ passed: true, sessionScore: data.score, targetRank: promoEligibility.nextRank, newElo: result.newElo });
+            } else {
+              setPromoResult({ passed: false, sessionScore: data.score, targetRank: promoEligibility.nextRank });
+            }
+            setShowPromoResult(true);
+            setIsPromotionMatch(false);
+            refreshProfile();
+          }
+
           if (result.rankedUp) {
             setRankUpData(result);
-          } else {
+          } else if (!isPromotionMatch) {
             toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
           }
         }
