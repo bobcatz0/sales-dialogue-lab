@@ -287,6 +287,12 @@ const LeaderboardPage = () => {
                         {entry.is_evaluator && (
                           <ShieldCheck className="h-3.5 w-3.5 text-blue-400 shrink-0" />
                         )}
+                        {entry.clan_name && (
+                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 gap-0.5 border-primary/30 text-primary shrink-0">
+                            <Shield className="h-2.5 w-2.5" />
+                            {entry.clan_name}
+                          </Badge>
+                        )}
                       </div>
 
                       {tab === "weekly" ? (
