@@ -73,7 +73,7 @@ export function getPromotionEligibility(
   return {
     eligible: inZone && !inCooldown,
     currentRank,
-    nextRank: nextTier.name,
+    nextRank: (nextTier?.name ?? null) as RankTier | null,
     nextThreshold: nextTier.min,
     eloNeeded: distanceToNext,
     inCooldown,
