@@ -180,6 +180,7 @@ export function FeedbackPanel({
   const skills = feedback.skillBreakdown || [];
   const frm = feedback.finalRoundMetrics;
   const [progressUpdated, setProgressUpdated] = useState(false);
+  const { profile } = useAuth();
 
   // Update skill progress on mount
   useEffect(() => {
