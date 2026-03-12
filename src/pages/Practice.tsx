@@ -597,6 +597,13 @@ This evaluation style should subtly influence your questions and reactions. Do N
       const updated = saveSession(session);
       setHistory(updated);
 
+      // Sync ELO to database if logged in
+      syncEloAfterSession(data.score).then((newElo) => {
+        if (newElo !== null) {
+          toast.success(`ELO updated: ${newElo}`, { duration: 3000 });
+        }
+      });
+
       // Process consistency scoring
       const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
       const recentScores = updated.slice(1, 6).map((s) => s.score); // previous 5
