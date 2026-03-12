@@ -443,9 +443,13 @@ const LeaderboardPage = () => {
                 <EditableProfile />
                 <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                   <span className="text-2xl font-bold font-heading text-foreground">{profile.elo}</span>
-                  <Badge variant="outline" className={`text-[10px] font-semibold border-primary/40 ${getRankColor(getEloRank(profile.elo))}`}>
-                    {getEloRank(profile.elo)}
-                  </Badge>
+                  {profile.total_sessions < PLACEMENT_SESSIONS_REQUIRED ? (
+                    <PlacingBadge />
+                  ) : (
+                    <Badge variant="outline" className={`text-[10px] font-semibold border-primary/40 ${getRankColor(getEloRank(profile.elo))}`}>
+                      {getEloRank(profile.elo)}
+                    </Badge>
+                  )}
                   {userRank && (
                     <span className="text-xs text-muted-foreground">
                       #{userRank} {tab === "weekly" ? "this week" : "overall"}
