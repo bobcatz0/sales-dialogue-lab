@@ -546,12 +546,16 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
           className="w-full h-9 text-xs text-muted-foreground gap-1.5"
           onClick={() => {
             setShowCard(true);
+            saveScorecard();
             if (feedback.score >= 85) {
               setShowConfetti(true);
               setTimeout(() => setShowConfetti(false), 2000);
             }
           }}
         >
+          <Trophy className="h-3.5 w-3.5" />
+          View Scorecard
+        </Button>
           <Trophy className="h-3.5 w-3.5" />
           View Scorecard
         </Button>
