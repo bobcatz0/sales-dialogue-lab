@@ -16,6 +16,7 @@ import DrillLibrary from "./pages/DrillLibrary";
 import Scenarios from "./pages/Scenarios";
 import Progress from "./pages/Progress";
 import Packs from "./pages/Packs";
+import ExpertChallenges from "./pages/ExpertChallenges";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/scenarios" element={<Scenarios />} />
             <Route path="/packs" element={<Packs />} />
             <Route path="/progress" element={<Progress />} />
+            <Route path="/expert-challenges" element={<ExpertChallenges />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

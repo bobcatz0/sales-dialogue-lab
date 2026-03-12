@@ -110,6 +110,86 @@ export type Database = {
         }
         Relationships: []
       }
+      expert_challenge_attempts: {
+        Row: {
+          beat_expert: boolean
+          challenge_id: string
+          created_at: string
+          id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          beat_expert?: boolean
+          challenge_id: string
+          created_at?: string
+          id?: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          beat_expert?: boolean
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expert_challenge_attempts_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "expert_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expert_challenges: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string | null
+          difficulty: string
+          expert_name: string
+          expert_role: string
+          expert_score: number
+          id: string
+          is_active: boolean
+          scenario_env: string
+          scenario_role: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          difficulty?: string
+          expert_name: string
+          expert_role: string
+          expert_score: number
+          id?: string
+          is_active?: boolean
+          scenario_env: string
+          scenario_role: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          difficulty?: string
+          expert_name?: string
+          expert_role?: string
+          expert_score?: number
+          id?: string
+          is_active?: boolean
+          scenario_env?: string
+          scenario_role?: string
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
