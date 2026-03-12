@@ -60,6 +60,7 @@ const Navbar = () => {
                   {getEloRank(profile?.elo ?? 1000)}
                 </span>
               </a>
+              <NotificationBell />
               <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground">
                 <LogOut className="h-4 w-4" />
               </Button>
