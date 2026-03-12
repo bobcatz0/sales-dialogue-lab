@@ -24,6 +24,10 @@ export interface EloSyncResult {
   placementComplete: boolean;
   /** How many sessions completed total (including this one) */
   totalSessions: number;
+  /** Current daily practice streak */
+  currentStreak: number;
+  /** Longest streak ever */
+  longestStreak: number;
 }
 
 /**
