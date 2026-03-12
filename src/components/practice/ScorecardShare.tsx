@@ -556,9 +556,6 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
           <Trophy className="h-3.5 w-3.5" />
           View Scorecard
         </Button>
-          <Trophy className="h-3.5 w-3.5" />
-          View Scorecard
-        </Button>
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
