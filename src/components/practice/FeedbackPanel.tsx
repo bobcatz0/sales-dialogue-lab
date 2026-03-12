@@ -647,6 +647,16 @@ export function FeedbackPanel({
           eloDelta={eloDelta}
         />
 
+        {/* Challenge a friend */}
+        {isValidSession && scenarioEnv && scenarioRole && (
+          <ChallengeButton
+            score={feedback.score}
+            scenarioEnv={scenarioEnv}
+            scenarioRole={scenarioRole}
+            isLoggedIn={!!profile}
+          />
+        )}
+
         {/* Shareable summary — interview only */}
         {interview && (
           <ShareableSummary
