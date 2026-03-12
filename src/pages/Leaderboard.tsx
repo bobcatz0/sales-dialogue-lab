@@ -274,17 +274,15 @@ const LeaderboardPage = () => {
                       </div>
 
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-                          {entry.avatar_url ? (
-                            <img src={entry.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
-                          ) : (
-                            <User className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </div>
-                        <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
-                          {entry.display_name}
-                        </span>
-                        <span className={`text-[10px] font-bold ${getRankColor(rank)}`}>[{rank}]</span>
+                        <UserAvatar
+                          avatarUrl={entry.avatar_url}
+                          displayName={entry.display_name}
+                          elo={entry.elo}
+                          size="sm"
+                          showRankBadge={true}
+                          showName={true}
+                          isHighlighted={isCurrentUser}
+                        />
                         {isCurrentUser && <span className="text-[10px] text-muted-foreground">(you)</span>}
                         {entry.is_evaluator && (
                           <ShieldCheck className="h-3.5 w-3.5 text-blue-400 shrink-0" />
