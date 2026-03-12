@@ -49,9 +49,57 @@ interface ScorecardShareProps {
   eloDelta?: number | null;
 }
 
+function ConfettiBurst() {
+  const particles = Array.from({ length: 40 }, (_, i) => {
+    const angle = (i / 40) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+    const distance = 80 + Math.random() * 160;
+    const colors = ["hsl(var(--primary))", "#facc15", "#f97316", "#ec4899", "#8b5cf6", "#22d3ee"];
+    return {
+      x: Math.cos(angle) * distance,
+      y: Math.sin(angle) * distance - 40,
+      rotation: Math.random() * 720 - 360,
+      color: colors[i % colors.length],
+      size: 4 + Math.random() * 5,
+      delay: Math.random() * 0.15,
+      shape: i % 3, // 0=square, 1=circle, 2=rect
+    };
+  });
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
+      {particles.map((p, i) => (
+        <motion.div
+          key={i}
+          initial={{ x: "50%", y: "30%", scale: 0, opacity: 1, rotate: 0 }}
+          animate={{
+            x: `calc(50% + ${p.x}px)`,
+            y: `calc(30% + ${p.y}px)`,
+            scale: [0, 1.2, 0.8],
+            opacity: [1, 1, 0],
+            rotate: p.rotation,
+          }}
+          transition={{
+            duration: 1 + Math.random() * 0.4,
+            delay: p.delay,
+            ease: [0.22, 0.61, 0.36, 1],
+          }}
+          className="absolute"
+          style={{
+            width: p.shape === 2 ? p.size * 1.8 : p.size,
+            height: p.shape === 2 ? p.size * 0.6 : p.size,
+            backgroundColor: p.color,
+            borderRadius: p.shape === 1 ? "50%" : "1px",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession, elo, eloDelta }: ScorecardShareProps) {
   const [showCard, setShowCard] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [discordWebhook, setDiscordWebhook] = useState(() => loadDiscordWebhook());
   const [showDiscordSetup, setShowDiscordSetup] = useState(false);
   const [discordInput, setDiscordInput] = useState(() => loadDiscordWebhook());
