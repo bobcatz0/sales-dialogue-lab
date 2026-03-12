@@ -5,6 +5,7 @@ import CompetitiveSection from "@/components/landing/CompetitiveSection";
 import ScenarioCards from "@/components/landing/ScenarioCards";
 import CTASection from "@/components/landing/CTASection";
 import SocialProofBar from "@/components/landing/SocialProofBar";
+import ActivityTicker from "@/components/landing/ActivityTicker";
 import Footer from "@/components/landing/Footer";
 
 const Index = () => {
@@ -12,6 +13,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
+      <ActivityTicker />
       <SocialProofBar />
       <HowItWorksSection />
       <CompetitiveSection />
