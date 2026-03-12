@@ -10,6 +10,7 @@ import { getDrillStats } from "@/components/practice/drillTracking";
 import { loadHistory } from "@/components/practice/sessionStorage";
 import { useAuth } from "@/hooks/useAuth";
 import { EvaluatorBadge, EvaluatorReputation } from "./EvaluatorBadges";
+import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
@@ -32,7 +33,7 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
   const earnedIds = loadEarnedBadges();
   const interviewReady = getInterviewReadyStatus();
   const drillStats = getDrillStats();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
 
   return (
     <motion.div
@@ -66,6 +67,9 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
           />
         </div>
       )}
+
+      {/* Weekly Challenge Badges */}
+      {user && <WeeklyChallengeBadges userId={user.id} />}
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-2 text-center">

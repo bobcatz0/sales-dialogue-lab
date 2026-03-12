@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getEloRank, ELO_RANKS } from "@/lib/elo";
 import { EloHistoryChart } from "@/components/practice/EloHistoryChart";
+import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
 
 interface LeaderboardEntry {
   id: string;
@@ -293,6 +294,7 @@ const LeaderboardPage = () => {
                             {entry.clan_name}
                           </Badge>
                         )}
+                        <WeeklyChallengeBadges userId={entry.id} compact />
                       </div>
 
                       {tab === "weekly" ? (

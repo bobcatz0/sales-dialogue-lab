@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Flame, Trophy, TrendingUp, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
+import { useAuth } from "@/hooks/useAuth";
+import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
 import {
   loadProgress,
   getSkillLevel,
@@ -54,6 +56,7 @@ function SkillProgressBar({
 
 const Progress = () => {
   const [progress, setProgress] = useState<ProgressState | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     setProgress(loadProgress());
@@ -140,6 +143,18 @@ const Progress = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* Weekly Challenge Badges */}
+        {user && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="mt-4 card-elevated p-5"
+          >
+            <WeeklyChallengeBadges userId={user.id} />
+          </motion.div>
+        )}
 
         {/* Skill bars */}
         {hasData ? (
