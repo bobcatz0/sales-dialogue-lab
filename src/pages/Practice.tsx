@@ -1117,7 +1117,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       // Auto-select hiring manager for promotion matches
                       const hiringManager = filteredRoles.find(r => r.id === "hiring-manager");
                       if (hiringManager) {
-                        handleStart(hiringManager.id);
+                        setPendingStartId(hiringManager.id);
+                        setShowBriefing(true);
                       }
                     }}
                   />
