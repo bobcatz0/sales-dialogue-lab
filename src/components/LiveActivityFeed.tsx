@@ -49,7 +49,7 @@ export function LiveActivityFeed() {
 
       if (data && data.length > 0) {
         // Fetch display names
-        const userIds = [...new Set(data.map((e) => e.user_id))];
+        const userIds = [...new Set(data.map((e: any) => e.user_id))] as string[];
         const { data: profiles } = await supabase
           .from("profiles")
           .select("id, display_name, avatar_url")
