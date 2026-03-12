@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { getEloRank } from "@/lib/elo";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const navLinks = [
   { label: "Practice", href: "/practice" },
