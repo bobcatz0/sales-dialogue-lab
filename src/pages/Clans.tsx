@@ -155,6 +155,14 @@ export default function Clans() {
           <ClanWeeklyChallenge />
         </div>
 
+        {/* Clan Rivalries */}
+        <div className="mb-6">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <Swords className="h-3.5 w-3.5" /> Weekly Rivalries
+          </h2>
+          <ClanRivalry />
+        </div>
+
         {/* Search */}
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
