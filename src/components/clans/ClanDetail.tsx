@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/landing/Navbar";
 import { Link } from "react-router-dom";
 import { ClanActivityFeed } from "./ClanActivityFeed";
+import { InviteLinkSection } from "./InviteLinkSection";
 
 interface ClanDetailProps {
   clanId: string;
