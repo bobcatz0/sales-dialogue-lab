@@ -1667,7 +1667,19 @@ This evaluation style should subtly influence your questions and reactions. Do N
         <div className="h-3 w-3 rounded-full opacity-0 hover:opacity-30 transition-opacity bg-muted-foreground cursor-default" />
       </div>
     </div>
+
+      {/* Rank Up Celebration */}
+      {rankUpData && rankUpData.rankedUp && (
+        <RankUpCelebration
+          newRank={rankUpData.newRank}
+          oldRank={rankUpData.oldRank}
+          newElo={rankUpData.newElo}
+          onClose={() => setRankUpData(null)}
+        />
+      )}
+    </>
   );
+};
 };
 
 export default PracticePage;
