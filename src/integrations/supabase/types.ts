@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      challenges: {
+        Row: {
+          challenger_id: string | null
+          challenger_score: number | null
+          completed_at: string | null
+          created_at: string
+          creator_id: string
+          creator_score: number
+          id: string
+          scenario_env: string
+          scenario_role: string
+          status: string
+        }
+        Insert: {
+          challenger_id?: string | null
+          challenger_score?: number | null
+          completed_at?: string | null
+          created_at?: string
+          creator_id: string
+          creator_score: number
+          id?: string
+          scenario_env: string
+          scenario_role: string
+          status?: string
+        }
+        Update: {
+          challenger_id?: string | null
+          challenger_score?: number | null
+          completed_at?: string | null
+          created_at?: string
+          creator_id?: string
+          creator_score?: number
+          id?: string
+          scenario_env?: string
+          scenario_role?: string
+          status?: string
+        }
+        Relationships: []
+      }
       elo_history: {
         Row: {
           created_at: string

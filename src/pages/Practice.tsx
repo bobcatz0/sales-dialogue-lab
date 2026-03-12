@@ -1664,6 +1664,9 @@ This evaluation style should subtly influence your questions and reactions. Do N
                             : undefined
                         }
                         isFinalRound={selectedEnv === "final-round"}
+                        scenarioTitle={activeRole?.title}
+                        scenarioEnv={selectedEnv}
+                        scenarioRole={selectedRole ?? undefined}
                       />
                       {/* Post-session prompts */}
                       {showHelpfulPrompt && (

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
 import { ScorecardShare } from "./ScorecardShare";
+import { ChallengeButton } from "./ChallengeButton";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
@@ -161,6 +162,8 @@ export function FeedbackPanel({
   voiceFeedbackLines,
   voiceScoreAdjustment,
   scenarioTitle,
+  scenarioEnv,
+  scenarioRole,
   eloDelta,
 }: {
   feedback: Feedback;
@@ -174,6 +177,8 @@ export function FeedbackPanel({
   voiceFeedbackLines?: string[];
   voiceScoreAdjustment?: number;
   scenarioTitle?: string;
+  scenarioEnv?: string;
+  scenarioRole?: string;
   eloDelta?: number | null;
 }) {
   const interview = isInterviewRank(feedback.rank);
@@ -643,6 +648,16 @@ export function FeedbackPanel({
           elo={profile?.elo ?? null}
           eloDelta={eloDelta}
         />
+
+        {/* Challenge a friend */}
+        {isValidSession && scenarioEnv && scenarioRole && (
+          <ChallengeButton
+            score={feedback.score}
+            scenarioEnv={scenarioEnv}
+            scenarioRole={scenarioRole}
+            isLoggedIn={!!profile}
+          />
+        )}
 
         {/* Shareable summary — interview only */}
         {interview && (
