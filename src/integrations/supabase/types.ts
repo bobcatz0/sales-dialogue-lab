@@ -187,6 +187,47 @@ export type Database = {
           },
         ]
       }
+      clan_weekly_results: {
+        Row: {
+          clan_id: string
+          clan_name: string
+          created_at: string
+          id: string
+          rank: number
+          total_score: number
+          total_sessions: number
+          week_start: string
+        }
+        Insert: {
+          clan_id: string
+          clan_name: string
+          created_at?: string
+          id?: string
+          rank?: number
+          total_score?: number
+          total_sessions?: number
+          week_start: string
+        }
+        Update: {
+          clan_id?: string
+          clan_name?: string
+          created_at?: string
+          id?: string
+          rank?: number
+          total_score?: number
+          total_sessions?: number
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_weekly_results_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clans: {
         Row: {
           avatar_url: string | null

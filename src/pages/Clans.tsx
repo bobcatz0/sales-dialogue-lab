@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { getEloRank } from "@/lib/elo";
 import { CreateClanDialog } from "@/components/clans/CreateClanDialog";
 import { ClanDetail } from "@/components/clans/ClanDetail";
+import { ClanWeeklyChallenge } from "@/components/clans/ClanWeeklyChallenge";
 
 interface ClanRow {
   id: string;
@@ -147,6 +148,11 @@ export default function Clans() {
             })()}
           </motion.div>
         )}
+
+        {/* Weekly Challenge */}
+        <div className="mb-6">
+          <ClanWeeklyChallenge />
+        </div>
 
         {/* Search */}
         <div className="relative mb-6">
