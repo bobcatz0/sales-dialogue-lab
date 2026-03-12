@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Target, Trophy, TrendingUp, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getEloRank, ELO_RANKS } from "@/lib/elo";
+import { getEloRank, getEloRanks } from "@/lib/elo";
 import { PLACEMENT_SESSIONS_REQUIRED } from "@/lib/eloSync";
 import { UserAvatar } from "@/components/UserAvatar";
 
