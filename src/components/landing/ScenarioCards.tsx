@@ -93,6 +93,30 @@ const ScenariosSection = () => {
               </Link>
             </motion.div>
           ))}
+          {/* Expert Challenges CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.35 }}
+            className="sm:col-span-2"
+          >
+            <Link
+              to="/expert-challenges"
+              className="card-elevated p-5 flex items-center gap-4 hover:border-yellow-400/30 transition-all duration-200 group block border-yellow-400/10"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-yellow-400/10 text-yellow-400 shrink-0 group-hover:bg-yellow-400/15 transition-colors">
+                <Swords className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-foreground">Beat the Expert</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Verified experts set the bar. Can you score higher?
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-yellow-400 transition-colors shrink-0" />
+            </Link>
+          </motion.div>
         </div>
       </div>
     </section>
