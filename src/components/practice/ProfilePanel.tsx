@@ -44,9 +44,13 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
     >
       {/* Header */}
       <div className="flex items-center gap-2">
-        <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center">
-          <User className="h-4 w-4 text-primary" />
-        </div>
+        <UserAvatar
+          avatarUrl={profile?.avatar_url}
+          displayName={alias}
+          elo={profile?.elo ?? 1000}
+          size="sm"
+          showRankBadge={false}
+        />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">{alias}</p>
           <p className="text-[11px] text-muted-foreground">
