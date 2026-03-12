@@ -374,6 +374,113 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     }
   }, [feedback, scenarioTitle, frameworkLabel, percentile, rubric, alias, elo, eloDelta, rankTier, topPercent]);
 
+  const handleCopyImage = useCallback(async () => {
+    try {
+      const canvas = document.createElement("canvas");
+      const scale = 2;
+      const width = 600;
+      const hasElo = elo != null;
+      const height = 460 + rubric.length * 40 + (hasElo ? 50 : 0) + (weakestSkill ? 60 : 0);
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.scale(scale, scale);
+      ctx.fillStyle = "#0d1117";
+      ctx.roundRect(0, 0, width, height, 16);
+      ctx.fill();
+
+      const grad = ctx.createLinearGradient(0, 0, width, 0);
+      grad.addColorStop(0, "#22c55e");
+      grad.addColorStop(1, "#16a34a");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, 4);
+
+      ctx.fillStyle = "#22c55e";
+      ctx.font = "700 14px 'Inter', system-ui, sans-serif";
+      ctx.fillText("SalesCalls.io Scorecard", 32, 40);
+
+      ctx.fillStyle = "#f9fafb";
+      ctx.font = "600 20px 'Inter', system-ui, sans-serif";
+      ctx.fillText(scenarioTitle, 32, 76);
+
+      let y = 76;
+      if (frameworkLabel) {
+        y += 24;
+        ctx.fillStyle = "#14532d";
+        const tw = ctx.measureText(frameworkLabel).width + 20;
+        ctx.roundRect(32, y - 12, tw, 22, 6);
+        ctx.fill();
+        ctx.fillStyle = "#86efac";
+        ctx.font = "600 11px 'Inter', system-ui, sans-serif";
+        ctx.fillText(frameworkLabel, 42, y + 2);
+        y += 24;
+      } else {
+        y += 20;
+      }
+
+      y += 16;
+      ctx.fillStyle = "#f9fafb";
+      ctx.font = "700 56px 'Inter', system-ui, sans-serif";
+      ctx.fillText(`${feedback.score}`, 32, y);
+      const sw = ctx.measureText(`${feedback.score}`).width;
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "400 22px 'Inter', system-ui, sans-serif";
+      ctx.fillText("/ 100", 32 + sw + 8, y);
+
+      y += 24;
+      ctx.fillStyle = "#22c55e";
+      ctx.font = "600 14px 'Inter', system-ui, sans-serif";
+      ctx.fillText(`${feedback.rank}  ·  Top ${topPercent}%`, 32, y);
+
+      if (hasElo) {
+        y += 24;
+        ctx.fillStyle = "#f9fafb";
+        ctx.font = "700 16px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`⚡ ${elo} ELO`, 32, y);
+      }
+
+      if (weakestSkill) {
+        y += 28;
+        ctx.fillStyle = "#7f1d1d";
+        ctx.roundRect(32, y - 14, width - 64, 44, 8);
+        ctx.fill();
+        ctx.fillStyle = "#fca5a5";
+        ctx.font = "600 10px 'Inter', system-ui, sans-serif";
+        ctx.fillText("⚠ WEAKEST SKILL", 44, y);
+        ctx.fillStyle = "#fef2f2";
+        ctx.font = "600 13px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`${weakestSkill.criterion}: ${weakestSkill.score}/100`, 44, y + 18);
+      }
+
+      ctx.fillStyle = "#4b5563";
+      ctx.font = "400 10px 'Inter', system-ui, sans-serif";
+      ctx.fillText("salescalls.io — Practice real sales scenarios", 32, height - 20);
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob }),
+          ]);
+          setImageCopied(true);
+          toast.success("Scorecard image copied to clipboard!", { duration: 2500 });
+          setTimeout(() => setImageCopied(false), 2500);
+        } catch {
+          // Fallback to download
+          const link = document.createElement("a");
+          link.download = `scorecard-${feedback.score}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+          toast("Clipboard not supported — image downloaded instead.", { duration: 2500 });
+        }
+      }, "image/png");
+    } catch {
+      toast.error("Failed to generate image.");
+    }
+  }, [feedback, scenarioTitle, frameworkLabel, rubric, alias, elo, eloDelta, rankTier, topPercent, weakestSkill]);
+
   if (!isValidSession) return null;
 
   return (
