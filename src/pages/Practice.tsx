@@ -192,6 +192,7 @@ async function streamChat({
 // --- Page ---
 
 const PracticePage = () => {
+  const { user, profile, refreshProfile } = useAuth();
   const [searchParams] = useSearchParams();
   const paramEnv = searchParams.get("env") as EnvironmentId | null;
   const paramRole = searchParams.get("role");
