@@ -599,9 +599,10 @@ This evaluation style should subtly influence your questions and reactions. Do N
       setHistory(updated);
 
       // Sync ELO to database if logged in
-      syncEloAfterSession(data.score).then((newElo) => {
-        if (newElo !== null) {
-          toast.success(`ELO updated: ${newElo}`, { duration: 3000 });
+      syncEloAfterSession(data.score).then((result) => {
+        if (result) {
+          setEloDelta(result.delta);
+          toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
         }
       });
 
