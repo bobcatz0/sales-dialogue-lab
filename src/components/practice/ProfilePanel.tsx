@@ -32,6 +32,7 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
   const earnedIds = loadEarnedBadges();
   const interviewReady = getInterviewReadyStatus();
   const drillStats = getDrillStats();
+  const { profile } = useAuth();
 
   return (
     <motion.div
