@@ -256,6 +256,9 @@ const LeaderboardPage = () => {
                           {entry.display_name}
                           {isCurrentUser && <span className="text-[10px] text-muted-foreground ml-1">(you)</span>}
                         </span>
+                        {entry.is_evaluator && (
+                          <ShieldCheck className="h-3.5 w-3.5 text-blue-400 shrink-0" title="Verified Evaluator" />
+                        )}
                       </div>
 
                       {tab === "weekly" ? (
