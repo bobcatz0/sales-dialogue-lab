@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      elo_history: {
+        Row: {
+          created_at: string
+          delta: number
+          elo: number
+          id: string
+          session_score: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          elo: number
+          id?: string
+          session_score: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          elo?: number
+          id?: string
+          session_score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
