@@ -99,6 +99,68 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     window.open(url, "_blank", "noopener,noreferrer,width=600,height=600");
   }, [feedback.score, scenarioTitle]);
 
+  const handleShareDiscord = useCallback(async () => {
+    if (!discordWebhook) {
+      setShowDiscordSetup(true);
+      return;
+    }
+    setDiscordSending(true);
+    try {
+      const embed = {
+        title: `🎯 ${scenarioTitle}`,
+        description: [
+          `**Score:** ${feedback.score}/100`,
+          `**Percentile:** Top ${topPercent}%`,
+          frameworkLabel ? `**Framework:** ${frameworkLabel}` : null,
+          elo != null ? `**ELO:** ${elo}${eloDelta != null ? ` (${eloDelta >= 0 ? "+" : ""}${eloDelta})` : ""} — ${rankTier}` : null,
+          alias ? `\n— ${alias}` : null,
+        ].filter(Boolean).join("\n"),
+        color: 0x22c55e,
+        footer: { text: "SalesCalls.io — Practice real sales scenarios" },
+        timestamp: new Date().toISOString(),
+      };
+
+      const resp = await fetch(DISCORD_FN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ webhookUrl: discordWebhook, embeds: [embed] }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Failed" }));
+        throw new Error(err.error || "Discord share failed");
+      }
+      toast.success("Scorecard shared to Discord!", { duration: 2500 });
+    } catch (e: any) {
+      toast.error(e.message || "Failed to share to Discord.");
+    } finally {
+      setDiscordSending(false);
+    }
+  }, [discordWebhook, feedback, scenarioTitle, topPercent, frameworkLabel, elo, eloDelta, rankTier, alias]);
+
+  const handleSaveDiscordWebhook = () => {
+    const url = discordInput.trim();
+    if (!url) {
+      saveDiscordWebhook("");
+      setDiscordWebhook("");
+      setShowDiscordSetup(false);
+      toast("Discord webhook removed.", { duration: 2000 });
+      return;
+    }
+    const pattern = /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/;
+    if (!pattern.test(url)) {
+      toast.error("Invalid Discord webhook URL. It should look like: https://discord.com/api/webhooks/123/abc-xyz");
+      return;
+    }
+    saveDiscordWebhook(url);
+    setDiscordWebhook(url);
+    setShowDiscordSetup(false);
+    toast.success("Discord webhook saved!", { duration: 2000 });
+  };
+
   const handleDownloadImage = useCallback(async () => {
     try {
       const canvas = document.createElement("canvas");
