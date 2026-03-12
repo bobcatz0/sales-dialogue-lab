@@ -175,6 +175,8 @@ export function FeedbackPanel({
   voiceFeedbackLines?: string[];
   voiceScoreAdjustment?: number;
   scenarioTitle?: string;
+  scenarioEnv?: string;
+  scenarioRole?: string;
   eloDelta?: number | null;
 }) {
   const interview = isInterviewRank(feedback.rank);
