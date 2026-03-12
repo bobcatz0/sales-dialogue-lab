@@ -10,6 +10,7 @@ import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
 import { ConversationBreakdown } from "./ConversationBreakdown";
+import { useAuth } from "@/hooks/useAuth";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
 
