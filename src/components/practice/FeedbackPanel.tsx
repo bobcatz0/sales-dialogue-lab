@@ -229,14 +229,11 @@ export function FeedbackPanel({
 
       {/* A. Overall Performance */}
       <div className="flex flex-col items-center py-5 px-4 border-b border-border">
-        <motion.span
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 350, damping: 22, delay: 0.05 }}
+        <AnimatedScore
+          target={feedback.score}
+          delay={0.2}
           className={`text-5xl font-bold font-heading ${getRankColor(feedback.rank)}`}
-        >
-          {feedback.score}
-        </motion.span>
+        />
         <p className="text-[10px] text-muted-foreground mt-0.5">
           {interview ? "Interview Readiness Score" : "Performance Score"}
         </p>
