@@ -110,6 +110,9 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     : null;
   const percentile = computePercentile(feedback.score);
   const rubric = feedback.rubricScores || [];
+  const weakestSkill = rubric.length > 0
+    ? rubric.reduce((min, r) => r.score < min.score ? r : min, rubric[0])
+    : null;
   const rankTier = elo != null ? getEloRank(elo) : null;
   const topPercent = 100 - percentile;
 
