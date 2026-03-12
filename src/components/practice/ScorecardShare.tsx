@@ -120,6 +120,9 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
   const weakestSkill = rubric.length > 0
     ? rubric.reduce((min, r) => r.score < min.score ? r : min, rubric[0])
     : null;
+  const strongestSkill = rubric.length > 0
+    ? rubric.reduce((max, r) => r.score > max.score ? r : max, rubric[0])
+    : null;
   const rankTier = elo != null ? getEloRank(elo) : null;
   const topPercent = 100 - percentile;
 
