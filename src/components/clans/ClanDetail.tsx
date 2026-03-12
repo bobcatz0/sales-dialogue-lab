@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import { ClanActivityFeed } from "./ClanActivityFeed";
 import { InviteLinkSection } from "./InviteLinkSection";
 import { ReferralLeaderboard } from "./ReferralLeaderboard";
+import { ClanChat } from "./ClanChat";
 
 interface ClanDetailProps {
   clanId: string;
