@@ -372,6 +372,7 @@ const PracticePage = () => {
   };
 
   const sendingRef = useRef(false);
+  const regenCountRef = useRef(0);
 
   // Shared send logic for both text and voice modes
   const sendUserMessage = useCallback(async (userText: string) => {
