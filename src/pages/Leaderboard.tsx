@@ -191,9 +191,10 @@ function NearYouSection({
   const nearbyEntries = entries.slice(startIdx, endIdx);
 
   // Next rank tier
+  const ranks = getEloRanks();
   const currentRank = getEloRank(userElo);
-  const currentRankIdx = ELO_RANKS.findIndex((r) => r.name === currentRank);
-  const nextRank = currentRankIdx < ELO_RANKS.length - 1 ? ELO_RANKS[currentRankIdx + 1] : null;
+  const currentRankIdx = ranks.findIndex((r) => r.name === currentRank);
+  const nextRank = currentRankIdx < ranks.length - 1 ? ranks[currentRankIdx + 1] : null;
   const pointsToNext = nextRank ? nextRank.min - userElo : 0;
 
   // Rival = closest player above
