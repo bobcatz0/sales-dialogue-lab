@@ -1241,6 +1241,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       {activeRole.title}
                     </span>
                   )}
+                  {activeRole && (selectedEnv === "interview" || selectedEnv === "final-round") && (
+                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-[18px] shrink-0 border-border text-muted-foreground">
+                      {PERSONALITIES.find(p => p.id === selectedPersonality)?.icon} {PERSONALITIES.find(p => p.id === selectedPersonality)?.label}
+                    </Badge>
+                  )}
                   {!activeRole && !activeEnv && (
                     <span className="text-xs text-muted-foreground">Session</span>
                   )}
