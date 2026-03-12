@@ -245,6 +245,8 @@ const PracticePage = () => {
   const [activeDrill, setActiveDrill] = useState<Drill | null>(null);
   const [showExitQuestion, setShowExitQuestion] = useState(false);
   const [showTextModeFallback, setShowTextModeFallback] = useState(false);
+  const [showPlacementResult, setShowPlacementResult] = useState(false);
+  const [placementElo, setPlacementElo] = useState<number>(1000);
   const [coldCallTextMode, setColdCallTextMode] = useState(false);
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
    const timer = useCallTimer(sessionActive);
