@@ -1099,6 +1099,23 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   </Badge>
                 </div>
 
+                {/* Promotion Banner */}
+                {promoEligibility && (selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
+                  <PromotionBanner
+                    eligibility={promoEligibility}
+                    onStartPromotion={() => {
+                      setIsPromotionMatch(true);
+                      personalityRef.current = "pressure";
+                      setSelectedPersonality("pressure");
+                      // Auto-select hiring manager for promotion matches
+                      const hiringManager = filteredRoles.find(r => r.id === "hiring-manager");
+                      if (hiringManager) {
+                        handleStart(hiringManager.id);
+                      }
+                    }}
+                  />
+                )}
+
                 {/* Interviewer Personality Selector */}
                 {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
                   <div className="mb-4">
