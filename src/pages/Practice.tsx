@@ -210,6 +210,7 @@ const PracticePage = () => {
     try { return localStorage.getItem("salescalls_resume") || ""; } catch { return ""; }
   });
   const evaluatorStyleRef = useRef<EvaluatorStyle>("analytical");
+  const personalityRef = useRef<InterviewerPersonality>("neutral");
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
   const elapsedRef = useRef(0);
