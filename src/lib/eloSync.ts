@@ -1,11 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
-import { calculateEloDelta } from "./elo";
+import { calculateEloDelta, getEloRank } from "./elo";
+import type { RankTier } from "./elo";
+
+export interface EloSyncResult {
+  newElo: number;
+  oldElo: number;
+  delta: number;
+  newRank: RankTier;
+  oldRank: RankTier;
+  rankedUp: boolean;
+}
 
 /**
  * After a session, update the user's ELO in the database and log history.
- * Returns { newElo, delta } or null if user is not logged in.
+ * Returns ELO details including rank change info, or null if not logged in.
  */
-export async function syncEloAfterSession(sessionScore: number): Promise<{ newElo: number; delta: number } | null> {
+export async function syncEloAfterSession(sessionScore: number): Promise<EloSyncResult | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -17,8 +27,11 @@ export async function syncEloAfterSession(sessionScore: number): Promise<{ newEl
 
   if (!profile) return null;
 
-  const delta = calculateEloDelta(sessionScore, profile.elo);
-  const newElo = Math.max(0, profile.elo + delta);
+  const oldElo = profile.elo;
+  const oldRank = getEloRank(oldElo);
+  const delta = calculateEloDelta(sessionScore, oldElo);
+  const newElo = Math.max(0, oldElo + delta);
+  const newRank = getEloRank(newElo);
 
   await Promise.all([
     supabase
@@ -39,5 +52,12 @@ export async function syncEloAfterSession(sessionScore: number): Promise<{ newEl
       }),
   ]);
 
-  return { newElo, delta };
+  return {
+    newElo,
+    oldElo,
+    delta,
+    newRank,
+    oldRank,
+    rankedUp: newRank !== oldRank && newElo > oldElo,
+  };
 }

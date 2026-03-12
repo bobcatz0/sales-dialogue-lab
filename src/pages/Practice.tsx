@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/landing/Navbar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { syncEloAfterSession } from "@/lib/eloSync";
+import { syncEloAfterSession, type EloSyncResult } from "@/lib/eloSync";
+import { RankUpCelebration } from "@/components/practice/RankUpCelebration";
 import { useAuth } from "@/hooks/useAuth";
 
 import { roles } from "@/components/practice/roleData";
@@ -192,6 +193,7 @@ const PracticePage = () => {
   const [history, setHistory] = useState<SessionRecord[]>([]);
   const [lastPoints, setLastPoints] = useState<number | null>(null);
   const [eloDelta, setEloDelta] = useState<number | null>(null);
+  const [rankUpData, setRankUpData] = useState<EloSyncResult | null>(null);
   const [progression, setProgression] = useState(() => loadProgression());
   const [unlockQueue, setUnlockQueue] = useState<{ id: string; label: string; description: string }[]>([]);
   const [alias, setAlias] = useState<string | null>(() => loadAlias());
@@ -603,7 +605,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
       syncEloAfterSession(data.score).then((result) => {
         if (result) {
           setEloDelta(result.delta);
-          toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
+          if (result.rankedUp) {
+            setRankUpData(result);
+          } else {
+            toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
+          }
         }
       });
 
@@ -782,6 +788,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
   const hasEnoughMessages = messages.filter((m) => m.role === "user").length >= 2;
 
   return (
+    <>
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 md:px-6 pt-24 pb-12">
@@ -1661,7 +1668,19 @@ This evaluation style should subtly influence your questions and reactions. Do N
         <div className="h-3 w-3 rounded-full opacity-0 hover:opacity-30 transition-opacity bg-muted-foreground cursor-default" />
       </div>
     </div>
+
+      {/* Rank Up Celebration */}
+      {rankUpData && rankUpData.rankedUp && (
+        <RankUpCelebration
+          newRank={rankUpData.newRank}
+          oldRank={rankUpData.oldRank}
+          newElo={rankUpData.newElo}
+          onClose={() => setRankUpData(null)}
+        />
+      )}
+    </>
   );
 };
+
 
 export default PracticePage;
