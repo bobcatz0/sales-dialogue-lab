@@ -864,6 +864,9 @@ This evaluation style should subtly influence your questions and reactions. Do N
   };
 
   const hasEnoughMessages = messages.filter((m) => m.role === "user").length >= 2;
+  const userQuestionCount = messages.filter((m) => m.role === "assistant").length;
+  const totalExpectedQuestions = 6;
+  const isReadyForScore = messages.filter((m) => m.role === "user").length >= 4;
 
   return (
     <>
