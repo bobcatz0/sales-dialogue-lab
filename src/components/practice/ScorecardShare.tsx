@@ -9,6 +9,8 @@ import { loadHistory } from "./sessionStorage";
 import { getEloRank } from "@/lib/elo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+
+const DISCORD_WEBHOOK_KEY = "salescalls_discord_webhook";
 const DISCORD_FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/discord-webhook`;
 
 function loadDiscordWebhook(): string {
