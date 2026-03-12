@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Trophy, Crown, Medal, LogIn, Flame, ShieldCheck, Shield } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Link } from "react-router-dom";
+import { EditableProfile } from "@/components/EditableProfile";
 import Navbar from "@/components/landing/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
