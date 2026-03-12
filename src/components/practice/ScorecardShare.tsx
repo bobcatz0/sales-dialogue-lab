@@ -1,11 +1,22 @@
 import { useState, useCallback } from "react";
-import { Share2, Download, Check, Copy, Trophy, Linkedin, ExternalLink } from "lucide-react";
+import { Share2, Download, Check, Copy, Trophy, Linkedin, ExternalLink, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import type { Feedback, FrameworkId } from "./types";
 import { loadHistory } from "./sessionStorage";
 import { getEloRank } from "@/lib/elo";
+
+const DISCORD_WEBHOOK_KEY = "salescalls_discord_webhook";
+const DISCORD_FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/discord-webhook`;
+
+function loadDiscordWebhook(): string {
+  try { return localStorage.getItem(DISCORD_WEBHOOK_KEY) || ""; } catch { return ""; }
+}
+function saveDiscordWebhook(url: string) {
+  try { localStorage.setItem(DISCORD_WEBHOOK_KEY, url); } catch { /* ignore */ }
+}
 
 const FRAMEWORK_LABELS: Record<string, string> = {
   star: "STAR Method",
@@ -41,6 +52,10 @@ interface ScorecardShareProps {
 export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession, elo, eloDelta }: ScorecardShareProps) {
   const [showCard, setShowCard] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [discordWebhook, setDiscordWebhook] = useState(() => loadDiscordWebhook());
+  const [showDiscordSetup, setShowDiscordSetup] = useState(false);
+  const [discordInput, setDiscordInput] = useState(() => loadDiscordWebhook());
+  const [discordSending, setDiscordSending] = useState(false);
 
   const frameworkLabel = feedback.frameworkId && feedback.frameworkId !== "none"
     ? FRAMEWORK_LABELS[feedback.frameworkId] || feedback.frameworkId.toUpperCase()
@@ -83,6 +98,68 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     const url = `https://www.reddit.com/submit?title=${encodeURIComponent(`Scored ${feedback.score}/100 on "${scenarioTitle}" — SalesCalls.io`)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(url, "_blank", "noopener,noreferrer,width=600,height=600");
   }, [feedback.score, scenarioTitle]);
+
+  const handleShareDiscord = useCallback(async () => {
+    if (!discordWebhook) {
+      setShowDiscordSetup(true);
+      return;
+    }
+    setDiscordSending(true);
+    try {
+      const embed = {
+        title: `🎯 ${scenarioTitle}`,
+        description: [
+          `**Score:** ${feedback.score}/100`,
+          `**Percentile:** Top ${topPercent}%`,
+          frameworkLabel ? `**Framework:** ${frameworkLabel}` : null,
+          elo != null ? `**ELO:** ${elo}${eloDelta != null ? ` (${eloDelta >= 0 ? "+" : ""}${eloDelta})` : ""} — ${rankTier}` : null,
+          alias ? `\n— ${alias}` : null,
+        ].filter(Boolean).join("\n"),
+        color: 0x22c55e,
+        footer: { text: "SalesCalls.io — Practice real sales scenarios" },
+        timestamp: new Date().toISOString(),
+      };
+
+      const resp = await fetch(DISCORD_FN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ webhookUrl: discordWebhook, embeds: [embed] }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Failed" }));
+        throw new Error(err.error || "Discord share failed");
+      }
+      toast.success("Scorecard shared to Discord!", { duration: 2500 });
+    } catch (e: any) {
+      toast.error(e.message || "Failed to share to Discord.");
+    } finally {
+      setDiscordSending(false);
+    }
+  }, [discordWebhook, feedback, scenarioTitle, topPercent, frameworkLabel, elo, eloDelta, rankTier, alias]);
+
+  const handleSaveDiscordWebhook = () => {
+    const url = discordInput.trim();
+    if (!url) {
+      saveDiscordWebhook("");
+      setDiscordWebhook("");
+      setShowDiscordSetup(false);
+      toast("Discord webhook removed.", { duration: 2000 });
+      return;
+    }
+    const pattern = /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/;
+    if (!pattern.test(url)) {
+      toast.error("Invalid Discord webhook URL. It should look like: https://discord.com/api/webhooks/123/abc-xyz");
+      return;
+    }
+    saveDiscordWebhook(url);
+    setDiscordWebhook(url);
+    setShowDiscordSetup(false);
+    toast.success("Discord webhook saved!", { duration: 2000 });
+  };
 
   const handleDownloadImage = useCallback(async () => {
     try {
@@ -408,13 +485,85 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-[10px] gap-1"
-              onClick={handleCopyText}
+              className={`h-8 text-[10px] gap-1 ${discordWebhook ? "" : "border-dashed"}`}
+              onClick={handleShareDiscord}
+              disabled={discordSending}
             >
-              <ExternalLink className="h-3 w-3" />
+              {discordSending ? (
+                <span className="h-3 w-3 border border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z" />
+                </svg>
+              )}
               Discord
             </Button>
           </div>
+
+          {/* Discord Webhook Setup */}
+          <AnimatePresence>
+            {showDiscordSetup && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="card-elevated p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-semibold text-foreground">Discord Webhook</p>
+                    <button
+                      onClick={() => setShowDiscordSetup(false)}
+                      className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    Paste your Discord channel webhook URL. Get it from Server Settings → Integrations → Webhooks.
+                  </p>
+                  <Input
+                    value={discordInput}
+                    onChange={(e) => setDiscordInput(e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="h-8 text-xs"
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" className="flex-1 h-7 text-[10px]" onClick={handleSaveDiscordWebhook}>
+                      Save & Share
+                    </Button>
+                    {discordWebhook && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-[10px] text-destructive"
+                        onClick={() => {
+                          setDiscordInput("");
+                          saveDiscordWebhook("");
+                          setDiscordWebhook("");
+                          setShowDiscordSetup(false);
+                          toast("Discord webhook removed.", { duration: 2000 });
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Discord webhook gear icon */}
+          {discordWebhook && !showDiscordSetup && (
+            <button
+              onClick={() => setShowDiscordSetup(true)}
+              className="text-[9px] text-muted-foreground/50 hover:text-muted-foreground flex items-center gap-1 transition-colors mx-auto"
+            >
+              <Settings2 className="h-2.5 w-2.5" />
+              Configure Discord webhook
+            </button>
+          )}
         </motion.div>
       )}
     </div>
