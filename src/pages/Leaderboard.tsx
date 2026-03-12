@@ -413,10 +413,11 @@ const LeaderboardPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 md:px-6 pt-24 pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-3xl mx-auto space-y-6"
+          className="space-y-6"
         >
           {/* Header */}
           <div className="text-center space-y-2">
