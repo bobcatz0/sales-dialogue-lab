@@ -12,6 +12,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { getEloRank, ELO_RANKS } from "@/lib/elo";
 import { EloHistoryChart } from "@/components/practice/EloHistoryChart";
 import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
+import { PlacementProgress, PlacingBadge } from "@/components/practice/PlacementSystem";
+import { PLACEMENT_SESSIONS_REQUIRED } from "@/lib/eloSync";
 
 interface LeaderboardEntry {
   id: string;
@@ -321,9 +323,13 @@ function NearYouSection({
                   <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
                     {entry.display_name}
                   </span>
-                  <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
-                    [{rank}]
-                  </span>
+                  {entry.total_sessions < PLACEMENT_SESSIONS_REQUIRED ? (
+                    <PlacingBadge />
+                  ) : (
+                    <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
+                      [{rank}]
+                    </span>
+                  )}
                   {isCurrentUser && <span className="text-[9px] text-muted-foreground shrink-0">(you)</span>}
                 </div>
 
@@ -441,9 +447,13 @@ const LeaderboardPage = () => {
                 <EditableProfile />
                 <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                   <span className="text-2xl font-bold font-heading text-foreground">{profile.elo}</span>
-                  <Badge variant="outline" className={`text-[10px] font-semibold border-primary/40 ${getRankColor(getEloRank(profile.elo))}`}>
-                    {getEloRank(profile.elo)}
-                  </Badge>
+                  {profile.total_sessions < PLACEMENT_SESSIONS_REQUIRED ? (
+                    <PlacingBadge />
+                  ) : (
+                    <Badge variant="outline" className={`text-[10px] font-semibold border-primary/40 ${getRankColor(getEloRank(profile.elo))}`}>
+                      {getEloRank(profile.elo)}
+                    </Badge>
+                  )}
                   {userRank && (
                     <span className="text-xs text-muted-foreground">
                       #{userRank} {tab === "weekly" ? "this week" : "overall"}
@@ -455,6 +465,13 @@ const LeaderboardPage = () => {
                 </div>
               </div>
             </motion.div>
+          ) : user && profile && profile.total_sessions < PLACEMENT_SESSIONS_REQUIRED ? (
+            <PlacementProgress
+              totalSessions={profile.total_sessions}
+              elo={profile.elo}
+              avatarUrl={profile.avatar_url}
+              displayName={profile.display_name}
+            />
           ) : (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -621,9 +638,13 @@ const LeaderboardPage = () => {
                             <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
                               {entry.display_name}
                             </span>
-                            <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
-                              [{rank}]
-                            </span>
+                            {entry.total_sessions < PLACEMENT_SESSIONS_REQUIRED ? (
+                              <PlacingBadge />
+                            ) : (
+                              <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
+                                [{rank}]
+                              </span>
+                            )}
                             {isCurrentUser && <span className="text-[9px] text-muted-foreground shrink-0">(you)</span>}
                             {entry.is_evaluator && (
                               <ShieldCheck className="h-3 w-3 text-blue-400 shrink-0" />

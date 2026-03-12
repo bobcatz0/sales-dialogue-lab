@@ -9,8 +9,9 @@ import Navbar from "@/components/landing/Navbar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { syncEloAfterSession, type EloSyncResult } from "@/lib/eloSync";
+import { syncEloAfterSession, PLACEMENT_SESSIONS_REQUIRED, type EloSyncResult } from "@/lib/eloSync";
 import { RankUpCelebration } from "@/components/practice/RankUpCelebration";
+import { PlacementProgress, PlacementResult } from "@/components/practice/PlacementSystem";
 import { useAuth } from "@/hooks/useAuth";
 import { PromotionBanner } from "@/components/practice/PromotionBanner";
 import { PromotionResultModal } from "@/components/practice/PromotionResult";
@@ -244,6 +245,8 @@ const PracticePage = () => {
   const [activeDrill, setActiveDrill] = useState<Drill | null>(null);
   const [showExitQuestion, setShowExitQuestion] = useState(false);
   const [showTextModeFallback, setShowTextModeFallback] = useState(false);
+  const [showPlacementResult, setShowPlacementResult] = useState(false);
+  const [placementElo, setPlacementElo] = useState<number>(1000);
   const [coldCallTextMode, setColdCallTextMode] = useState(false);
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
    const timer = useCallTimer(sessionActive);
@@ -716,10 +719,33 @@ This evaluation style should subtly influence your questions and reactions. Do N
             refreshProfile();
           }
 
-          if (result.rankedUp) {
+          if (result.placementComplete) {
+            // Placement just finished — show the placement result modal
+            setPlacementElo(result.newElo);
+            // Fetch percentile
+            const { count } = await supabase
+              .from("profiles")
+              .select("id", { count: "exact", head: true })
+              .lt("elo", result.newElo);
+            const { count: totalCount } = await supabase
+              .from("profiles")
+              .select("id", { count: "exact", head: true });
+            const percentile = totalCount && totalCount > 0
+              ? Math.round(((count ?? 0) / totalCount) * 100)
+              : 50;
+            setPlacementElo(result.newElo);
+            setShowPlacementResult(true);
+            // Store percentile for the modal
+            (window as any).__placementPercentile = percentile;
+            refreshProfile();
+          } else if (result.rankedUp) {
             setRankUpData(result);
           } else if (!isPromotionMatch) {
-            toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
+            if (result.totalSessions <= PLACEMENT_SESSIONS_REQUIRED) {
+              toast.success(`Placement ${result.totalSessions}/${PLACEMENT_SESSIONS_REQUIRED} — ELO calibrating...`, { duration: 3000 });
+            } else {
+              toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
+            }
           }
         }
       });
@@ -1342,6 +1368,16 @@ This evaluation style should subtly influence your questions and reactions. Do N
               <DailyChallengeCard onStart={handleStartChallenge} />
             )}
 
+            {/* Placement Progress */}
+            {profile && profile.total_sessions < PLACEMENT_SESSIONS_REQUIRED && (
+              <PlacementProgress
+                totalSessions={profile.total_sessions}
+                elo={profile.elo}
+                avatarUrl={profile.avatar_url}
+                displayName={profile.display_name}
+              />
+            )}
+
             {/* Profile Panel */}
             {alias && (
               <ProfilePanel alias={alias} consistency={loadConsistency()} />
@@ -1918,6 +1954,20 @@ This evaluation style should subtly influence your questions and reactions. Do N
           refreshProfile();
         }}
       />
+
+      {/* Placement Result */}
+      {showPlacementResult && (
+        <PlacementResult
+          elo={placementElo}
+          percentile={(window as any).__placementPercentile ?? 50}
+          avatarUrl={profile?.avatar_url}
+          displayName={profile?.display_name}
+          onDismiss={() => {
+            setShowPlacementResult(false);
+            refreshProfile();
+          }}
+        />
+      )}
     </>
   );
 };
