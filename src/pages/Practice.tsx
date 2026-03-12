@@ -747,6 +747,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
               toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
             }
           }
+        }
+      });
 
       // Process consistency scoring
       const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
