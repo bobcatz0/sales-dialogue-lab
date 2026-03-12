@@ -7,6 +7,7 @@ import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRound
 import { ShareableSummary } from "./ShareableSummary";
 import { ScorecardShare } from "./ScorecardShare";
 import { ChallengeButton } from "./ChallengeButton";
+import { HumanReviewedBadge } from "./EvaluatorBadges";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
@@ -262,6 +263,9 @@ export function FeedbackPanel({
               {eloDelta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               {eloDelta >= 0 ? "+" : ""}{eloDelta} ELO
             </motion.span>
+          )}
+          {feedback.humanReviewScore != null && (
+            <HumanReviewedBadge evaluatorScore={feedback.humanReviewScore} />
           )}
         </div>
         <div className="w-full max-w-[200px] h-1 bg-muted rounded-full overflow-hidden mt-3">

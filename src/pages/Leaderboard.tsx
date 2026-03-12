@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, LogIn, User, Flame } from "lucide-react";
+import { Trophy, Crown, Medal, LogIn, User, Flame, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ interface LeaderboardEntry {
   elo: number;
   total_sessions: number;
   weekly_elo_gain?: number;
+  is_evaluator?: boolean;
 }
 
 function getMedalIcon(index: number) {
@@ -53,7 +54,7 @@ const LeaderboardPage = () => {
       const orderCol = tab === "weekly" ? "weekly_elo_gain" : "elo";
       const { data } = await supabase
         .from("profiles")
-        .select("id, display_name, avatar_url, elo, total_sessions, weekly_elo_gain")
+        .select("id, display_name, avatar_url, elo, total_sessions, weekly_elo_gain, is_evaluator")
         .order(orderCol, { ascending: false })
         .limit(50);
 
@@ -255,6 +256,9 @@ const LeaderboardPage = () => {
                           {entry.display_name}
                           {isCurrentUser && <span className="text-[10px] text-muted-foreground ml-1">(you)</span>}
                         </span>
+                        {entry.is_evaluator && (
+                          <ShieldCheck className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                        )}
                       </div>
 
                       {tab === "weekly" ? (

@@ -8,6 +8,8 @@ import { getRank } from "@/components/practice/progression";
 import { getInterviewReadyStatus } from "@/components/practice/interviewReadyStatus";
 import { getDrillStats } from "@/components/practice/drillTracking";
 import { loadHistory } from "@/components/practice/sessionStorage";
+import { useAuth } from "@/hooks/useAuth";
+import { EvaluatorBadge, EvaluatorReputation } from "./EvaluatorBadges";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
@@ -30,6 +32,7 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
   const earnedIds = loadEarnedBadges();
   const interviewReady = getInterviewReadyStatus();
   const drillStats = getDrillStats();
+  const { profile } = useAuth();
 
   return (
     <motion.div
@@ -52,6 +55,17 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
           {rank}
         </Badge>
       </div>
+
+      {/* Evaluator badge & reputation */}
+      {profile?.is_evaluator && (
+        <div className="space-y-1.5">
+          <EvaluatorBadge size="sm" />
+          <EvaluatorReputation
+            reputation={profile.evaluator_reputation}
+            reviewsGiven={profile.reviews_given}
+          />
+        </div>
+      )}
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-2 text-center">
