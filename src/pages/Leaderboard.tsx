@@ -131,16 +131,14 @@ const LeaderboardPage = () => {
               transition={{ delay: 0.05 }}
               className="card-elevated p-5 flex items-center gap-4"
             >
-              <div className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0 overflow-hidden">
-                {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
-                ) : (
-                  <User className="h-6 w-6 text-primary" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-lg font-heading font-bold text-foreground truncate">
-                  {profile.display_name} <span className={`text-sm ${getRankColor(getEloRank(profile.elo))}`}>[{getEloRank(profile.elo)}]</span>
+              <UserAvatar
+                avatarUrl={profile.avatar_url}
+                displayName={profile.display_name}
+                elo={profile.elo}
+                size="lg"
+                showRankBadge={true}
+                showName={true}
+              />
                 </p>
                 <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                   <span className="text-2xl font-bold font-heading text-foreground">{profile.elo}</span>
