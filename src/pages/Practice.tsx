@@ -1597,7 +1597,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         Reset
                       </Button>
                       <Button
-                        variant="outline"
+                        variant={isReadyForScore ? "hero" : "outline"}
                         size="sm"
                         className="text-xs h-8"
                         onClick={handleEndSession}
