@@ -7,6 +7,7 @@ import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRound
 import { ShareableSummary } from "./ShareableSummary";
 import { ScorecardShare } from "./ScorecardShare";
 import { ChallengeButton } from "./ChallengeButton";
+import { HumanReviewedBadge } from "./EvaluatorBadges";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
