@@ -124,6 +124,7 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     frameworkLabel ? `📋 ${frameworkLabel}` : null,
     `📊 Top ${topPercent}%`,
     elo != null ? `⚡ ELO: ${elo}${eloDelta != null ? ` (${eloDelta >= 0 ? "+" : ""}${eloDelta})` : ""} — ${rankTier}` : null,
+    weakestSkill ? `⚠️ Focus area: ${weakestSkill.criterion} (${weakestSkill.score}/100)` : null,
     ``,
     `Practice sales scenarios at ${shareUrl}`,
   ].filter(Boolean).join("\n");
