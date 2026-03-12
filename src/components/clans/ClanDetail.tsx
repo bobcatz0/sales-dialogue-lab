@@ -171,6 +171,14 @@ export function ClanDetail({ clanId, onBack }: ClanDetailProps) {
 
       if (error) throw error;
       toast.success(`Joined ${clan.name}!`);
+      // Publish activity event
+      import("@/lib/activityEvents").then(({ publishActivityEvent }) =>
+        publishActivityEvent({
+          eventType: "clan_join",
+          title: `joined ${clan.name}`,
+          metadata: { clanId, clanName: clan.name },
+        })
+      );
       fetchClan();
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to join.");

@@ -74,6 +74,15 @@ export default function JoinClan() {
 
       if (error) throw error;
 
+      // Publish activity event
+      import("@/lib/activityEvents").then(({ publishActivityEvent }) =>
+        publishActivityEvent({
+          eventType: "clan_join",
+          title: "joined a clan via invite",
+          metadata: { clanId },
+        })
+      );
+
       // Record referral (best-effort — the invite_code owner = clan creator for now)
       const { data: clan } = await supabase
         .from("clans")
