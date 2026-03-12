@@ -296,7 +296,7 @@ export function FeedbackPanel({
             transition={{ duration: 0.8, ease: "easeOut", delay: 3.0 }}
             className={`h-full rounded-full ${getScoreBarColor(feedback.score)}`}
           />
-        </div>
+        </motion.div>
       </div>
 
       <div className="p-5 space-y-5">
