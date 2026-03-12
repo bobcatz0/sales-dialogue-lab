@@ -1501,6 +1501,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           setMessages([]);
                           setInput("");
                           setLastPoints(null);
+                          setEloDelta(null);
                           setLastSessionValid(false);
                           setActiveSDRRound(null);
                           setSdrProgress(loadSDRTrackProgress());
