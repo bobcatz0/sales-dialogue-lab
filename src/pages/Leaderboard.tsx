@@ -254,8 +254,9 @@ const LeaderboardPage = () => {
                         </div>
                         <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
                           {entry.display_name}
-                          {isCurrentUser && <span className="text-[10px] text-muted-foreground ml-1">(you)</span>}
                         </span>
+                        <span className={`text-[10px] font-bold ${getRankColor(rank)}`}>[{rank}]</span>
+                        {isCurrentUser && <span className="text-[10px] text-muted-foreground">(you)</span>}
                         {entry.is_evaluator && (
                           <ShieldCheck className="h-3.5 w-3.5 text-blue-400 shrink-0" />
                         )}
