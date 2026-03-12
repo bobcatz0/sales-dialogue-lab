@@ -1024,6 +1024,42 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     {currentRank}
                   </Badge>
                 </div>
+
+                {/* Interviewer Personality Selector */}
+                {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                      Interviewer Personality
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {PERSONALITIES.map((p) => {
+                        const isSelected = personalityRef.current === p.id;
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => { personalityRef.current = p.id; setSelectedRole(null); }}
+                            className={`card-elevated p-3 text-left transition-all duration-200 cursor-pointer ${
+                              isSelected
+                                ? "border-primary/60 shadow-[0_0_16px_hsl(145_72%_50%/0.08)]"
+                                : "hover:border-border/80"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-base">{p.icon}</span>
+                              <span className={`text-xs font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
+                                {p.label}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground leading-relaxed">
+                              {p.description}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-3">
                   {filteredRoles.map((role) => {
                     const isActive = selectedRole === role.id;
