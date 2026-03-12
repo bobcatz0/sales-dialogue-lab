@@ -19,6 +19,7 @@ import Packs from "./pages/Packs";
 import ExpertChallenges from "./pages/ExpertChallenges";
 import Clans from "./pages/Clans";
 import JoinClan from "./pages/JoinClan";
+import ScorecardPage from "./pages/ScorecardPage";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { WeeklyChampionCelebration } from "./components/clans/WeeklyChampionCelebration";
 import { useRankThresholds } from "./hooks/useRankThresholds";
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/expert-challenges" element={<ExpertChallenges />} />
             <Route path="/clans" element={<Clans />} />
             <Route path="/join/:code" element={<JoinClan />} />
+            <Route path="/scorecard/:id" element={<ScorecardPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

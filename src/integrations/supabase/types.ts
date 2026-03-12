@@ -611,6 +611,66 @@ export type Database = {
         }
         Relationships: []
       }
+      scorecards: {
+        Row: {
+          alias: string | null
+          avatar_url: string | null
+          best_moment: string | null
+          created_at: string
+          display_name: string
+          elo: number | null
+          elo_delta: number | null
+          framework_id: string | null
+          id: string
+          improvements: Json | null
+          percentile: number
+          rank: string
+          rubric_scores: Json | null
+          scenario_title: string
+          score: number
+          strengths: Json | null
+          user_id: string
+        }
+        Insert: {
+          alias?: string | null
+          avatar_url?: string | null
+          best_moment?: string | null
+          created_at?: string
+          display_name?: string
+          elo?: number | null
+          elo_delta?: number | null
+          framework_id?: string | null
+          id?: string
+          improvements?: Json | null
+          percentile?: number
+          rank: string
+          rubric_scores?: Json | null
+          scenario_title: string
+          score: number
+          strengths?: Json | null
+          user_id: string
+        }
+        Update: {
+          alias?: string | null
+          avatar_url?: string | null
+          best_moment?: string | null
+          created_at?: string
+          display_name?: string
+          elo?: number | null
+          elo_delta?: number | null
+          framework_id?: string | null
+          id?: string
+          improvements?: Json | null
+          percentile?: number
+          rank?: string
+          rubric_scores?: Json | null
+          scenario_title?: string
+          score?: number
+          strengths?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

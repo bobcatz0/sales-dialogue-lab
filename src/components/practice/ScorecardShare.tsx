@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Share2, Download, Check, Copy, Trophy, Linkedin, ExternalLink, Settings2 } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { Share2, Download, Check, Copy, Trophy, Linkedin, ExternalLink, Settings2, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import type { Feedback, FrameworkId } from "./types";
 import { loadHistory } from "./sessionStorage";
 import { getEloRank } from "@/lib/elo";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const DISCORD_WEBHOOK_KEY = "salescalls_discord_webhook";
 const DISCORD_FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/discord-webhook`;
@@ -97,14 +99,18 @@ function ConfettiBurst() {
 }
 
 export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession, elo, eloDelta }: ScorecardShareProps) {
+  const { user, profile } = useAuth();
   const [showCard, setShowCard] = useState(false);
   const [copied, setCopied] = useState(false);
   const [imageCopied, setImageCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [discordWebhook, setDiscordWebhook] = useState(() => loadDiscordWebhook());
   const [showDiscordSetup, setShowDiscordSetup] = useState(false);
   const [discordInput, setDiscordInput] = useState(() => loadDiscordWebhook());
   const [discordSending, setDiscordSending] = useState(false);
+  const [scorecardId, setScorecardId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const frameworkLabel = feedback.frameworkId && feedback.frameworkId !== "none"
     ? FRAMEWORK_LABELS[feedback.frameworkId] || feedback.frameworkId.toUpperCase()
@@ -117,7 +123,45 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
   const rankTier = elo != null ? getEloRank(elo) : null;
   const topPercent = 100 - percentile;
 
-  const shareUrl = "https://sales-dialogue-lab.lovable.app/scenarios";
+  const scorecardUrl = scorecardId
+    ? `${window.location.origin}/scorecard/${scorecardId}`
+    : null;
+  const shareUrl = scorecardUrl || "https://sales-dialogue-lab.lovable.app/scenarios";
+
+  // Save scorecard to DB when card is first shown
+  const saveScorecard = useCallback(async () => {
+    if (scorecardId || saving || !user) return;
+    setSaving(true);
+    try {
+      const { data, error } = await supabase
+        .from("scorecards")
+        .insert({
+          user_id: user.id,
+          score: feedback.score,
+          rank: feedback.rank,
+          percentile,
+          scenario_title: scenarioTitle,
+          framework_id: feedback.frameworkId || null,
+          rubric_scores: rubric as any,
+          strengths: feedback.strengths as any,
+          improvements: feedback.improvements as any,
+          best_moment: feedback.bestMoment || null,
+          elo: elo ?? null,
+          elo_delta: eloDelta ?? null,
+          alias: alias || null,
+          display_name: profile?.display_name || "Anonymous",
+          avatar_url: profile?.avatar_url || null,
+        })
+        .select("id")
+        .single();
+
+      if (data) setScorecardId(data.id);
+    } catch {
+      // Non-critical — sharing still works without saved scorecard
+    } finally {
+      setSaving(false);
+    }
+  }, [scorecardId, saving, user, feedback, scenarioTitle, percentile, rubric, elo, eloDelta, alias, profile]);
 
   const shareText = [
     `🎯 Just scored ${feedback.score}/100 on "${scenarioTitle}"`,
@@ -128,6 +172,15 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     ``,
     `Practice sales scenarios at ${shareUrl}`,
   ].filter(Boolean).join("\n");
+
+  const handleCopyLink = useCallback(() => {
+    if (!scorecardUrl) return;
+    navigator.clipboard.writeText(scorecardUrl).then(() => {
+      setLinkCopied(true);
+      toast("Scorecard link copied!", { duration: 2000 });
+      setTimeout(() => setLinkCopied(false), 2000);
+    }).catch(() => toast.error("Failed to copy link."));
+  }, [scorecardUrl]);
 
   const handleCopyText = useCallback(() => {
     navigator.clipboard.writeText(shareText).then(() => {
@@ -493,6 +546,7 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
           className="w-full h-9 text-xs text-muted-foreground gap-1.5"
           onClick={() => {
             setShowCard(true);
+            saveScorecard();
             if (feedback.score >= 85) {
               setShowConfetti(true);
               setTimeout(() => setShowConfetti(false), 2000);
@@ -641,6 +695,19 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
               {imageCopied ? "Copied!" : "Copy Image"}
             </Button>
           </div>
+
+          {/* Copy Link */}
+          {scorecardUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-1.5"
+              onClick={handleCopyLink}
+            >
+              {linkCopied ? <Check className="h-3 w-3" /> : <LinkIcon className="h-3 w-3" />}
+              {linkCopied ? "Link Copied!" : "Copy Scorecard Link"}
+            </Button>
+          )}
 
           {/* Secondary Actions */}
           <div className="flex gap-2">
