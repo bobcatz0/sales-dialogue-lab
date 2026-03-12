@@ -149,6 +149,11 @@ export default function Clans() {
           </motion.div>
         )}
 
+        {/* Weekly Challenge */}
+        <div className="mb-6">
+          <ClanWeeklyChallenge />
+        </div>
+
         {/* Search */}
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
