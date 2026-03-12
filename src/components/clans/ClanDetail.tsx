@@ -456,6 +456,21 @@ export function ClanDetail({ clanId, onBack }: ClanDetailProps) {
             })}
           </div>
         </motion.div>
+
+        {/* Activity Feed */}
+        {isMember && members.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-6"
+          >
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Activity className="h-3.5 w-3.5" /> Recent Activity
+            </h2>
+            <ClanActivityFeed memberUserIds={members.map((m) => m.user_id)} />
+          </motion.div>
+        )}
       </div>
     </div>
   );
