@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, LogIn, Flame, ShieldCheck, Shield } from "lucide-react";
+import { Trophy, Crown, Medal, LogIn, Flame, ShieldCheck, Shield, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Link } from "react-router-dom";
 import { EditableProfile } from "@/components/EditableProfile";
@@ -29,13 +29,6 @@ interface ClanMemberInfo {
   clans: { name: string } | { name: string }[] | null;
 }
 
-function getMedalIcon(index: number) {
-  if (index === 0) return <Crown className="h-4 w-4 text-yellow-500" />;
-  if (index === 1) return <Medal className="h-4 w-4 text-gray-400" />;
-  if (index === 2) return <Medal className="h-4 w-4 text-amber-600" />;
-  return null;
-}
-
 function getRankColor(rank: string) {
   switch (rank) {
     case "Sales Architect": return "text-purple-400";
@@ -47,7 +40,131 @@ function getRankColor(rank: string) {
   }
 }
 
+function getRankBorderColor(rank: string) {
+  switch (rank) {
+    case "Sales Architect": return "border-purple-400/30";
+    case "Rainmaker": return "border-yellow-400/30";
+    case "Operator": return "border-blue-400/30";
+    case "Closer": return "border-primary/30";
+    case "Prospector": return "border-orange-400/30";
+    default: return "border-border";
+  }
+}
+
+function MovementIndicator({ gain }: { gain: number }) {
+  if (gain > 0) {
+    return (
+      <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-primary">
+        <TrendingUp className="h-3 w-3" />+{gain}
+      </span>
+    );
+  }
+  if (gain < 0) {
+    return (
+      <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-destructive">
+        <TrendingDown className="h-3 w-3" />{gain}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+      <Minus className="h-3 w-3" />
+    </span>
+  );
+}
+
 type Tab = "all-time" | "weekly";
+
+// Podium card for top 3
+function PodiumCard({
+  entry,
+  position,
+  isCurrentUser,
+  delay,
+}: {
+  entry: LeaderboardEntry;
+  position: 1 | 2 | 3;
+  isCurrentUser: boolean;
+  delay: number;
+}) {
+  const rank = getEloRank(entry.elo);
+  const isFirst = position === 1;
+  const avatarSize = isFirst ? "lg" : "md";
+  const medalColors = {
+    1: "from-yellow-400/20 to-yellow-600/10 border-yellow-500/30",
+    2: "from-gray-300/15 to-gray-500/10 border-gray-400/30",
+    3: "from-amber-500/15 to-amber-700/10 border-amber-600/30",
+  };
+  const medalIcons = {
+    1: <Crown className="h-5 w-5 text-yellow-500" />,
+    2: <Medal className="h-4 w-4 text-gray-400" />,
+    3: <Medal className="h-4 w-4 text-amber-600" />,
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay, type: "spring", stiffness: 300, damping: 20 }}
+      className={`flex flex-col items-center text-center ${isFirst ? "order-2" : position === 2 ? "order-1" : "order-3"}`}
+    >
+      {/* Medal */}
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: delay + 0.15, type: "spring", stiffness: 400 }}
+        className="mb-2"
+      >
+        {medalIcons[position]}
+      </motion.div>
+
+      {/* Card */}
+      <div
+        className={`relative rounded-2xl border bg-gradient-to-b p-4 ${medalColors[position]} ${
+          isFirst ? "w-36 pb-5" : "w-28 pb-4"
+        } ${isCurrentUser ? "ring-2 ring-primary/40 ring-offset-2 ring-offset-background" : ""}`}
+      >
+        <div className="flex justify-center mb-2">
+          <UserAvatar
+            avatarUrl={entry.avatar_url}
+            displayName={entry.display_name}
+            elo={entry.elo}
+            size={avatarSize}
+            showRankBadge={false}
+            showName={false}
+          />
+        </div>
+
+        <p className={`font-semibold text-foreground truncate ${isFirst ? "text-sm" : "text-xs"}`}>
+          {entry.display_name}
+        </p>
+
+        <p className={`font-bold tabular-nums ${isFirst ? "text-xl" : "text-lg"} font-heading text-foreground mt-1`}>
+          {entry.elo}
+        </p>
+
+        <span className={`text-[10px] font-bold ${getRankColor(rank)}`}>
+          {rank}
+        </span>
+
+        {(entry.weekly_elo_gain ?? 0) !== 0 && (
+          <div className="mt-1">
+            <MovementIndicator gain={entry.weekly_elo_gain ?? 0} />
+          </div>
+        )}
+
+        {isCurrentUser && (
+          <span className="text-[9px] text-muted-foreground mt-0.5 block">(you)</span>
+        )}
+      </div>
+
+      {/* Position number */}
+      <span className={`mt-2 font-bold font-heading ${isFirst ? "text-lg text-foreground" : "text-sm text-muted-foreground"}`}>
+        #{position}
+      </span>
+    </motion.div>
+  );
+}
 
 const LeaderboardPage = () => {
   const { user, profile } = useAuth();
@@ -72,7 +189,6 @@ const LeaderboardPage = () => {
           ? data.filter((e) => (e.weekly_elo_gain ?? 0) > 0)
           : data;
 
-        // Fetch clan affiliations for all users
         const userIds = filtered.map((e) => e.id);
         const { data: clanData } = await supabase
           .from("clan_members")
@@ -103,6 +219,9 @@ const LeaderboardPage = () => {
 
     fetchLeaderboard();
   }, [user, tab]);
+
+  const podiumEntries = entries.slice(0, 3);
+  const listEntries = entries.slice(3);
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,6 +269,9 @@ const LeaderboardPage = () => {
                     <span className="text-xs text-muted-foreground">
                       #{userRank} {tab === "weekly" ? "this week" : "overall"}
                     </span>
+                  )}
+                  {userRank && entries[userRank - 1] && (
+                    <MovementIndicator gain={entries[userRank - 1].weekly_elo_gain ?? 0} />
                   )}
                 </div>
               </div>
@@ -211,7 +333,7 @@ const LeaderboardPage = () => {
             ))}
           </div>
 
-          {/* Leaderboard table */}
+          {/* Leaderboard content */}
           {loading ? (
             <div className="text-center py-12">
               <p className="text-sm text-muted-foreground">Loading leaderboard…</p>
@@ -226,108 +348,127 @@ const LeaderboardPage = () => {
               </p>
             </div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="card-elevated overflow-hidden"
-            >
-              {/* Table header */}
-              <div className={`grid ${tab === "weekly" ? "grid-cols-[3rem_1fr_5rem_5rem]" : "grid-cols-[3rem_1fr_5rem_7rem] md:grid-cols-[3rem_1fr_5rem_7rem_5rem]"} items-center px-5 py-3 border-b border-border text-[11px] font-semibold text-muted-foreground uppercase tracking-wider`}>
-                <span>Rank</span>
-                <span>Player</span>
-                {tab === "weekly" ? (
-                  <>
-                    <span className="text-right">Gained</span>
-                    <span className="text-right">ELO</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-right">ELO</span>
-                    <span className="text-right">Tier</span>
-                    <span className="hidden md:block text-right">Sessions</span>
-                  </>
-                )}
-              </div>
+            <>
+              {/* Podium for top 3 */}
+              {podiumEntries.length >= 3 && (
+                <div className="flex items-end justify-center gap-4 pt-4 pb-2">
+                  {[1, 0, 2].map((idx) => (
+                    <PodiumCard
+                      key={podiumEntries[idx].id}
+                      entry={podiumEntries[idx]}
+                      position={(idx + 1) as 1 | 2 | 3}
+                      isCurrentUser={user?.id === podiumEntries[idx].id}
+                      delay={0.1 + idx * 0.08}
+                    />
+                  ))}
+                </div>
+              )}
 
-              {/* Rows */}
-              <div className="divide-y divide-border">
-                {entries.map((entry, i) => {
-                  const rank = getEloRank(entry.elo);
-                  const isCurrentUser = user?.id === entry.id;
-
-                  return (
-                    <motion.div
+              {/* Podium fallback for < 3 entries */}
+              {podiumEntries.length > 0 && podiumEntries.length < 3 && (
+                <div className="flex items-end justify-center gap-4 pt-4 pb-2">
+                  {podiumEntries.map((entry, idx) => (
+                    <PodiumCard
                       key={entry.id}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.15 + i * 0.03 }}
-                      className={`grid ${tab === "weekly" ? "grid-cols-[3rem_1fr_5rem_5rem]" : "grid-cols-[3rem_1fr_5rem_7rem] md:grid-cols-[3rem_1fr_5rem_7rem_5rem]"} items-center px-5 py-3 transition-colors ${
-                        isCurrentUser ? "bg-primary/5" : "hover:bg-muted/30"
-                      } ${i === 0 ? "bg-primary/5" : ""}`}
-                    >
-                      <div className="flex items-center justify-center">
-                        {getMedalIcon(i) || (
-                          <span className="text-xs text-muted-foreground font-bold">{i + 1}</span>
-                        )}
-                      </div>
+                      entry={entry}
+                      position={(idx + 1) as 1 | 2 | 3}
+                      isCurrentUser={user?.id === entry.id}
+                      delay={0.1 + idx * 0.08}
+                    />
+                  ))}
+                </div>
+              )}
 
-                      <div className="flex items-center gap-3 min-w-0">
-                        <UserAvatar
-                          avatarUrl={entry.avatar_url}
-                          displayName={entry.display_name}
-                          elo={entry.elo}
-                          size="sm"
-                          showRankBadge={true}
-                          showName={true}
-                          isHighlighted={isCurrentUser}
-                        />
-                        {isCurrentUser && <span className="text-[10px] text-muted-foreground">(you)</span>}
-                        {entry.is_evaluator && (
-                          <ShieldCheck className="h-3.5 w-3.5 text-blue-400 shrink-0" />
-                        )}
-                        {entry.clan_name && (
-                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 gap-0.5 border-primary/30 text-primary shrink-0">
-                            <Shield className="h-2.5 w-2.5" />
-                            {entry.clan_name}
-                          </Badge>
-                        )}
-                        <WeeklyChallengeBadges userId={entry.id} compact />
-                      </div>
+              {/* Remaining players list */}
+              {listEntries.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="card-elevated overflow-hidden"
+                >
+                  {/* Table header */}
+                  <div className="grid grid-cols-[2.5rem_1fr_4.5rem_4rem] md:grid-cols-[2.5rem_1fr_4.5rem_5rem_4rem] items-center px-4 py-2.5 border-b border-border text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    <span>#</span>
+                    <span>Player</span>
+                    <span className="text-right">ELO</span>
+                    <span className="hidden md:block text-right">Sessions</span>
+                    <span className="text-right">Move</span>
+                  </div>
 
-                      {tab === "weekly" ? (
-                        <>
-                          <div className="text-right">
-                            <span className="text-sm font-bold text-primary">
-                              +{entry.weekly_elo_gain ?? 0}
+                  {/* Rows */}
+                  <div className="divide-y divide-border">
+                    {listEntries.map((entry, i) => {
+                      const rank = getEloRank(entry.elo);
+                      const actualIndex = i + 3;
+                      const isCurrentUser = user?.id === entry.id;
+
+                      return (
+                        <motion.div
+                          key={entry.id}
+                          initial={{ opacity: 0, x: -6 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.35 + i * 0.02 }}
+                          className={`grid grid-cols-[2.5rem_1fr_4.5rem_4rem] md:grid-cols-[2.5rem_1fr_4.5rem_5rem_4rem] items-center px-4 py-2.5 transition-colors ${
+                            isCurrentUser
+                              ? "bg-primary/5 border-l-2 border-l-primary"
+                              : "hover:bg-muted/30"
+                          }`}
+                        >
+                          <span className="text-xs font-bold text-muted-foreground tabular-nums">
+                            {actualIndex + 1}
+                          </span>
+
+                          <div className="flex items-center gap-2 min-w-0">
+                            <UserAvatar
+                              avatarUrl={entry.avatar_url}
+                              displayName={entry.display_name}
+                              elo={entry.elo}
+                              size="xs"
+                              showRankBadge={false}
+                              showName={false}
+                            />
+                            <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
+                              {entry.display_name}
                             </span>
+                            <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
+                              [{rank}]
+                            </span>
+                            {isCurrentUser && <span className="text-[9px] text-muted-foreground shrink-0">(you)</span>}
+                            {entry.is_evaluator && (
+                              <ShieldCheck className="h-3 w-3 text-blue-400 shrink-0" />
+                            )}
+                            {entry.clan_name && (
+                              <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 gap-0.5 border-primary/30 text-primary shrink-0 hidden md:inline-flex">
+                                <Shield className="h-2 w-2" />
+                                {entry.clan_name}
+                              </Badge>
+                            )}
+                            <WeeklyChallengeBadges userId={entry.id} compact />
                           </div>
+
                           <div className="text-right">
-                            <span className="text-xs text-muted-foreground">{entry.elo}</span>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="text-right">
-                            <span className={`text-sm font-bold font-heading ${i === 0 ? "text-primary" : "text-foreground"}`}>
+                            <span className="text-sm font-bold font-heading text-foreground tabular-nums">
                               {entry.elo}
                             </span>
                           </div>
-                          <div className="text-right">
-                            <span className={`text-[11px] font-semibold ${getRankColor(rank)}`}>
-                              {rank}
+
+                          <div className="hidden md:block text-right">
+                            <span className="text-xs text-muted-foreground tabular-nums">
+                              {entry.total_sessions}
                             </span>
                           </div>
-                          <div className="hidden md:block text-right">
-                            <span className="text-xs text-muted-foreground">{entry.total_sessions}</span>
+
+                          <div className="text-right">
+                            <MovementIndicator gain={entry.weekly_elo_gain ?? 0} />
                           </div>
-                        </>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </>
           )}
         </motion.div>
       </div>
