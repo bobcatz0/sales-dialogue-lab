@@ -264,6 +264,9 @@ export function FeedbackPanel({
               {eloDelta >= 0 ? "+" : ""}{eloDelta} ELO
             </motion.span>
           )}
+          {feedback.humanReviewScore != null && (
+            <HumanReviewedBadge evaluatorScore={feedback.humanReviewScore} />
+          )}
         </div>
         <div className="w-full max-w-[200px] h-1 bg-muted rounded-full overflow-hidden mt-3">
           <motion.div
