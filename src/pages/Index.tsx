@@ -1,8 +1,8 @@
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
-import FeaturesSection from "@/components/landing/FeaturesSection";
-import SocialProofSection from "@/components/landing/SocialProofSection";
+import CompetitiveSection from "@/components/landing/CompetitiveSection";
+import ScenarioCards from "@/components/landing/ScenarioCards";
 import CTASection from "@/components/landing/CTASection";
 import Footer from "@/components/landing/Footer";
 
@@ -12,8 +12,8 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <HowItWorksSection />
-      <FeaturesSection />
-      <SocialProofSection />
+      <CompetitiveSection />
+      <ScenarioCards />
       <CTASection />
       <Footer />
     </div>

@@ -1,15 +1,13 @@
-import { Phone, Menu, X, LogIn, User, LogOut, Trophy } from "lucide-react";
+import { Phone, Menu, X, LogIn, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { getEloRank } from "@/lib/elo";
 
 const navLinks = [
-  { label: "Scenarios", href: "/scenarios" },
-  { label: "Packs", href: "/packs" },
-  { label: "Frameworks", href: "/frameworks" },
-  { label: "Drills", href: "/drills" },
-  { label: "Progress", href: "/progress" },
+  { label: "Practice", href: "/practice" },
   { label: "Leaderboard", href: "/leaderboard" },
+  { label: "Progress", href: "/progress" },
 ];
 
 const Navbar = () => {
@@ -18,7 +16,7 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/90 backdrop-blur-xl">
-      <div className="container mx-auto flex h-16 items-center justify-between px-6">
+      <div className="container mx-auto flex h-14 items-center justify-between px-6">
         <a href="/" className="flex items-center gap-2">
           <Phone className="h-5 w-5 text-primary" />
           <span className="font-heading text-lg font-bold text-foreground">
@@ -27,7 +25,7 @@ const Navbar = () => {
         </a>
 
         {/* Desktop */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -50,7 +48,14 @@ const Navbar = () => {
                     <User className="h-3.5 w-3.5 text-primary" />
                   )}
                 </div>
-                <span className="font-medium text-foreground text-xs">{profile?.elo ?? 1000}</span>
+                <span className="font-bold text-foreground text-xs">{profile?.elo ?? 1000}</span>
+                <span className={`text-[10px] font-semibold ${
+                  getEloRank(profile?.elo ?? 1000) === "Rainmaker" ? "text-yellow-400" :
+                  getEloRank(profile?.elo ?? 1000) === "Operator" ? "text-blue-400" :
+                  "text-primary"
+                }`}>
+                  {getEloRank(profile?.elo ?? 1000)}
+                </span>
               </a>
               <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground">
                 <LogOut className="h-4 w-4" />
