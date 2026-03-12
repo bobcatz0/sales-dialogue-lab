@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Share2, Download, Check, Copy, Trophy, Linkedin, ExternalLink, Settings2 } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { Share2, Download, Check, Copy, Trophy, Linkedin, ExternalLink, Settings2, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,8 +7,8 @@ import { toast } from "sonner";
 import type { Feedback, FrameworkId } from "./types";
 import { loadHistory } from "./sessionStorage";
 import { getEloRank } from "@/lib/elo";
-
-const DISCORD_WEBHOOK_KEY = "salescalls_discord_webhook";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 const DISCORD_FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/discord-webhook`;
 
 function loadDiscordWebhook(): string {
