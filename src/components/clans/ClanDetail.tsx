@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/landing/Navbar";
 import { Link } from "react-router-dom";
 import { ClanActivityFeed } from "./ClanActivityFeed";
+import { InviteLinkSection } from "./InviteLinkSection";
 
 interface ClanDetailProps {
   clanId: string;
@@ -28,6 +29,8 @@ interface ClanData {
   clan_elo: number;
   total_members: number;
   created_by: string;
+  invite_code: string;
+  referral_points: number;
 }
 
 interface MemberData {
@@ -362,6 +365,17 @@ export function ClanDetail({ clanId, onBack }: ClanDetailProps) {
               </Link>
             )}
           </div>
+
+          {/* Invite Link */}
+          {isMember && clan.invite_code && (
+            <div className="mt-5 pt-5 border-t border-border">
+              <InviteLinkSection
+                inviteCode={clan.invite_code}
+                referralPoints={clan.referral_points}
+                canManage={canManage}
+              />
+            </div>
+          )}
         </motion.div>
 
         {/* Member leaderboard */}
