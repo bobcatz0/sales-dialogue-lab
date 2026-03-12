@@ -17,6 +17,7 @@ import { ClanActivityFeed } from "./ClanActivityFeed";
 import { InviteLinkSection } from "./InviteLinkSection";
 import { ReferralLeaderboard } from "./ReferralLeaderboard";
 import { ClanChat } from "./ClanChat";
+import { UserAvatar } from "@/components/UserAvatar";
 
 interface ClanDetailProps {
   clanId: string;
