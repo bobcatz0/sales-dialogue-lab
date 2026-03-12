@@ -297,6 +297,7 @@ const PracticePage = () => {
     setFeedback(null);
     setIsFeedbackLoading(false);
     setLastPoints(null);
+    setEloDelta(null);
     setHardCloseWin(false);
     setShowHelpfulPrompt(false);
     setShowRunAgainPrompt(false);
