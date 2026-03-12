@@ -111,7 +111,7 @@ const LeaderboardPage = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-lg font-heading font-bold text-foreground truncate">
-                  {profile.display_name}
+                  {profile.display_name} <span className={`text-sm ${getRankColor(getEloRank(profile.elo))}`}>[{getEloRank(profile.elo)}]</span>
                 </p>
                 <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                   <span className="text-2xl font-bold font-heading text-foreground">{profile.elo}</span>
