@@ -103,6 +103,36 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
+    // Award badges to members of the winning clan (rank 1)
+    const winner = ranked.find((r) => r.rank === 1);
+    if (winner) {
+      const winningMembers = members.filter(
+        (m: any) => m.clan_id === winner.clan_id
+      );
+
+      if (winningMembers.length > 0) {
+        const badgeRows = winningMembers.map((m: any) => ({
+          user_id: m.user_id,
+          clan_id: winner.clan_id,
+          clan_name: winner.clan_name,
+          week_start: weekStartStr,
+          badge_type: "weekly_champion",
+        }));
+
+        const { error: badgeError } = await supabase
+          .from("weekly_challenge_badges")
+          .upsert(badgeRows, { onConflict: "user_id,week_start" });
+
+        if (badgeError) {
+          console.error("Badge award error:", badgeError.message);
+        } else {
+          console.log(
+            `Awarded ${badgeRows.length} badges for week ${weekStartStr}`
+          );
+        }
+      }
+    }
+
     return new Response(
       JSON.stringify({ message: "Weekly results finalized", count: ranked.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
