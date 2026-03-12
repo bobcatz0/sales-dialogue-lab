@@ -20,6 +20,7 @@ import ExpertChallenges from "./pages/ExpertChallenges";
 import Clans from "./pages/Clans";
 import JoinClan from "./pages/JoinClan";
 import { FeedbackWidget } from "./components/FeedbackWidget";
+import { WeeklyChampionCelebration } from "./components/clans/WeeklyChampionCelebration";
 
 const queryClient = new QueryClient();
 
