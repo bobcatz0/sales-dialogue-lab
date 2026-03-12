@@ -294,6 +294,7 @@ const LeaderboardPage = () => {
                             {entry.clan_name}
                           </Badge>
                         )}
+                        <WeeklyChallengeBadges userId={entry.id} compact />
                       </div>
 
                       {tab === "weekly" ? (
