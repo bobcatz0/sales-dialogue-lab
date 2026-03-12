@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, LogIn, User, Flame, ShieldCheck } from "lucide-react";
+import { Trophy, Crown, Medal, LogIn, User, Flame, ShieldCheck, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,12 @@ interface LeaderboardEntry {
   total_sessions: number;
   weekly_elo_gain?: number;
   is_evaluator?: boolean;
+  clan_name?: string;
+}
+
+interface ClanMemberInfo {
+  user_id: string;
+  clans: { name: string } | { name: string }[] | null;
 }
 
 function getMedalIcon(index: number) {
@@ -62,9 +68,30 @@ const LeaderboardPage = () => {
         const filtered = tab === "weekly"
           ? data.filter((e) => (e.weekly_elo_gain ?? 0) > 0)
           : data;
-        setEntries(filtered);
+
+        // Fetch clan affiliations for all users
+        const userIds = filtered.map((e) => e.id);
+        const { data: clanData } = await supabase
+          .from("clan_members")
+          .select("user_id, clans:clan_id(name)")
+          .in("user_id", userIds);
+
+        const clanMap = new Map<string, string>();
+        if (clanData) {
+          for (const cm of clanData as unknown as ClanMemberInfo[]) {
+            const clan = Array.isArray(cm.clans) ? cm.clans[0] : cm.clans;
+            if (clan?.name) clanMap.set(cm.user_id, clan.name);
+          }
+        }
+
+        const enriched: LeaderboardEntry[] = filtered.map((e) => ({
+          ...e,
+          clan_name: clanMap.get(e.id),
+        }));
+
+        setEntries(enriched);
         if (user) {
-          const idx = filtered.findIndex((e) => e.id === user.id);
+          const idx = enriched.findIndex((e) => e.id === user.id);
           setUserRank(idx >= 0 ? idx + 1 : null);
         }
       }
@@ -259,6 +286,12 @@ const LeaderboardPage = () => {
                         {isCurrentUser && <span className="text-[10px] text-muted-foreground">(you)</span>}
                         {entry.is_evaluator && (
                           <ShieldCheck className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                        )}
+                        {entry.clan_name && (
+                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 gap-0.5 border-primary/30 text-primary shrink-0">
+                            <Shield className="h-2.5 w-2.5" />
+                            {entry.clan_name}
+                          </Badge>
                         )}
                       </div>
 
