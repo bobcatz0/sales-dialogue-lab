@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Target, Trophy, TrendingUp, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getEloRank, ELO_RANKS } from "@/lib/elo";
+import { getEloRank, getEloRanks } from "@/lib/elo";
 import { PLACEMENT_SESSIONS_REQUIRED } from "@/lib/eloSync";
 import { UserAvatar } from "@/components/UserAvatar";
 
@@ -65,8 +65,9 @@ interface PlacementResultProps {
 /** Shown after completing placement — reveals rank, ELO, percentile, and next tier */
 export function PlacementResult({ elo, percentile, avatarUrl, displayName, onDismiss }: PlacementResultProps) {
   const rank = getEloRank(elo);
-  const currentRankIdx = ELO_RANKS.findIndex((r) => r.name === rank);
-  const nextRank = currentRankIdx < ELO_RANKS.length - 1 ? ELO_RANKS[currentRankIdx + 1] : null;
+  const ranks = getEloRanks();
+  const currentRankIdx = ranks.findIndex((r) => r.name === rank);
+  const nextRank = currentRankIdx < ranks.length - 1 ? ranks[currentRankIdx + 1] : null;
   const pointsToNext = nextRank ? nextRank.min - elo : 0;
 
   function getRankColor(r: string) {

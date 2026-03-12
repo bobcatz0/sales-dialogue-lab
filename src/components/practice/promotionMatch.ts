@@ -5,7 +5,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
-import { ELO_RANKS, getEloRank, type RankTier } from "@/lib/elo";
+import { getEloRanks, getEloRank, type RankTier } from "@/lib/elo";
 
 // Must score this or higher to pass a promotion match
 export const PROMO_PASS_SCORE = 75;
@@ -43,8 +43,9 @@ export function getPromotionEligibility(
   const currentRank = getEloRank(currentElo);
 
   // Find the next tier
-  const currentTierIdx = ELO_RANKS.findIndex((r) => r.name === currentRank);
-  const nextTier = currentTierIdx < ELO_RANKS.length - 1 ? ELO_RANKS[currentTierIdx + 1] : null;
+  const ranks = getEloRanks();
+  const currentTierIdx = ranks.findIndex((r) => r.name === currentRank);
+  const nextTier = currentTierIdx < ranks.length - 1 ? ranks[currentTierIdx + 1] : null;
 
   if (!nextTier) {
     return {
@@ -72,7 +73,7 @@ export function getPromotionEligibility(
   return {
     eligible: inZone && !inCooldown,
     currentRank,
-    nextRank: nextTier.name,
+    nextRank: (nextTier?.name ?? null) as RankTier | null,
     nextThreshold: nextTier.min,
     eloNeeded: distanceToNext,
     inCooldown,

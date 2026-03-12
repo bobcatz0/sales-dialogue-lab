@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { getEloRank, ELO_RANKS } from "@/lib/elo";
+import { getEloRank, getEloRanks } from "@/lib/elo";
 import { EloHistoryChart } from "@/components/practice/EloHistoryChart";
 import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
 import { PlacementProgress, PlacingBadge } from "@/components/practice/PlacementSystem";
@@ -191,9 +191,10 @@ function NearYouSection({
   const nearbyEntries = entries.slice(startIdx, endIdx);
 
   // Next rank tier
+  const ranks = getEloRanks();
   const currentRank = getEloRank(userElo);
-  const currentRankIdx = ELO_RANKS.findIndex((r) => r.name === currentRank);
-  const nextRank = currentRankIdx < ELO_RANKS.length - 1 ? ELO_RANKS[currentRankIdx + 1] : null;
+  const currentRankIdx = ranks.findIndex((r) => r.name === currentRank);
+  const nextRank = currentRankIdx < ranks.length - 1 ? ranks[currentRankIdx + 1] : null;
   const pointsToNext = nextRank ? nextRank.min - userElo : 0;
 
   // Rival = closest player above
@@ -228,7 +229,7 @@ function NearYouSection({
               <motion.div
                 initial={{ width: 0 }}
                 animate={{
-                  width: `${Math.min(100, ((userElo - ELO_RANKS[currentRankIdx].min) / (nextRank.min - ELO_RANKS[currentRankIdx].min)) * 100)}%`,
+                  width: `${Math.min(100, ((userElo - ranks[currentRankIdx].min) / (nextRank.min - ranks[currentRankIdx].min)) * 100)}%`,
                 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
                 className="h-full rounded-full bg-primary"
@@ -535,7 +536,7 @@ const LeaderboardPage = () => {
 
           {/* Rank tiers legend */}
           <div className="flex flex-wrap justify-center gap-2">
-            {ELO_RANKS.map((r) => (
+            {getEloRanks().map((r) => (
               <span key={r.name} className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-muted ${getRankColor(r.name)}`}>
                 {r.name} ({r.min}+)
               </span>

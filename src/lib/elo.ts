@@ -1,24 +1,67 @@
 /**
  * ELO rating system for sales practice sessions.
  * Users start at 1000. Gain/lose based on session score vs expected performance.
+ * 
+ * Rank tiers are percentile-based — thresholds are computed from the
+ * distribution of all placed users. When fewer than 20 placed users exist,
+ * static fallbacks are used.
  */
 
 const K_FACTOR = 32;
 
-export const ELO_RANKS = [
-  { name: "Rookie", min: 0 },
-  { name: "Prospector", min: 900 },
-  { name: "Closer", min: 1100 },
-  { name: "Operator", min: 1300 },
-  { name: "Rainmaker", min: 1500 },
+/** Percentile targets for each rank (cumulative from bottom). */
+export const RANK_PERCENTILES = [
+  { name: "Rookie",          percentile: 0 },
+  { name: "Prospector",      percentile: 20 },
+  { name: "Closer",          percentile: 50 },
+  { name: "Operator",        percentile: 75 },
+  { name: "Rainmaker",       percentile: 90 },
+  { name: "Sales Architect", percentile: 97 },
+] as const;
+
+/** Static fallback thresholds used when population is small. */
+export const DEFAULT_RANK_THRESHOLDS = [
+  { name: "Rookie",          min: 0 },
+  { name: "Prospector",      min: 900 },
+  { name: "Closer",          min: 1100 },
+  { name: "Operator",        min: 1300 },
+  { name: "Rainmaker",       min: 1500 },
   { name: "Sales Architect", min: 1800 },
 ] as const;
 
-export type RankTier = (typeof ELO_RANKS)[number]["name"];
+export interface RankThreshold {
+  name: string;
+  min: number;
+}
+
+// ── Dynamic threshold cache ──────────────────────────────────────────
+let _thresholds: RankThreshold[] = [...DEFAULT_RANK_THRESHOLDS];
+
+/** Replace cached thresholds (called by useRankThresholds). */
+export function setRankThresholds(thresholds: RankThreshold[]) {
+  if (thresholds.length === RANK_PERCENTILES.length) {
+    _thresholds = thresholds;
+  }
+}
+
+/** Get the current cached thresholds. */
+export function getRankThresholds(): readonly RankThreshold[] {
+  return _thresholds;
+}
+
+/** Live thresholds array — same reference consumers used before. */
+export function getEloRanks(): readonly RankThreshold[] {
+  return _thresholds;
+}
+// Backward compat — note: this is the initial snapshot; prefer getEloRanks()
+export const ELO_RANKS = DEFAULT_RANK_THRESHOLDS;
+
+export type RankTier = (typeof RANK_PERCENTILES)[number]["name"];
 
 export function getEloRank(elo: number): RankTier {
-  for (let i = ELO_RANKS.length - 1; i >= 0; i--) {
-    if (elo >= ELO_RANKS[i].min) return ELO_RANKS[i].name;
+  const t = _thresholds;
+  for (let i = t.length - 1; i >= 0; i--) {
+    if (elo >= t[i].min) return t[i].name as RankTier;
   }
   return "Rookie";
 }
