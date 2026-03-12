@@ -162,6 +162,8 @@ export function FeedbackPanel({
   voiceFeedbackLines,
   voiceScoreAdjustment,
   scenarioTitle,
+  scenarioEnv,
+  scenarioRole,
   eloDelta,
 }: {
   feedback: Feedback;
