@@ -1434,7 +1434,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 ref={scrollRef}
                 className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-[250px] sm:min-h-[350px]"
               >
-                {!selectedRole && (
+                {!selectedRole && !showBriefing && (
                   <div className="flex items-center justify-center h-full">
                     <p className="text-xs text-muted-foreground text-center">
                       {!selectedEnv
@@ -1442,6 +1442,19 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         : "Select a persona or track round to begin your rehearsal."}
                     </p>
                   </div>
+                )}
+                {showBriefing && pendingStartId && activeEnv && !selectedRole && (
+                  <SessionBriefing
+                    env={activeEnv}
+                    roleTitle={roles.find(r => r.id === pendingStartId)?.title ?? "Interviewer"}
+                    personalityLabel={PERSONALITIES.find(p => p.id === selectedPersonality)?.label ?? "Neutral"}
+                    personalityIcon={PERSONALITIES.find(p => p.id === selectedPersonality)?.icon ?? "😐"}
+                    onBegin={() => {
+                      setShowBriefing(false);
+                      handleStart(pendingStartId);
+                      setPendingStartId(null);
+                    }}
+                  />
                 )}
                 {messages.map((msg, i) => (
                   <motion.div
