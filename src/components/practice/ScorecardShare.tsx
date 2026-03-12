@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
-import { Share2, Download, Check, Copy, Trophy } from "lucide-react";
+import { Share2, Download, Check, Copy, Trophy, Linkedin, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import type { Feedback, RubricScore, FrameworkId } from "./types";
+import type { Feedback, FrameworkId } from "./types";
 import { loadHistory } from "./sessionStorage";
+import { getEloRank } from "@/lib/elo";
 
 const FRAMEWORK_LABELS: Record<string, string> = {
   star: "STAR Method",
@@ -33,9 +34,11 @@ interface ScorecardShareProps {
   scenarioTitle: string;
   alias: string | null;
   isValidSession: boolean;
+  elo?: number | null;
+  eloDelta?: number | null;
 }
 
-export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession }: ScorecardShareProps) {
+export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession, elo, eloDelta }: ScorecardShareProps) {
   const [showCard, setShowCard] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -44,34 +47,50 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
     : null;
   const percentile = computePercentile(feedback.score);
   const rubric = feedback.rubricScores || [];
+  const rankTier = elo != null ? getEloRank(elo) : null;
+  const topPercent = 100 - percentile;
+
+  const shareUrl = "https://sales-dialogue-lab.lovable.app/scenarios";
+
+  const shareText = [
+    `🎯 Just scored ${feedback.score}/100 on "${scenarioTitle}"`,
+    frameworkLabel ? `📋 ${frameworkLabel}` : null,
+    `📊 Top ${topPercent}%`,
+    elo != null ? `⚡ ELO: ${elo}${eloDelta != null ? ` (${eloDelta >= 0 ? "+" : ""}${eloDelta})` : ""} — ${rankTier}` : null,
+    ``,
+    `Practice sales scenarios at ${shareUrl}`,
+  ].filter(Boolean).join("\n");
 
   const handleCopyText = useCallback(() => {
-    const lines = [
-      `SalesCalls.io Scorecard`,
-      `${scenarioTitle}`,
-      frameworkLabel ? `Framework: ${frameworkLabel}` : null,
-      ``,
-      `Score: ${feedback.score} / 100`,
-      `Top ${100 - percentile}%`,
-      ``,
-      ...rubric.map((r) => `${r.criterion}: ${r.score} / 100`),
-      ``,
-      alias ? `— ${alias}` : null,
-      `Practice real sales scenarios at salescalls.io`,
-    ].filter(Boolean).join("\n");
-    navigator.clipboard.writeText(lines).then(() => {
+    navigator.clipboard.writeText(shareText).then(() => {
       setCopied(true);
-      toast("Scorecard copied to clipboard.", { duration: 2000 });
+      toast("Scorecard copied — paste it anywhere!", { duration: 2000 });
       setTimeout(() => setCopied(false), 2000);
     }).catch(() => toast.error("Failed to copy."));
-  }, [feedback, scenarioTitle, frameworkLabel, percentile, rubric, alias]);
+  }, [shareText]);
+
+  const handleShareLinkedIn = useCallback(() => {
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, "_blank", "noopener,noreferrer,width=600,height=600");
+  }, []);
+
+  const handleShareX = useCallback(() => {
+    const url = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+    window.open(url, "_blank", "noopener,noreferrer,width=600,height=600");
+  }, [shareText]);
+
+  const handleShareReddit = useCallback(() => {
+    const url = `https://www.reddit.com/submit?title=${encodeURIComponent(`Scored ${feedback.score}/100 on "${scenarioTitle}" — SalesCalls.io`)}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, "_blank", "noopener,noreferrer,width=600,height=600");
+  }, [feedback.score, scenarioTitle]);
 
   const handleDownloadImage = useCallback(async () => {
     try {
       const canvas = document.createElement("canvas");
       const scale = 2;
       const width = 600;
-      const height = 520 + rubric.length * 40;
+      const hasElo = elo != null;
+      const height = 460 + rubric.length * 40 + (hasElo ? 50 : 0);
       canvas.width = width * scale;
       canvas.height = height * scale;
       const ctx = canvas.getContext("2d");
@@ -80,21 +99,21 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
       ctx.scale(scale, scale);
 
       // Background
-      ctx.fillStyle = "#0f1117";
+      ctx.fillStyle = "#0d1117";
       ctx.roundRect(0, 0, width, height, 16);
       ctx.fill();
 
-      // Accent bar
-      const gradient = ctx.createLinearGradient(0, 0, width, 0);
-      gradient.addColorStop(0, "#6366f1");
-      gradient.addColorStop(1, "#8b5cf6");
-      ctx.fillStyle = gradient;
+      // Accent gradient bar
+      const grad = ctx.createLinearGradient(0, 0, width, 0);
+      grad.addColorStop(0, "#22c55e");
+      grad.addColorStop(1, "#16a34a");
+      ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, 4);
 
       // Brand
-      ctx.fillStyle = "#6366f1";
+      ctx.fillStyle = "#22c55e";
       ctx.font = "700 14px 'Inter', system-ui, sans-serif";
-      ctx.fillText("SalesCalls.io Scorecard", 32, 40);
+      ctx.fillText("SalesCalls.io", 32, 40);
 
       // Date
       ctx.fillStyle = "#6b7280";
@@ -107,30 +126,64 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
       ctx.fillText(scenarioTitle, 32, 96);
 
       // Framework badge
+      let y = 96;
       if (frameworkLabel) {
-        ctx.fillStyle = "#1e1b4b";
-        ctx.roundRect(32, 108, ctx.measureText(frameworkLabel).width + 20, 24, 6);
+        y += 12;
+        ctx.fillStyle = "#14532d";
+        const tw = ctx.measureText(frameworkLabel).width + 20;
+        ctx.roundRect(32, y, tw, 24, 6);
         ctx.fill();
-        ctx.fillStyle = "#a5b4fc";
+        ctx.fillStyle = "#86efac";
         ctx.font = "600 11px 'Inter', system-ui, sans-serif";
-        ctx.fillText(frameworkLabel, 42, 124);
+        ctx.fillText(frameworkLabel, 42, y + 16);
+        y += 36;
+      } else {
+        y += 20;
       }
 
       // Score
-      let y = frameworkLabel ? 170 : 140;
+      y += 16;
       ctx.fillStyle = "#f9fafb";
       ctx.font = "700 64px 'Inter', system-ui, sans-serif";
       ctx.fillText(`${feedback.score}`, 32, y);
-      const scoreWidth = ctx.measureText(`${feedback.score}`).width;
+      const sw = ctx.measureText(`${feedback.score}`).width;
       ctx.fillStyle = "#6b7280";
       ctx.font = "400 24px 'Inter', system-ui, sans-serif";
-      ctx.fillText("/ 100", 32 + scoreWidth + 8, y);
+      ctx.fillText("/ 100", 32 + sw + 8, y);
 
-      // Percentile
-      y += 30;
-      ctx.fillStyle = "#10b981";
-      ctx.font = "600 16px 'Inter', system-ui, sans-serif";
-      ctx.fillText(`Top ${100 - percentile}%`, 32, y);
+      // Rank + Percentile row
+      y += 28;
+      ctx.fillStyle = "#22c55e";
+      ctx.font = "600 14px 'Inter', system-ui, sans-serif";
+      ctx.fillText(`${feedback.rank}`, 32, y);
+      const rankW = ctx.measureText(feedback.rank).width;
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "400 14px 'Inter', system-ui, sans-serif";
+      ctx.fillText("  ·  ", 32 + rankW, y);
+      ctx.fillStyle = "#22c55e";
+      ctx.fillText(`Top ${topPercent}%`, 32 + rankW + 30, y);
+
+      // ELO row
+      if (hasElo) {
+        y += 28;
+        ctx.fillStyle = "#f9fafb";
+        ctx.font = "700 18px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`⚡ ${elo} ELO`, 32, y);
+        if (eloDelta != null) {
+          const eloText = `⚡ ${elo} ELO`;
+          const ew = ctx.measureText(eloText).width;
+          ctx.fillStyle = eloDelta >= 0 ? "#22c55e" : "#ef4444";
+          ctx.font = "600 14px 'Inter', system-ui, sans-serif";
+          ctx.fillText(`${eloDelta >= 0 ? "+" : ""}${eloDelta}`, 32 + ew + 8, y);
+        }
+        if (rankTier) {
+          const fullText = `⚡ ${elo} ELO${eloDelta != null ? ` ${eloDelta >= 0 ? "+" : ""}${eloDelta}` : ""}`;
+          const fullW = ctx.measureText(fullText).width + 16;
+          ctx.fillStyle = "#9ca3af";
+          ctx.font = "500 14px 'Inter', system-ui, sans-serif";
+          ctx.fillText(`— ${rankTier}`, 32 + fullW + 12, y);
+        }
+      }
 
       // Divider
       y += 20;
@@ -146,35 +199,32 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
         y += 20;
 
         rubric.forEach((r) => {
-          // Bar background
           ctx.fillStyle = "#1f2937";
           ctx.roundRect(32, y, width - 64, 8, 4);
           ctx.fill();
-          // Bar fill
-          const barWidth = ((width - 64) * r.score) / 100;
-          const barGrad = ctx.createLinearGradient(32, 0, 32 + barWidth, 0);
-          barGrad.addColorStop(0, "#6366f1");
-          barGrad.addColorStop(1, "#8b5cf6");
+          const barW = ((width - 64) * r.score) / 100;
+          const barGrad = ctx.createLinearGradient(32, 0, 32 + barW, 0);
+          barGrad.addColorStop(0, "#22c55e");
+          barGrad.addColorStop(1, "#16a34a");
           ctx.fillStyle = barGrad;
-          ctx.roundRect(32, y, barWidth, 8, 4);
+          ctx.roundRect(32, y, barW, 8, 4);
           ctx.fill();
           y += 16;
 
-          // Label + score
           ctx.fillStyle = "#d1d5db";
           ctx.font = "400 12px 'Inter', system-ui, sans-serif";
           ctx.fillText(r.criterion, 32, y);
           ctx.fillStyle = "#f9fafb";
           ctx.font = "600 12px 'Inter', system-ui, sans-serif";
-          const scoreText = `${r.score}`;
-          ctx.fillText(scoreText, width - 32 - ctx.measureText(scoreText).width, y);
+          const st = `${r.score}`;
+          ctx.fillText(st, width - 32 - ctx.measureText(st).width, y);
           y += 24;
         });
       }
 
       // Alias
       if (alias) {
-        y += 8;
+        y += 4;
         ctx.fillStyle = "#6b7280";
         ctx.font = "500 12px 'Inter', system-ui, sans-serif";
         ctx.fillText(`— ${alias}`, 32, y);
@@ -186,14 +236,14 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
       ctx.fillText("salescalls.io — Practice real sales scenarios", 32, height - 20);
 
       const link = document.createElement("a");
-      link.download = `scorecard-${feedback.score}.png`;
+      link.download = `scorecard-${feedback.score}-elo${elo ?? ""}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
       toast("Scorecard image downloaded.", { duration: 2000 });
     } catch {
       toast.error("Failed to generate image.");
     }
-  }, [feedback, scenarioTitle, frameworkLabel, percentile, rubric, alias]);
+  }, [feedback, scenarioTitle, frameworkLabel, percentile, rubric, alias, elo, eloDelta, rankTier, topPercent]);
 
   if (!isValidSession) return null;
 
@@ -217,10 +267,8 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
         >
           {/* Preview Card */}
           <div className="rounded-xl border border-border bg-card overflow-hidden">
-            {/* Accent bar */}
             <div className="h-1 bg-gradient-to-r from-primary to-primary/60" />
             <div className="p-5 space-y-4">
-              {/* Header */}
               <div>
                 <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">
                   SalesCalls.io Scorecard
@@ -228,7 +276,6 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
                 <p className="text-[10px] text-muted-foreground">{formatDate()}</p>
               </div>
 
-              {/* Scenario + Framework */}
               <div>
                 <p className="text-sm font-bold text-foreground">{scenarioTitle}</p>
                 {frameworkLabel && (
@@ -244,10 +291,30 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
                   <span className="text-4xl font-bold font-heading text-foreground">{feedback.score}</span>
                   <span className="text-sm text-muted-foreground">/ 100</span>
                 </div>
-                <span className="text-sm font-semibold text-green-500">
-                  Top {100 - percentile}%
+                <span className="text-sm font-semibold text-primary">
+                  Top {topPercent}%
                 </span>
               </div>
+
+              {/* ELO + Rank Tier */}
+              {elo != null && (
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-lg font-bold font-heading text-foreground">{elo}</span>
+                    <span className="text-xs text-muted-foreground">ELO</span>
+                    {eloDelta != null && (
+                      <span className={`text-xs font-bold ${eloDelta >= 0 ? "text-primary" : "text-destructive"}`}>
+                        {eloDelta >= 0 ? "+" : ""}{eloDelta}
+                      </span>
+                    )}
+                  </div>
+                  {rankTier && (
+                    <span className="text-[10px] font-semibold text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                      {rankTier}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Subscores */}
               {rubric.length > 0 && (
@@ -274,7 +341,6 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
                 </div>
               )}
 
-              {/* Alias + branding */}
               {alias && (
                 <p className="text-[11px] text-muted-foreground">— {alias}</p>
               )}
@@ -284,17 +350,8 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Actions — Download + Copy */}
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 h-8 text-xs gap-1.5"
-              onClick={handleCopyText}
-            >
-              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-              {copied ? "Copied" : "Share Result"}
-            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -303,6 +360,59 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession 
             >
               <Download className="h-3 w-3" />
               Download Image
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 h-8 text-xs gap-1.5"
+              onClick={handleCopyText}
+            >
+              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copied ? "Copied!" : "Copy Text"}
+            </Button>
+          </div>
+
+          {/* Social Share Buttons */}
+          <div className="grid grid-cols-4 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-[10px] gap-1"
+              onClick={handleShareLinkedIn}
+            >
+              <Linkedin className="h-3 w-3" />
+              LinkedIn
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-[10px] gap-1"
+              onClick={handleShareX}
+            >
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              X
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-[10px] gap-1"
+              onClick={handleShareReddit}
+            >
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 0-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
+              </svg>
+              Reddit
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-[10px] gap-1"
+              onClick={handleCopyText}
+            >
+              <ExternalLink className="h-3 w-3" />
+              Discord
             </Button>
           </div>
         </motion.div>
