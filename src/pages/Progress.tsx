@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Flame, Trophy, TrendingUp, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
+import { useAuth } from "@/hooks/useAuth";
+import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
 import {
   loadProgress,
   getSkillLevel,
