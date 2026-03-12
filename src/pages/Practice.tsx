@@ -1034,11 +1034,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {PERSONALITIES.map((p) => {
-                        const isSelected = personalityRef.current === p.id;
+                        const isSelected = selectedPersonality === p.id;
                         return (
                           <button
                             key={p.id}
-                            onClick={() => { personalityRef.current = p.id; setSelectedRole(null); }}
+                            onClick={() => { personalityRef.current = p.id; setSelectedPersonality(p.id); }}
                             className={`card-elevated p-3 text-left transition-all duration-200 cursor-pointer ${
                               isSelected
                                 ? "border-primary/60 shadow-[0_0_16px_hsl(145_72%_50%/0.08)]"
