@@ -1368,6 +1368,16 @@ This evaluation style should subtly influence your questions and reactions. Do N
               <DailyChallengeCard onStart={handleStartChallenge} />
             )}
 
+            {/* Placement Progress */}
+            {profile && profile.total_sessions < PLACEMENT_SESSIONS_REQUIRED && (
+              <PlacementProgress
+                totalSessions={profile.total_sessions}
+                elo={profile.elo}
+                avatarUrl={profile.avatar_url}
+                displayName={profile.display_name}
+              />
+            )}
+
             {/* Profile Panel */}
             {alias && (
               <ProfilePanel alias={alias} consistency={loadConsistency()} />
