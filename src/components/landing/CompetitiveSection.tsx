@@ -106,14 +106,25 @@ const CompetitiveSection = () => {
             className="grid grid-cols-3 gap-4 mt-6"
           >
             {[
-              { label: "Earn ELO", desc: "Win points every session" },
-              { label: "Climb ranks", desc: "Rookie → Sales Architect" },
-              { label: "Compete weekly", desc: "Fresh leaderboard each week" },
-            ].map((item) => (
-              <div key={item.label} className="card-elevated p-4 text-center">
+              { label: "Earn ELO", desc: "Win points every session", icon: TrendingUp },
+              { label: "Climb ranks", desc: "Rookie → Sales Architect", icon: Crown },
+              { label: "Compete weekly", desc: "Fresh leaderboard each week", icon: Medal },
+            ].map((item, i) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 + i * 0.1, type: "spring", stiffness: 300, damping: 20 }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                className="card-elevated p-4 text-center cursor-default"
+              >
+                <div className="mx-auto mb-2 h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <item.icon className="h-4 w-4 text-primary" />
+                </div>
                 <p className="text-sm font-bold text-foreground">{item.label}</p>
                 <p className="text-[10px] text-muted-foreground mt-1">{item.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         </div>
