@@ -10,6 +10,7 @@ import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
 import { ConversationBreakdown } from "./ConversationBreakdown";
+import { useAuth } from "@/hooks/useAuth";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
 
@@ -179,6 +180,7 @@ export function FeedbackPanel({
   const skills = feedback.skillBreakdown || [];
   const frm = feedback.finalRoundMetrics;
   const [progressUpdated, setProgressUpdated] = useState(false);
+  const { profile } = useAuth();
 
   // Update skill progress on mount
   useEffect(() => {
@@ -638,6 +640,8 @@ export function FeedbackPanel({
           scenarioTitle={scenarioTitle || feedback.rank}
           alias={alias ?? null}
           isValidSession={!!isValidSession}
+          elo={profile?.elo ?? null}
+          eloDelta={eloDelta}
         />
 
         {/* Shareable summary — interview only */}
