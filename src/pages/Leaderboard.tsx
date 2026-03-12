@@ -54,7 +54,7 @@ const LeaderboardPage = () => {
       const orderCol = tab === "weekly" ? "weekly_elo_gain" : "elo";
       const { data } = await supabase
         .from("profiles")
-        .select("id, display_name, avatar_url, elo, total_sessions, weekly_elo_gain")
+        .select("id, display_name, avatar_url, elo, total_sessions, weekly_elo_gain, is_evaluator")
         .order(orderCol, { ascending: false })
         .limit(50);
 
