@@ -219,6 +219,70 @@ export type Database = {
           },
         ]
       }
+      clan_rivalries: {
+        Row: {
+          clan_a_id: string
+          clan_a_score: number
+          clan_a_sessions: number
+          clan_b_id: string
+          clan_b_score: number
+          clan_b_sessions: number
+          created_at: string
+          id: string
+          status: string
+          week_start: string
+          winner_clan_id: string | null
+        }
+        Insert: {
+          clan_a_id: string
+          clan_a_score?: number
+          clan_a_sessions?: number
+          clan_b_id: string
+          clan_b_score?: number
+          clan_b_sessions?: number
+          created_at?: string
+          id?: string
+          status?: string
+          week_start: string
+          winner_clan_id?: string | null
+        }
+        Update: {
+          clan_a_id?: string
+          clan_a_score?: number
+          clan_a_sessions?: number
+          clan_b_id?: string
+          clan_b_score?: number
+          clan_b_sessions?: number
+          created_at?: string
+          id?: string
+          status?: string
+          week_start?: string
+          winner_clan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_rivalries_clan_a_id_fkey"
+            columns: ["clan_a_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_rivalries_clan_b_id_fkey"
+            columns: ["clan_b_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_rivalries_winner_clan_id_fkey"
+            columns: ["winner_clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clan_weekly_results: {
         Row: {
           clan_id: string

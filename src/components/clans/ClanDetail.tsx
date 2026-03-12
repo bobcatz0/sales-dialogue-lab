@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Shield, ArrowLeft, Users, Crown, Settings, UserPlus, UserMinus,
-  Globe, Lock, LogIn, Ban, ChevronUp, ChevronDown, Activity
+  Globe, Lock, LogIn, Ban, ChevronUp, ChevronDown, Activity, Swords
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import { InviteLinkSection } from "./InviteLinkSection";
 import { ReferralLeaderboard } from "./ReferralLeaderboard";
 import { ClanChat } from "./ClanChat";
 import { UserAvatar } from "@/components/UserAvatar";
+import { ClanRivalry } from "./ClanRivalry";
 
 interface ClanDetailProps {
   clanId: string;
@@ -380,6 +381,21 @@ export function ClanDetail({ clanId, onBack }: ClanDetailProps) {
             </div>
           )}
         </motion.div>
+
+        {/* Clan Rivalry */}
+        {isMember && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="mb-6"
+          >
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Swords className="h-3.5 w-3.5" /> Weekly Rivalry
+            </h2>
+            <ClanRivalry clanId={clanId} />
+          </motion.div>
+        )}
 
         {/* Member leaderboard */}
         <motion.div

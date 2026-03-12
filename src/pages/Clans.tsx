@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Users, Crown, Plus, Search, Lock, Globe, ChevronRight, Trophy } from "lucide-react";
+import { Shield, Users, Crown, Plus, Search, Lock, Globe, ChevronRight, Trophy, Swords } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { getEloRank } from "@/lib/elo";
 import { CreateClanDialog } from "@/components/clans/CreateClanDialog";
 import { ClanDetail } from "@/components/clans/ClanDetail";
 import { ClanWeeklyChallenge } from "@/components/clans/ClanWeeklyChallenge";
+import { ClanRivalry } from "@/components/clans/ClanRivalry";
 
 interface ClanRow {
   id: string;
@@ -152,6 +153,14 @@ export default function Clans() {
         {/* Weekly Challenge */}
         <div className="mb-6">
           <ClanWeeklyChallenge />
+        </div>
+
+        {/* Clan Rivalries */}
+        <div className="mb-6">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <Swords className="h-3.5 w-3.5" /> Weekly Rivalries
+          </h2>
+          <ClanRivalry />
         </div>
 
         {/* Search */}
