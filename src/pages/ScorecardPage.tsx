@@ -237,6 +237,22 @@ export default function ScorecardPage() {
                 </div>
               )}
 
+              {/* Strongest Skill */}
+              {strongestSkill && (
+                <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Trophy className="h-3 w-3 text-primary" />
+                    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+                      Strongest Skill
+                    </p>
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">{strongestSkill.criterion}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Score: {strongestSkill.score}/100{strongestSkill.note ? ` — ${strongestSkill.note}` : ""}
+                  </p>
+                </div>
+              )}
+
               {/* Weakest Skill */}
               {weakestSkill && (
                 <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
