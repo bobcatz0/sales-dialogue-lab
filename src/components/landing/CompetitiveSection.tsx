@@ -30,8 +30,11 @@ function getMedalIcon(rank: number) {
 }
 
 const CompetitiveSection = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true });
+
   return (
-    <section className="py-20">
+    <section className="py-20" ref={sectionRef}>
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
