@@ -191,6 +191,7 @@ const PracticePage = () => {
   const [isFeedbackLoading, setIsFeedbackLoading] = useState(false);
   const [history, setHistory] = useState<SessionRecord[]>([]);
   const [lastPoints, setLastPoints] = useState<number | null>(null);
+  const [eloDelta, setEloDelta] = useState<number | null>(null);
   const [progression, setProgression] = useState(() => loadProgression());
   const [unlockQueue, setUnlockQueue] = useState<{ id: string; label: string; description: string }[]>([]);
   const [alias, setAlias] = useState<string | null>(() => loadAlias());
@@ -296,6 +297,7 @@ const PracticePage = () => {
     setFeedback(null);
     setIsFeedbackLoading(false);
     setLastPoints(null);
+    setEloDelta(null);
     setHardCloseWin(false);
     setShowHelpfulPrompt(false);
     setShowRunAgainPrompt(false);
@@ -598,9 +600,10 @@ This evaluation style should subtly influence your questions and reactions. Do N
       setHistory(updated);
 
       // Sync ELO to database if logged in
-      syncEloAfterSession(data.score).then((newElo) => {
-        if (newElo !== null) {
-          toast.success(`ELO updated: ${newElo}`, { duration: 3000 });
+      syncEloAfterSession(data.score).then((result) => {
+        if (result) {
+          setEloDelta(result.delta);
+          toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
         }
       });
 
@@ -1490,6 +1493,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         voiceMetrics={voice.voiceMode ? voice.getSessionVoiceMetrics() ?? undefined : undefined}
                         voiceFeedbackLines={voice.voiceMode ? voice.getVoiceFeedbackLines() : undefined}
                         voiceScoreAdjustment={voice.voiceMode ? voice.getVoiceScoreAdjustment() : undefined}
+                        eloDelta={eloDelta}
                         onStartNew={() => {
                           setFeedback(null);
                           setSelectedRole(null);
@@ -1497,6 +1501,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           setMessages([]);
                           setInput("");
                           setLastPoints(null);
+                          setEloDelta(null);
                           setLastSessionValid(false);
                           setActiveSDRRound(null);
                           setSdrProgress(loadSDRTrackProgress());
@@ -1506,6 +1511,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           markFirstSessionRetried();
                           setFeedback(null);
                           setLastPoints(null);
+                          setEloDelta(null);
                           setLastSessionValid(false);
                           if (selectedRole) handleStart(selectedRole);
                         }}
