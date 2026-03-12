@@ -8,6 +8,8 @@ import { getRank } from "@/components/practice/progression";
 import { getInterviewReadyStatus } from "@/components/practice/interviewReadyStatus";
 import { getDrillStats } from "@/components/practice/drillTracking";
 import { loadHistory } from "@/components/practice/sessionStorage";
+import { useAuth } from "@/hooks/useAuth";
+import { EvaluatorBadge, EvaluatorReputation } from "./EvaluatorBadges";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
