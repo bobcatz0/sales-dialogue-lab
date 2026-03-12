@@ -78,7 +78,7 @@ export function LiveActivityFeed() {
     const channel = supabase
       .channel("activity-feed")
       .on(
-        "postgres_changes",
+        "postgres_changes" as any,
         { event: "INSERT", schema: "public", table: "activity_events" },
         async (payload) => {
           const newEvent = payload.new as FeedEvent;
