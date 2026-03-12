@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Users, Crown, Plus, Search, Lock, Globe, ChevronRight, Trophy } from "lucide-react";
+import { Shield, Users, Crown, Plus, Search, Lock, Globe, ChevronRight, Trophy, Swords } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import { Badge } from "@/components/ui/badge";
