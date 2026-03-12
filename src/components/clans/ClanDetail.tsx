@@ -13,6 +13,7 @@ import { getEloRank } from "@/lib/elo";
 import { toast } from "sonner";
 import Navbar from "@/components/landing/Navbar";
 import { Link } from "react-router-dom";
+import { ClanActivityFeed } from "./ClanActivityFeed";
 
 interface ClanDetailProps {
   clanId: string;
