@@ -8,6 +8,7 @@ import { ShareableSummary } from "./ShareableSummary";
 import { ScorecardShare } from "./ScorecardShare";
 import { ChallengeButton } from "./ChallengeButton";
 import { HumanReviewedBadge } from "./EvaluatorBadges";
+import { AnimatedScore } from "./AnimatedScore";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
