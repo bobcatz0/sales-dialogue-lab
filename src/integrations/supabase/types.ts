@@ -538,6 +538,44 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_challenge_badges: {
+        Row: {
+          badge_type: string
+          clan_id: string
+          clan_name: string
+          created_at: string
+          id: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          badge_type?: string
+          clan_id: string
+          clan_name: string
+          created_at?: string
+          id?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          badge_type?: string
+          clan_id?: string
+          clan_name?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_challenge_badges_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
