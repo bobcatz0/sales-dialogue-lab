@@ -18,6 +18,12 @@ interface LeaderboardEntry {
   total_sessions: number;
   weekly_elo_gain?: number;
   is_evaluator?: boolean;
+  clan_name?: string;
+}
+
+interface ClanMemberInfo {
+  user_id: string;
+  clans: { name: string } | { name: string }[] | null;
 }
 
 function getMedalIcon(index: number) {
