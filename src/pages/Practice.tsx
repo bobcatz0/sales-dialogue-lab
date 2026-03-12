@@ -719,13 +719,34 @@ This evaluation style should subtly influence your questions and reactions. Do N
             refreshProfile();
           }
 
-          if (result.rankedUp) {
+          if (result.placementComplete) {
+            // Placement just finished — show the placement result modal
+            setPlacementElo(result.newElo);
+            // Fetch percentile
+            const { count } = await supabase
+              .from("profiles")
+              .select("id", { count: "exact", head: true })
+              .lt("elo", result.newElo);
+            const { count: totalCount } = await supabase
+              .from("profiles")
+              .select("id", { count: "exact", head: true });
+            const percentile = totalCount && totalCount > 0
+              ? Math.round(((count ?? 0) / totalCount) * 100)
+              : 50;
+            setPlacementElo(result.newElo);
+            setShowPlacementResult(true);
+            // Store percentile for the modal
+            (window as any).__placementPercentile = percentile;
+            refreshProfile();
+          } else if (result.rankedUp) {
             setRankUpData(result);
           } else if (!isPromotionMatch) {
-            toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
+            if (result.totalSessions <= PLACEMENT_SESSIONS_REQUIRED) {
+              toast.success(`Placement ${result.totalSessions}/${PLACEMENT_SESSIONS_REQUIRED} — ELO calibrating...`, { duration: 3000 });
+            } else {
+              toast.success(`ELO: ${result.newElo} (${result.delta >= 0 ? "+" : ""}${result.delta})`, { duration: 3000 });
+            }
           }
-        }
-      });
 
       // Process consistency scoring
       const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
