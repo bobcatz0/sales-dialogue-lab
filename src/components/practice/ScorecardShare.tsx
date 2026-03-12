@@ -646,6 +646,19 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
                 </div>
               )}
 
+              {/* Strongest Skill Callout */}
+              {strongestSkill && (
+                <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
+                  <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">
+                    💪 Strongest Skill
+                  </p>
+                  <p className="text-xs font-semibold text-foreground">{strongestSkill.criterion}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Score: {strongestSkill.score}/100{strongestSkill.note ? ` — ${strongestSkill.note}` : ""}
+                  </p>
+                </div>
+              )}
+
               {/* Weakest Skill Callout */}
               {weakestSkill && (
                 <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
