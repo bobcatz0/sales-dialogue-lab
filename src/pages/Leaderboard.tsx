@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, LogIn, User } from "lucide-react";
+import { Trophy, Crown, Medal, LogIn, User, Flame } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ interface LeaderboardEntry {
   avatar_url: string | null;
   elo: number;
   total_sessions: number;
+  weekly_elo_gain?: number;
 }
 
 function getMedalIcon(index: number) {
@@ -36,24 +37,33 @@ function getRankColor(rank: string) {
   }
 }
 
+type Tab = "all-time" | "weekly";
+
 const LeaderboardPage = () => {
   const { user, profile } = useAuth();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<number | null>(null);
+  const [tab, setTab] = useState<Tab>("all-time");
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
+      setLoading(true);
+
+      const orderCol = tab === "weekly" ? "weekly_elo_gain" : "elo";
       const { data } = await supabase
         .from("profiles")
-        .select("id, display_name, avatar_url, elo, total_sessions")
-        .order("elo", { ascending: false })
+        .select("id, display_name, avatar_url, elo, total_sessions, weekly_elo_gain")
+        .order(orderCol, { ascending: false })
         .limit(50);
 
       if (data) {
-        setEntries(data);
+        const filtered = tab === "weekly"
+          ? data.filter((e) => (e.weekly_elo_gain ?? 0) > 0)
+          : data;
+        setEntries(filtered);
         if (user) {
-          const idx = data.findIndex((e) => e.id === user.id);
+          const idx = filtered.findIndex((e) => e.id === user.id);
           setUserRank(idx >= 0 ? idx + 1 : null);
         }
       }
@@ -61,7 +71,7 @@ const LeaderboardPage = () => {
     };
 
     fetchLeaderboard();
-  }, [user]);
+  }, [user, tab]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,16 +80,16 @@ const LeaderboardPage = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-3xl mx-auto space-y-8"
+          className="max-w-3xl mx-auto space-y-6"
         >
           {/* Header */}
           <div className="text-center space-y-2">
             <h1 className="font-heading text-3xl font-bold text-foreground flex items-center justify-center gap-3">
-              <Trophy className="h-8 w-8 text-primary" />
+              <Trophy className="h-7 w-7 text-primary" />
               Leaderboard
             </h1>
             <p className="text-sm text-muted-foreground">
-              Compete against other sellers. Climb the ranks.
+              Compete against other players. Climb the ranks.
             </p>
           </div>
 
@@ -109,7 +119,7 @@ const LeaderboardPage = () => {
                   </Badge>
                   {userRank && (
                     <span className="text-xs text-muted-foreground">
-                      #{userRank} overall
+                      #{userRank} {tab === "weekly" ? "this week" : "overall"}
                     </span>
                   )}
                 </div>
@@ -137,6 +147,32 @@ const LeaderboardPage = () => {
           {/* ELO History Chart */}
           <EloHistoryChart />
 
+          {/* Tab switcher */}
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => setTab("all-time")}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                tab === "all-time"
+                  ? "bg-primary/10 text-primary border border-primary/30"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Trophy className="h-3.5 w-3.5 inline mr-1.5" />
+              All Time
+            </button>
+            <button
+              onClick={() => setTab("weekly")}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                tab === "weekly"
+                  ? "bg-primary/10 text-primary border border-primary/30"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Flame className="h-3.5 w-3.5 inline mr-1.5" />
+              This Week
+            </button>
+          </div>
+
           {/* Rank tiers legend */}
           <div className="flex flex-wrap justify-center gap-2">
             {ELO_RANKS.map((r) => (
@@ -154,24 +190,35 @@ const LeaderboardPage = () => {
           ) : entries.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-sm text-muted-foreground">
-                No players yet. Be the first to{" "}
-                <Link to="/scenarios" className="text-primary hover:underline">practice</Link>!
+                {tab === "weekly"
+                  ? "No activity this week yet. Be the first to "
+                  : "No players yet. Be the first to "}
+                <Link to="/practice" className="text-primary hover:underline">practice</Link>!
               </p>
             </div>
           ) : (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.1 }}
               className="card-elevated overflow-hidden"
             >
               {/* Table header */}
-              <div className="grid grid-cols-[3rem_1fr_5rem_7rem] md:grid-cols-[3rem_1fr_5rem_7rem_5rem] items-center px-5 py-3 border-b border-border text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className={`grid ${tab === "weekly" ? "grid-cols-[3rem_1fr_5rem_5rem]" : "grid-cols-[3rem_1fr_5rem_7rem] md:grid-cols-[3rem_1fr_5rem_7rem_5rem]"} items-center px-5 py-3 border-b border-border text-[11px] font-semibold text-muted-foreground uppercase tracking-wider`}>
                 <span>Rank</span>
                 <span>Player</span>
-                <span className="text-right">ELO</span>
-                <span className="text-right">Tier</span>
-                <span className="hidden md:block text-right">Sessions</span>
+                {tab === "weekly" ? (
+                  <>
+                    <span className="text-right">Gained</span>
+                    <span className="text-right">ELO</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-right">ELO</span>
+                    <span className="text-right">Tier</span>
+                    <span className="hidden md:block text-right">Sessions</span>
+                  </>
+                )}
               </div>
 
               {/* Rows */}
@@ -185,19 +232,17 @@ const LeaderboardPage = () => {
                       key={entry.id}
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.25 + i * 0.03 }}
-                      className={`grid grid-cols-[3rem_1fr_5rem_7rem] md:grid-cols-[3rem_1fr_5rem_7rem_5rem] items-center px-5 py-3 transition-colors ${
+                      transition={{ delay: 0.15 + i * 0.03 }}
+                      className={`grid ${tab === "weekly" ? "grid-cols-[3rem_1fr_5rem_5rem]" : "grid-cols-[3rem_1fr_5rem_7rem] md:grid-cols-[3rem_1fr_5rem_7rem_5rem]"} items-center px-5 py-3 transition-colors ${
                         isCurrentUser ? "bg-primary/5" : "hover:bg-muted/30"
                       } ${i === 0 ? "bg-primary/5" : ""}`}
                     >
-                      {/* Rank number */}
                       <div className="flex items-center justify-center">
                         {getMedalIcon(i) || (
                           <span className="text-xs text-muted-foreground font-bold">{i + 1}</span>
                         )}
                       </div>
 
-                      {/* Player */}
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                           {entry.avatar_url ? (
@@ -212,24 +257,34 @@ const LeaderboardPage = () => {
                         </span>
                       </div>
 
-                      {/* ELO */}
-                      <div className="text-right">
-                        <span className={`text-sm font-bold font-heading ${i === 0 ? "text-primary" : "text-foreground"}`}>
-                          {entry.elo}
-                        </span>
-                      </div>
-
-                      {/* Rank tier */}
-                      <div className="text-right">
-                        <span className={`text-[11px] font-semibold ${getRankColor(rank)}`}>
-                          {rank}
-                        </span>
-                      </div>
-
-                      {/* Sessions */}
-                      <div className="hidden md:block text-right">
-                        <span className="text-xs text-muted-foreground">{entry.total_sessions}</span>
-                      </div>
+                      {tab === "weekly" ? (
+                        <>
+                          <div className="text-right">
+                            <span className="text-sm font-bold text-primary">
+                              +{entry.weekly_elo_gain ?? 0}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs text-muted-foreground">{entry.elo}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-right">
+                            <span className={`text-sm font-bold font-heading ${i === 0 ? "text-primary" : "text-foreground"}`}>
+                              {entry.elo}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className={`text-[11px] font-semibold ${getRankColor(rank)}`}>
+                              {rank}
+                            </span>
+                          </div>
+                          <div className="hidden md:block text-right">
+                            <span className="text-xs text-muted-foreground">{entry.total_sessions}</span>
+                          </div>
+                        </>
+                      )}
                     </motion.div>
                   );
                 })}

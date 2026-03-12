@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles ADD COLUMN weekly_elo_gain integer NOT NULL DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN week_start timestamp with time zone NOT NULL DEFAULT date_trunc('week', now());

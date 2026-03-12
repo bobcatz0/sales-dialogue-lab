@@ -50,6 +50,8 @@ export type Database = {
           id: string
           total_sessions: number
           updated_at: string
+          week_start: string
+          weekly_elo_gain: number
         }
         Insert: {
           avatar_url?: string | null
@@ -59,6 +61,8 @@ export type Database = {
           id: string
           total_sessions?: number
           updated_at?: string
+          week_start?: string
+          weekly_elo_gain?: number
         }
         Update: {
           avatar_url?: string | null
@@ -68,6 +72,8 @@ export type Database = {
           id?: string
           total_sessions?: number
           updated_at?: string
+          week_start?: string
+          weekly_elo_gain?: number
         }
         Relationships: []
       }
