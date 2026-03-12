@@ -35,6 +35,34 @@ interface UnseenBadge {
 
 const confettiEmojis = ["🏆", "⭐", "🎉", "🔥", "👑", "💎"];
 
+async function playCelebrationSfx() {
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-sfx`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          prompt: "Triumphant victory fanfare with sparkle chimes and a crowd cheering, celebratory and exciting",
+          duration: 3,
+        }),
+      }
+    );
+    if (!response.ok) return;
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    audio.volume = 0.6;
+    await audio.play();
+  } catch {
+    // Silent fail — SFX is non-critical
+  }
+}
+
 export function WeeklyChampionCelebration() {
   const { user } = useAuth();
   const [badge, setBadge] = useState<UnseenBadge | null>(null);
