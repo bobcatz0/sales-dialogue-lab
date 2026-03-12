@@ -8,7 +8,8 @@ import { ShareableSummary } from "./ShareableSummary";
 import { ScorecardShare } from "./ScorecardShare";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
-import { RubricScoresSection, AnswerComparisonSection, TimestampedMomentsSection } from "./FrameworkFeedback";
+import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
+import { ConversationBreakdown } from "./ConversationBreakdown";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
 
