@@ -52,6 +52,10 @@ interface ScorecardShareProps {
 export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession, elo, eloDelta }: ScorecardShareProps) {
   const [showCard, setShowCard] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [discordWebhook, setDiscordWebhook] = useState(() => loadDiscordWebhook());
+  const [showDiscordSetup, setShowDiscordSetup] = useState(false);
+  const [discordInput, setDiscordInput] = useState(() => loadDiscordWebhook());
+  const [discordSending, setDiscordSending] = useState(false);
 
   const frameworkLabel = feedback.frameworkId && feedback.frameworkId !== "none"
     ? FRAMEWORK_LABELS[feedback.frameworkId] || feedback.frameworkId.toUpperCase()
