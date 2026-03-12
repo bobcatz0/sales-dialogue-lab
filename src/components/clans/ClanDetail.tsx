@@ -29,6 +29,8 @@ interface ClanData {
   clan_elo: number;
   total_members: number;
   created_by: string;
+  invite_code: string;
+  referral_points: number;
 }
 
 interface MemberData {
