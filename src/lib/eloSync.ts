@@ -166,5 +166,7 @@ export async function syncEloAfterSession(sessionScore: number): Promise<EloSync
     rankedUp: newRank !== oldRank && newElo > oldElo,
     placementComplete,
     totalSessions: newTotalSessions,
+    currentStreak,
+    longestStreak,
   };
 }
