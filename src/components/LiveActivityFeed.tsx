@@ -41,8 +41,8 @@ export function LiveActivityFeed() {
   // Fetch initial events
   useEffect(() => {
     const fetchEvents = async () => {
-      const { data } = await supabase
-        .from("activity_events")
+      const { data } = await (supabase
+        .from("activity_events") as any)
         .select("*")
         .order("created_at", { ascending: false })
         .limit(30);
