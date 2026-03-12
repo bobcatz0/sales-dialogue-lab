@@ -365,6 +365,17 @@ export function ClanDetail({ clanId, onBack }: ClanDetailProps) {
               </Link>
             )}
           </div>
+
+          {/* Invite Link */}
+          {isMember && clan.invite_code && (
+            <div className="mt-5 pt-5 border-t border-border">
+              <InviteLinkSection
+                inviteCode={clan.invite_code}
+                referralPoints={clan.referral_points}
+                canManage={canManage}
+              />
+            </div>
+          )}
         </motion.div>
 
         {/* Member leaderboard */}
