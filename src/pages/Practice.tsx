@@ -1738,6 +1738,13 @@ This evaluation style should subtly influence your questions and reactions. Do N
               )}
               {feedback && !isFeedbackLoading && (
                 <>
+                  {/* Rank Progress + Streak */}
+                  {profile && rankUpData && (
+                    <>
+                      <RankProgressCard elo={rankUpData.newElo} eloDelta={rankUpData.delta} />
+                      <PracticeStreak currentStreak={rankUpData.currentStreak} longestStreak={rankUpData.longestStreak} />
+                    </>
+                  )}
                   {lastPoints !== null && lastPoints > 0 && selectedEnv !== "interview" && (
                     <motion.div
                       initial={{ opacity: 0 }}
