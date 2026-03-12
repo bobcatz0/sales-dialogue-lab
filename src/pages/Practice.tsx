@@ -1325,79 +1325,90 @@ This evaluation style should subtly influence your questions and reactions. Do N
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col card-elevated overflow-hidden flex-1"
             >
-              {/* Chat Header — compact / call-style for cold call */}
-              <div className={`flex items-center justify-between px-4 py-3 border-b border-border ${isColdCall && sessionActive ? "bg-muted/40" : ""}`}>
-                <div className="flex items-center gap-2 min-w-0">
-                  {activeEnv && (
-                    <Badge variant={isColdCall ? "destructive" : "secondary"} className="text-[10px] font-medium shrink-0">
-                      {isColdCall && sessionActive ? "LIVE CALL" : activeEnv.title}
-                    </Badge>
-                  )}
-                  {activeRole && (
-                    <span className="text-xs font-medium text-foreground truncate">
-                      {activeRole.title}
+              {/* Stage Header */}
+              <div className={`px-4 py-3 border-b border-border ${isColdCall && sessionActive ? "bg-muted/40" : ""}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {activeEnv && (
+                      <Badge variant={isColdCall ? "destructive" : "secondary"} className="text-[10px] font-medium shrink-0">
+                        {isColdCall && sessionActive ? "LIVE CALL" : activeEnv.title}
+                      </Badge>
+                    )}
+                    {!activeRole && !activeEnv && (
+                      <span className="text-xs text-muted-foreground">Session</span>
+                    )}
+                    {/* Voice / Text mode indicator */}
+                    {sessionActive && (() => {
+                      const isVoice = (voice.voiceMode || (isColdCall && !coldCallTextMode)) && !coldCallTextMode;
+                      const isRequired = isColdCall && isVoice;
+                      const noMic = coldCallTextMode && (mic.status === "no-device" || mic.status === "blocked");
+
+                      return (
+                        <TooltipProvider delayDuration={0}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge
+                                variant="outline"
+                                className={`text-[9px] px-2 py-0.5 h-[18px] gap-1 shrink-0 cursor-pointer transition-colors duration-200 ${
+                                  isVoice
+                                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                    : "border-muted-foreground/25 bg-muted/40 text-muted-foreground"
+                                }`}
+                              >
+                                {isVoice ? (
+                                  <>
+                                    <Mic className="h-2.5 w-2.5" />
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    Voice Mode
+                                    {isRequired && (
+                                      <span className="text-[8px] opacity-70 ml-0.5">· Required</span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="text-[10px]">⌨️</span>
+                                    Text Mode
+                                    {noMic && (
+                                      <span className="text-[8px] opacity-60 ml-0.5">(No mic detected)</span>
+                                    )}
+                                  </>
+                                )}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="text-[10px] max-w-[220px] text-center">
+                              {isVoice
+                                ? "Voice mode scores pacing + pauses."
+                                : "Text mode scores structure + clarity."}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      );
+                    })()}
+                  </div>
+                  {sessionActive && (
+                    <span className={`text-[10px] tabular-nums shrink-0 font-mono ${isColdCall ? "text-destructive font-semibold" : "text-muted-foreground/60"}`}>
+                      {timer.display}
                     </span>
                   )}
-                  {activeRole && (selectedEnv === "interview" || selectedEnv === "final-round") && (
-                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-[18px] shrink-0 border-border text-muted-foreground">
-                      {PERSONALITIES.find(p => p.id === selectedPersonality)?.icon} {PERSONALITIES.find(p => p.id === selectedPersonality)?.label}
-                    </Badge>
-                  )}
-                  {!activeRole && !activeEnv && (
-                    <span className="text-xs text-muted-foreground">Session</span>
-                  )}
-                  {/* Voice / Text mode indicator */}
-                  {sessionActive && (() => {
-                    const isVoice = (voice.voiceMode || (isColdCall && !coldCallTextMode)) && !coldCallTextMode;
-                    const isRequired = isColdCall && isVoice;
-                    const noMic = coldCallTextMode && (mic.status === "no-device" || mic.status === "blocked");
-
-                    return (
-                      <TooltipProvider delayDuration={0}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge
-                              variant="outline"
-                              className={`text-[9px] px-2 py-0.5 h-[18px] gap-1 shrink-0 cursor-pointer transition-colors duration-200 ${
-                                isVoice
-                                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                                  : "border-muted-foreground/25 bg-muted/40 text-muted-foreground"
-                              }`}
-                            >
-                              {isVoice ? (
-                                <>
-                                  <Mic className="h-2.5 w-2.5" />
-                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                  Voice Mode
-                                  {isRequired && (
-                                    <span className="text-[8px] opacity-70 ml-0.5">· Required</span>
-                                  )}
-                                </>
-                              ) : (
-                                <>
-                                  <span className="text-[10px]">⌨️</span>
-                                  Text Mode
-                                  {noMic && (
-                                    <span className="text-[8px] opacity-60 ml-0.5">(No mic detected)</span>
-                                  )}
-                                </>
-                              )}
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom" className="text-[10px] max-w-[220px] text-center">
-                            {isVoice
-                              ? "Voice mode scores pacing + pauses."
-                              : "Text mode scores structure + clarity."}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    );
-                  })()}
                 </div>
-                {sessionActive && (
-                  <span className={`text-[10px] tabular-nums shrink-0 font-mono ${isColdCall ? "text-destructive font-semibold" : "text-muted-foreground/60"}`}>
-                    {timer.display}
-                  </span>
+                {/* Structured stage info when session is active */}
+                {activeRole && sessionActive && (
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className="text-xs font-semibold text-foreground">{activeRole.title}</span>
+                    {(selectedEnv === "interview" || selectedEnv === "final-round") && (
+                      <span className="text-[10px] text-muted-foreground">
+                        {PERSONALITIES.find(p => p.id === selectedPersonality)?.icon}{" "}
+                        {PERSONALITIES.find(p => p.id === selectedPersonality)?.label} Interviewer
+                      </span>
+                    )}
+                    <span className="text-[10px] text-muted-foreground">·</span>
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                      Q{Math.min(userQuestionCount, totalExpectedQuestions)}/~{totalExpectedQuestions}
+                    </span>
+                    <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-[16px] border-border text-muted-foreground">
+                      {selectedEnv === "final-round" ? "Pressure" : "Standard"}
+                    </Badge>
+                  </div>
                 )}
               </div>
 
