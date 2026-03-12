@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { getEloRank } from "@/lib/elo";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const navLinks = [
   { label: "Practice", href: "/practice" },
@@ -59,6 +60,7 @@ const Navbar = () => {
                   {getEloRank(profile?.elo ?? 1000)}
                 </span>
               </a>
+              <NotificationBell />
               <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground">
                 <LogOut className="h-4 w-4" />
               </Button>
