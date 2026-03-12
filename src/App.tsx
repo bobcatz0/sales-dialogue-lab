@@ -21,6 +21,12 @@ import Clans from "./pages/Clans";
 import JoinClan from "./pages/JoinClan";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { WeeklyChampionCelebration } from "./components/clans/WeeklyChampionCelebration";
+import { useRankThresholds } from "./hooks/useRankThresholds";
+
+function RankThresholdsLoader() {
+  useRankThresholds();
+  return null;
+}
 
 const queryClient = new QueryClient();
 

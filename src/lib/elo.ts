@@ -49,8 +49,12 @@ export function getRankThresholds(): readonly RankThreshold[] {
   return _thresholds;
 }
 
-// Keep backward compat alias
-export const ELO_RANKS = _thresholds;
+/** Live thresholds array — same reference consumers used before. */
+export function getEloRanks(): readonly RankThreshold[] {
+  return _thresholds;
+}
+// Backward compat — note: this is the initial snapshot; prefer getEloRanks()
+export const ELO_RANKS = DEFAULT_RANK_THRESHOLDS;
 
 export type RankTier = (typeof RANK_PERCENTILES)[number]["name"];
 
