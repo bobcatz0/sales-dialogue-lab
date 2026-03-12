@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Trophy } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AnimatedCounter, RankBadge, EloDelta } from "./AnimatedStats";
 import { Link } from "react-router-dom";
 import HeroArenaFeed from "./HeroArenaFeed";
+import HeroLeaderboardPreview from "./HeroLeaderboardPreview";
 
 const HeroSection = () => {
   return (
@@ -25,10 +25,10 @@ const HeroSection = () => {
       <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-primary/3 blur-[100px]" />
 
       <div className="container relative z-10 mx-auto px-6 py-16">
-        <div className="mx-auto max-w-5xl">
-          {/* Headline area */}
+        <div className="mx-auto max-w-5xl space-y-12">
+          {/* ── Headline ── */}
           <div className="text-center max-w-3xl mx-auto">
-            {/* Live activity pulse */}
+            {/* Live pulse */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -48,7 +48,7 @@ const HeroSection = () => {
               transition={{ duration: 0.6 }}
               className="font-heading text-4xl font-bold leading-[1.1] tracking-tight md:text-6xl lg:text-7xl"
             >
-              Train your interview and sales skills
+              Train your interview skills
               <br />
               <span className="text-gradient">against AI.</span>
             </motion.h1>
@@ -62,131 +62,39 @@ const HeroSection = () => {
               Practice conversations, get scored, and climb the leaderboard.
             </motion.p>
 
+            {/* ── CTA ── */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-8 flex items-center justify-center gap-4 flex-wrap"
+              className="mt-8"
             >
-              <Button variant="hero" size="lg" className="gap-2 px-8 py-6 text-lg" asChild>
+              <Button variant="hero" size="lg" className="gap-2 px-10 py-6 text-lg" asChild>
                 <Link to="/practice">
-                  Start Practice
+                  Start Interview
                   <ArrowRight className="h-5 w-5" />
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" className="gap-2 px-8 py-6 border-border/60 hover:border-primary/40" asChild>
-                <Link to="/leaderboard">
-                  <Trophy className="h-4 w-4" />
-                  View Leaderboard
-                </Link>
-              </Button>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mt-4 text-sm text-muted-foreground"
+              >
+                Free to try. No account required.
+              </motion.p>
             </motion.div>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="mt-5 text-sm text-muted-foreground"
-            >
-              Free to try. No account required.
-            </motion.p>
           </div>
 
-          {/* Product Preview — Chat + Live Arena */}
+          {/* ── Live Arena + Leaderboard Preview ── */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.5 }}
-            className="mt-16 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-4"
+            className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            {/* Mock chat */}
-            <div className="card-elevated rounded-xl overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/30">
-                <div className="flex gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-destructive/50" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/50" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary/50" />
-                </div>
-                <span className="text-[10px] text-muted-foreground font-mono ml-2">Interview Prep — Hiring Manager</span>
-              </div>
-
-              <div className="p-5 space-y-4">
-                <motion.div
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 }}
-                  className="flex gap-3"
-                >
-                  <div className="h-7 w-7 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-[10px] font-bold text-primary">AI</span>
-                  </div>
-                  <div className="bg-muted/50 rounded-xl rounded-tl-sm px-4 py-2.5 max-w-[85%]">
-                    <p className="text-sm text-foreground">
-                      Tell me about a time you handled a difficult prospect.
-                    </p>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: 12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.1 }}
-                  className="flex gap-3 justify-end"
-                >
-                  <div className="bg-primary/10 rounded-xl rounded-tr-sm px-4 py-2.5 max-w-[85%]">
-                    <p className="text-sm text-foreground">
-                      I worked with a customer who initially rejected our offer because of price. I anchored on the ROI…
-                    </p>
-                  </div>
-                </motion.div>
-              </div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.5, type: "spring", stiffness: 200, damping: 20 }}
-                className="border-t border-border bg-muted/20 px-5 py-4"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-5">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Score</p>
-                      <p className="text-2xl font-bold font-heading text-foreground">
-                        <AnimatedCounter target={82} delay={1.8} duration={0.8} />
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Rank</p>
-                      <RankBadge rank="Operator" delay={2.0} />
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">ELO</p>
-                      <p className="text-sm font-bold text-foreground">
-                        <AnimatedCounter target={1340} delay={1.8} duration={1.2} />{" "}
-                        <EloDelta delta={18} delay={2.4} />
-                      </p>
-                    </div>
-                  </div>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 2.6, type: "spring", stiffness: 300 }}
-                    className="text-[10px] text-muted-foreground px-2 py-1 rounded-full border border-border bg-card/50"
-                  >
-                    Top 12%
-                  </motion.div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Live Arena Feed */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-            >
-              <HeroArenaFeed />
-            </motion.div>
+            <HeroArenaFeed />
+            <HeroLeaderboardPreview />
           </motion.div>
         </div>
       </div>
