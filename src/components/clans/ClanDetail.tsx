@@ -473,6 +473,21 @@ export function ClanDetail({ clanId, onBack }: ClanDetailProps) {
           </div>
         </motion.div>
 
+        {/* Clan Chat */}
+        {isMember && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            className="mt-6"
+          >
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Users className="h-3.5 w-3.5" /> Clan Chat
+            </h2>
+            <ClanChat clanId={clanId} />
+          </motion.div>
+        )}
+
         {/* Referral Leaderboard */}
         {isMember && (
           <motion.div
