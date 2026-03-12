@@ -68,9 +68,30 @@ const LeaderboardPage = () => {
         const filtered = tab === "weekly"
           ? data.filter((e) => (e.weekly_elo_gain ?? 0) > 0)
           : data;
-        setEntries(filtered);
+
+        // Fetch clan affiliations for all users
+        const userIds = filtered.map((e) => e.id);
+        const { data: clanData } = await supabase
+          .from("clan_members")
+          .select("user_id, clans:clan_id(name)")
+          .in("user_id", userIds);
+
+        const clanMap = new Map<string, string>();
+        if (clanData) {
+          for (const cm of clanData as unknown as ClanMemberInfo[]) {
+            const clan = Array.isArray(cm.clans) ? cm.clans[0] : cm.clans;
+            if (clan?.name) clanMap.set(cm.user_id, clan.name);
+          }
+        }
+
+        const enriched: LeaderboardEntry[] = filtered.map((e) => ({
+          ...e,
+          clan_name: clanMap.get(e.id),
+        }));
+
+        setEntries(enriched);
         if (user) {
-          const idx = filtered.findIndex((e) => e.id === user.id);
+          const idx = enriched.findIndex((e) => e.id === user.id);
           setUserRank(idx >= 0 ? idx + 1 : null);
         }
       }
