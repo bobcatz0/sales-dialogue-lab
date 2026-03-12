@@ -1,9 +1,11 @@
-import { Phone, Menu, X, LogIn, User, LogOut } from "lucide-react";
+import { Phone, Menu, X, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { getEloRank } from "@/lib/elo";
 import { NotificationBell } from "@/components/NotificationBell";
+import { UserAvatar } from "@/components/UserAvatar";
+import { EditableProfile } from "@/components/EditableProfile";
 
 const navLinks = [
   { label: "Practice", href: "/practice" },
