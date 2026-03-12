@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { calculateEloDelta, getEloRank, ELO_RANKS } from "./elo";
 import type { RankTier } from "./elo";
+import { publishActivityEvent } from "./activityEvents";
 
 function getWeekStart(): Date {
   const now = new Date();
