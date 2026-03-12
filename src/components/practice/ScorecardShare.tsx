@@ -99,14 +99,18 @@ function ConfettiBurst() {
 }
 
 export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession, elo, eloDelta }: ScorecardShareProps) {
+  const { user, profile } = useAuth();
   const [showCard, setShowCard] = useState(false);
   const [copied, setCopied] = useState(false);
   const [imageCopied, setImageCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [discordWebhook, setDiscordWebhook] = useState(() => loadDiscordWebhook());
   const [showDiscordSetup, setShowDiscordSetup] = useState(false);
   const [discordInput, setDiscordInput] = useState(() => loadDiscordWebhook());
   const [discordSending, setDiscordSending] = useState(false);
+  const [scorecardId, setScorecardId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const frameworkLabel = feedback.frameworkId && feedback.frameworkId !== "none"
     ? FRAMEWORK_LABELS[feedback.frameworkId] || feedback.frameworkId.toUpperCase()
@@ -119,7 +123,45 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
   const rankTier = elo != null ? getEloRank(elo) : null;
   const topPercent = 100 - percentile;
 
-  const shareUrl = "https://sales-dialogue-lab.lovable.app/scenarios";
+  const scorecardUrl = scorecardId
+    ? `${window.location.origin}/scorecard/${scorecardId}`
+    : null;
+  const shareUrl = scorecardUrl || "https://sales-dialogue-lab.lovable.app/scenarios";
+
+  // Save scorecard to DB when card is first shown
+  const saveScorecard = useCallback(async () => {
+    if (scorecardId || saving || !user) return;
+    setSaving(true);
+    try {
+      const { data, error } = await supabase
+        .from("scorecards")
+        .insert({
+          user_id: user.id,
+          score: feedback.score,
+          rank: feedback.rank,
+          percentile,
+          scenario_title: scenarioTitle,
+          framework_id: feedback.frameworkId || null,
+          rubric_scores: rubric as any,
+          strengths: feedback.strengths as any,
+          improvements: feedback.improvements as any,
+          best_moment: feedback.bestMoment || null,
+          elo: elo ?? null,
+          elo_delta: eloDelta ?? null,
+          alias: alias || null,
+          display_name: profile?.display_name || "Anonymous",
+          avatar_url: profile?.avatar_url || null,
+        })
+        .select("id")
+        .single();
+
+      if (data) setScorecardId(data.id);
+    } catch {
+      // Non-critical — sharing still works without saved scorecard
+    } finally {
+      setSaving(false);
+    }
+  }, [scorecardId, saving, user, feedback, scenarioTitle, percentile, rubric, elo, eloDelta, alias, profile]);
 
   const shareText = [
     `🎯 Just scored ${feedback.score}/100 on "${scenarioTitle}"`,
@@ -130,6 +172,15 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     ``,
     `Practice sales scenarios at ${shareUrl}`,
   ].filter(Boolean).join("\n");
+
+  const handleCopyLink = useCallback(() => {
+    if (!scorecardUrl) return;
+    navigator.clipboard.writeText(scorecardUrl).then(() => {
+      setLinkCopied(true);
+      toast("Scorecard link copied!", { duration: 2000 });
+      setTimeout(() => setLinkCopied(false), 2000);
+    }).catch(() => toast.error("Failed to copy link."));
+  }, [scorecardUrl]);
 
   const handleCopyText = useCallback(() => {
     navigator.clipboard.writeText(shareText).then(() => {
