@@ -1954,6 +1954,20 @@ This evaluation style should subtly influence your questions and reactions. Do N
           refreshProfile();
         }}
       />
+
+      {/* Placement Result */}
+      {showPlacementResult && (
+        <PlacementResult
+          elo={placementElo}
+          percentile={(window as any).__placementPercentile ?? 50}
+          avatarUrl={profile?.avatar_url}
+          displayName={profile?.display_name}
+          onDismiss={() => {
+            setShowPlacementResult(false);
+            refreshProfile();
+          }}
+        />
+      )}
     </>
   );
 };
