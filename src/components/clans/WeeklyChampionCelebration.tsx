@@ -86,6 +86,7 @@ export function WeeklyChampionCelebration() {
       if (unseen) {
         setBadge(unseen);
         setOpen(true);
+        playCelebrationSfx();
       }
     }
 
