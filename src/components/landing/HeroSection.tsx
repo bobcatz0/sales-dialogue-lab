@@ -92,15 +92,15 @@ const HeroSection = () => {
             </motion.p>
           </div>
 
-          {/* Product Preview — Mock chat + result */}
+          {/* Product Preview — Chat + Live Arena */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.5 }}
-            className="mt-16 max-w-2xl mx-auto"
+            className="mt-16 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-4"
           >
+            {/* Mock chat */}
             <div className="card-elevated rounded-xl overflow-hidden">
-              {/* Fake top bar */}
               <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/30">
                 <div className="flex gap-1.5">
                   <div className="h-2.5 w-2.5 rounded-full bg-destructive/50" />
@@ -110,9 +110,7 @@ const HeroSection = () => {
                 <span className="text-[10px] text-muted-foreground font-mono ml-2">Interview Prep — Hiring Manager</span>
               </div>
 
-              {/* Chat messages */}
               <div className="p-5 space-y-4">
-                {/* Interviewer */}
                 <motion.div
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -129,7 +127,6 @@ const HeroSection = () => {
                   </div>
                 </motion.div>
 
-                {/* User */}
                 <motion.div
                   initial={{ opacity: 0, x: 12 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -138,13 +135,12 @@ const HeroSection = () => {
                 >
                   <div className="bg-primary/10 rounded-xl rounded-tr-sm px-4 py-2.5 max-w-[85%]">
                     <p className="text-sm text-foreground">
-                      I worked with a customer who initially rejected our offer because of price. I anchored on the ROI and asked what their cost of inaction was…
+                      I worked with a customer who initially rejected our offer because of price. I anchored on the ROI…
                     </p>
                   </div>
                 </motion.div>
               </div>
 
-              {/* Result bar */}
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -182,6 +178,15 @@ const HeroSection = () => {
                 </div>
               </motion.div>
             </div>
+
+            {/* Live Arena Feed */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+            >
+              <HeroArenaFeed />
+            </motion.div>
           </motion.div>
         </div>
       </div>
