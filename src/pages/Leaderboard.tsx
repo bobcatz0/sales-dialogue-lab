@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, LogIn, Flame, ShieldCheck, Shield, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Trophy, Crown, Medal, LogIn, Flame, ShieldCheck, Shield, TrendingUp, TrendingDown, Minus, Target, Swords, ChevronUp } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Link } from "react-router-dom";
 import { EditableProfile } from "@/components/EditableProfile";
@@ -166,6 +166,185 @@ function PodiumCard({
   );
 }
 
+// "Players Near You" section with rival + next rank
+function NearYouSection({
+  entries,
+  userRank,
+  userId,
+  userElo,
+  tab,
+}: {
+  entries: LeaderboardEntry[];
+  userRank: number;
+  userId: string;
+  userElo: number;
+  tab: Tab;
+}) {
+  const userIdx = userRank - 1;
+
+  // 3 above + user + 3 below
+  const startIdx = Math.max(0, userIdx - 3);
+  const endIdx = Math.min(entries.length, userIdx + 4);
+  const nearbyEntries = entries.slice(startIdx, endIdx);
+
+  // Next rank tier
+  const currentRank = getEloRank(userElo);
+  const currentRankIdx = ELO_RANKS.findIndex((r) => r.name === currentRank);
+  const nextRank = currentRankIdx < ELO_RANKS.length - 1 ? ELO_RANKS[currentRankIdx + 1] : null;
+  const pointsToNext = nextRank ? nextRank.min - userElo : 0;
+
+  // Rival = closest player above
+  const rival = userIdx > 0 ? entries[userIdx - 1] : null;
+  const rivalGap = rival ? rival.elo - userElo : 0;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 }}
+      className="space-y-3"
+    >
+      {/* Stats row: Next Rank + Rival */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Next rank progress */}
+        {nextRank ? (
+          <div className="card-elevated p-4 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+              <Target className="h-3.5 w-3.5 text-primary" />
+              Next Rank
+            </div>
+            <div className="flex items-center justify-between">
+              <span className={`text-sm font-bold ${getRankColor(nextRank.name)}`}>
+                {nextRank.name}
+              </span>
+              <span className="text-xs text-muted-foreground font-semibold tabular-nums">
+                {pointsToNext} pts away
+              </span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{
+                  width: `${Math.min(100, ((userElo - ELO_RANKS[currentRankIdx].min) / (nextRank.min - ELO_RANKS[currentRankIdx].min)) * 100)}%`,
+                }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="h-full rounded-full bg-primary"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="card-elevated p-4 flex items-center gap-3">
+            <Crown className="h-5 w-5 text-yellow-500" />
+            <div>
+              <p className="text-sm font-bold text-foreground">Max Rank!</p>
+              <p className="text-[10px] text-muted-foreground">You've reached Sales Architect</p>
+            </div>
+          </div>
+        )}
+
+        {/* Your rival */}
+        {rival ? (
+          <div className="card-elevated p-4 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+              <Swords className="h-3.5 w-3.5 text-destructive" />
+              Your Rival
+            </div>
+            <div className="flex items-center gap-2">
+              <UserAvatar
+                avatarUrl={rival.avatar_url}
+                displayName={rival.display_name}
+                elo={rival.elo}
+                size="xs"
+                showRankBadge={false}
+                showName={false}
+              />
+              <span className="text-sm font-semibold text-foreground truncate">
+                {rival.display_name}
+              </span>
+              <span className={`text-[9px] font-bold ${getRankColor(getEloRank(rival.elo))}`}>
+                [{getEloRank(rival.elo)}]
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Their ELO: <span className="font-bold text-foreground tabular-nums">{rival.elo}</span></span>
+              <span className="text-primary font-bold tabular-nums flex items-center gap-0.5">
+                <ChevronUp className="h-3 w-3" />{rivalGap} to overtake
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="card-elevated p-4 flex items-center gap-3">
+            <Trophy className="h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm font-bold text-foreground">#1 Player!</p>
+              <p className="text-[10px] text-muted-foreground">You're at the top</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Players near you */}
+      <div className="card-elevated overflow-hidden">
+        <div className="px-4 py-2.5 border-b border-border flex items-center gap-2">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+            Players Near You
+          </span>
+        </div>
+        <div className="divide-y divide-border">
+          {nearbyEntries.map((entry) => {
+            const rank = getEloRank(entry.elo);
+            const globalIdx = entries.indexOf(entry);
+            const isCurrentUser = entry.id === userId;
+
+            return (
+              <div
+                key={entry.id}
+                className={`grid grid-cols-[2.5rem_1fr_4.5rem_4rem] items-center px-4 py-2.5 transition-colors ${
+                  isCurrentUser
+                    ? "bg-primary/8 border-l-2 border-l-primary"
+                    : "hover:bg-muted/30"
+                }`}
+              >
+                <span className="text-xs font-bold text-muted-foreground tabular-nums">
+                  {globalIdx + 1}
+                </span>
+
+                <div className="flex items-center gap-2 min-w-0">
+                  <UserAvatar
+                    avatarUrl={entry.avatar_url}
+                    displayName={entry.display_name}
+                    elo={entry.elo}
+                    size="xs"
+                    showRankBadge={false}
+                    showName={false}
+                  />
+                  <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
+                    {entry.display_name}
+                  </span>
+                  <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
+                    [{rank}]
+                  </span>
+                  {isCurrentUser && <span className="text-[9px] text-muted-foreground shrink-0">(you)</span>}
+                </div>
+
+                <div className="text-right">
+                  <span className="text-sm font-bold font-heading text-foreground tabular-nums">
+                    {entry.elo}
+                  </span>
+                </div>
+
+                <div className="text-right">
+                  <MovementIndicator gain={entry.weekly_elo_gain ?? 0} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 const LeaderboardPage = () => {
   const { user, profile } = useAuth();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
@@ -293,6 +472,17 @@ const LeaderboardPage = () => {
                 </Link>
               </Button>
             </motion.div>
+          )}
+
+          {/* Players Near You + Next Rank + Rival */}
+          {user && profile && userRank !== null && entries.length > 0 && (
+            <NearYouSection
+              entries={entries}
+              userRank={userRank}
+              userId={user.id}
+              userElo={profile.elo}
+              tab={tab}
+            />
           )}
 
           {/* ELO History Chart */}
