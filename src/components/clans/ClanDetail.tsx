@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Shield, ArrowLeft, Users, Crown, Settings, UserPlus, UserMinus,
-  Globe, Lock, LogIn, Ban, ChevronUp, ChevronDown
+  Globe, Lock, LogIn, Ban, ChevronUp, ChevronDown, Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import { getEloRank } from "@/lib/elo";
 import { toast } from "sonner";
 import Navbar from "@/components/landing/Navbar";
 import { Link } from "react-router-dom";
+import { ClanActivityFeed } from "./ClanActivityFeed";
 
 interface ClanDetailProps {
   clanId: string;
@@ -455,6 +456,21 @@ export function ClanDetail({ clanId, onBack }: ClanDetailProps) {
             })}
           </div>
         </motion.div>
+
+        {/* Activity Feed */}
+        {isMember && members.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-6"
+          >
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Activity className="h-3.5 w-3.5" /> Recent Activity
+            </h2>
+            <ClanActivityFeed memberUserIds={members.map((m) => m.user_id)} />
+          </motion.div>
+        )}
       </div>
     </div>
   );
