@@ -134,6 +134,9 @@ const LeaderboardPage = () => {
             </motion.div>
           )}
 
+          {/* ELO History Chart */}
+          <EloHistoryChart />
+
           {/* Rank tiers legend */}
           <div className="flex flex-wrap justify-center gap-2">
             {ELO_RANKS.map((r) => (
