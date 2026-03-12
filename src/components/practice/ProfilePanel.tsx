@@ -56,6 +56,17 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
         </Badge>
       </div>
 
+      {/* Evaluator badge & reputation */}
+      {profile?.is_evaluator && (
+        <div className="space-y-1.5">
+          <EvaluatorBadge size="sm" />
+          <EvaluatorReputation
+            reputation={profile.evaluator_reputation}
+            reviewsGiven={profile.reviews_given}
+          />
+        </div>
+      )}
+
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
