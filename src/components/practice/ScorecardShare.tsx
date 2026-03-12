@@ -99,6 +99,7 @@ function ConfettiBurst() {
 export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession, elo, eloDelta }: ScorecardShareProps) {
   const [showCard, setShowCard] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [imageCopied, setImageCopied] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [discordWebhook, setDiscordWebhook] = useState(() => loadDiscordWebhook());
   const [showDiscordSetup, setShowDiscordSetup] = useState(false);
@@ -110,6 +111,9 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     : null;
   const percentile = computePercentile(feedback.score);
   const rubric = feedback.rubricScores || [];
+  const weakestSkill = rubric.length > 0
+    ? rubric.reduce((min, r) => r.score < min.score ? r : min, rubric[0])
+    : null;
   const rankTier = elo != null ? getEloRank(elo) : null;
   const topPercent = 100 - percentile;
 
@@ -120,6 +124,7 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     frameworkLabel ? `📋 ${frameworkLabel}` : null,
     `📊 Top ${topPercent}%`,
     elo != null ? `⚡ ELO: ${elo}${eloDelta != null ? ` (${eloDelta >= 0 ? "+" : ""}${eloDelta})` : ""} — ${rankTier}` : null,
+    weakestSkill ? `⚠️ Focus area: ${weakestSkill.criterion} (${weakestSkill.score}/100)` : null,
     ``,
     `Practice sales scenarios at ${shareUrl}`,
   ].filter(Boolean).join("\n");
@@ -370,6 +375,113 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
     }
   }, [feedback, scenarioTitle, frameworkLabel, percentile, rubric, alias, elo, eloDelta, rankTier, topPercent]);
 
+  const handleCopyImage = useCallback(async () => {
+    try {
+      const canvas = document.createElement("canvas");
+      const scale = 2;
+      const width = 600;
+      const hasElo = elo != null;
+      const height = 460 + rubric.length * 40 + (hasElo ? 50 : 0) + (weakestSkill ? 60 : 0);
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.scale(scale, scale);
+      ctx.fillStyle = "#0d1117";
+      ctx.roundRect(0, 0, width, height, 16);
+      ctx.fill();
+
+      const grad = ctx.createLinearGradient(0, 0, width, 0);
+      grad.addColorStop(0, "#22c55e");
+      grad.addColorStop(1, "#16a34a");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, 4);
+
+      ctx.fillStyle = "#22c55e";
+      ctx.font = "700 14px 'Inter', system-ui, sans-serif";
+      ctx.fillText("SalesCalls.io Scorecard", 32, 40);
+
+      ctx.fillStyle = "#f9fafb";
+      ctx.font = "600 20px 'Inter', system-ui, sans-serif";
+      ctx.fillText(scenarioTitle, 32, 76);
+
+      let y = 76;
+      if (frameworkLabel) {
+        y += 24;
+        ctx.fillStyle = "#14532d";
+        const tw = ctx.measureText(frameworkLabel).width + 20;
+        ctx.roundRect(32, y - 12, tw, 22, 6);
+        ctx.fill();
+        ctx.fillStyle = "#86efac";
+        ctx.font = "600 11px 'Inter', system-ui, sans-serif";
+        ctx.fillText(frameworkLabel, 42, y + 2);
+        y += 24;
+      } else {
+        y += 20;
+      }
+
+      y += 16;
+      ctx.fillStyle = "#f9fafb";
+      ctx.font = "700 56px 'Inter', system-ui, sans-serif";
+      ctx.fillText(`${feedback.score}`, 32, y);
+      const sw = ctx.measureText(`${feedback.score}`).width;
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "400 22px 'Inter', system-ui, sans-serif";
+      ctx.fillText("/ 100", 32 + sw + 8, y);
+
+      y += 24;
+      ctx.fillStyle = "#22c55e";
+      ctx.font = "600 14px 'Inter', system-ui, sans-serif";
+      ctx.fillText(`${feedback.rank}  ·  Top ${topPercent}%`, 32, y);
+
+      if (hasElo) {
+        y += 24;
+        ctx.fillStyle = "#f9fafb";
+        ctx.font = "700 16px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`⚡ ${elo} ELO`, 32, y);
+      }
+
+      if (weakestSkill) {
+        y += 28;
+        ctx.fillStyle = "#7f1d1d";
+        ctx.roundRect(32, y - 14, width - 64, 44, 8);
+        ctx.fill();
+        ctx.fillStyle = "#fca5a5";
+        ctx.font = "600 10px 'Inter', system-ui, sans-serif";
+        ctx.fillText("⚠ WEAKEST SKILL", 44, y);
+        ctx.fillStyle = "#fef2f2";
+        ctx.font = "600 13px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`${weakestSkill.criterion}: ${weakestSkill.score}/100`, 44, y + 18);
+      }
+
+      ctx.fillStyle = "#4b5563";
+      ctx.font = "400 10px 'Inter', system-ui, sans-serif";
+      ctx.fillText("salescalls.io — Practice real sales scenarios", 32, height - 20);
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob }),
+          ]);
+          setImageCopied(true);
+          toast.success("Scorecard image copied to clipboard!", { duration: 2500 });
+          setTimeout(() => setImageCopied(false), 2500);
+        } catch {
+          // Fallback to download
+          const link = document.createElement("a");
+          link.download = `scorecard-${feedback.score}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+          toast("Clipboard not supported — image downloaded instead.", { duration: 2500 });
+        }
+      }, "image/png");
+    } catch {
+      toast.error("Failed to generate image.");
+    }
+  }, [feedback, scenarioTitle, frameworkLabel, rubric, alias, elo, eloDelta, rankTier, topPercent, weakestSkill]);
+
   if (!isValidSession) return null;
 
   return (
@@ -463,13 +575,30 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
-                          animate={{ width: `${r.score}%` }}
+                           animate={{ width: `${r.score}%` }}
                           transition={{ duration: 0.5, delay: 0.1 + i * 0.06 }}
-                          className="h-full rounded-full bg-primary"
+                          className={`h-full rounded-full ${
+                            weakestSkill && r.criterion === weakestSkill.criterion
+                              ? "bg-destructive"
+                              : "bg-primary"
+                          }`}
                         />
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Weakest Skill Callout */}
+              {weakestSkill && (
+                <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
+                  <p className="text-[10px] font-semibold text-destructive uppercase tracking-wider mb-1">
+                    ⚠ Weakest Skill
+                  </p>
+                  <p className="text-xs font-semibold text-foreground">{weakestSkill.criterion}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Score: {weakestSkill.score}/100{weakestSkill.note ? ` — ${weakestSkill.note}` : ""}
+                  </p>
                 </div>
               )}
 
@@ -482,7 +611,38 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
             </div>
           </div>
 
-          {/* Actions — Download + Copy */}
+          {/* Primary Share Buttons */}
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              size="sm"
+              className="h-9 text-xs gap-1.5 bg-[#0A66C2] hover:bg-[#004182] text-white"
+              onClick={handleShareLinkedIn}
+            >
+              <Linkedin className="h-3.5 w-3.5" />
+              LinkedIn
+            </Button>
+            <Button
+              size="sm"
+              className="h-9 text-xs gap-1.5 bg-foreground hover:bg-foreground/90 text-background"
+              onClick={handleShareX}
+            >
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              Twitter / X
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 text-xs gap-1.5"
+              onClick={handleCopyImage}
+            >
+              {imageCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {imageCopied ? "Copied!" : "Copy Image"}
+            </Button>
+          </div>
+
+          {/* Secondary Actions */}
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -491,7 +651,7 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
               onClick={handleDownloadImage}
             >
               <Download className="h-3 w-3" />
-              Download Image
+              Download
             </Button>
             <Button
               variant="outline"
@@ -504,37 +664,15 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
             </Button>
           </div>
 
-          {/* Social Share Buttons */}
-          <div className="grid grid-cols-4 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-[10px] gap-1"
-              onClick={handleShareLinkedIn}
-            >
-              <Linkedin className="h-3 w-3" />
-              LinkedIn
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-[10px] gap-1"
-              onClick={handleShareX}
-            >
-              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-              X
-            </Button>
+          {/* More Sharing */}
+          <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"
               size="sm"
               className="h-8 text-[10px] gap-1"
               onClick={handleShareReddit}
             >
-              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 0-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
-              </svg>
+              <ExternalLink className="h-3 w-3" />
               Reddit
             </Button>
             <Button
@@ -547,9 +685,7 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
               {discordSending ? (
                 <span className="h-3 w-3 border border-current border-t-transparent rounded-full animate-spin" />
               ) : (
-                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z" />
-                </svg>
+                <ExternalLink className="h-3 w-3" />
               )}
               Discord
             </Button>
