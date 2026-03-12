@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, LogIn, Flame, ShieldCheck, Shield, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Trophy, Crown, Medal, LogIn, Flame, ShieldCheck, Shield, TrendingUp, TrendingDown, Minus, Target, Swords, ChevronUp } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Link } from "react-router-dom";
 import { EditableProfile } from "@/components/EditableProfile";
