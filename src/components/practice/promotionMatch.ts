@@ -5,7 +5,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
-import { ELO_RANKS, getEloRank, type RankTier } from "@/lib/elo";
+import { getEloRanks, getEloRank, type RankTier } from "@/lib/elo";
 
 // Must score this or higher to pass a promotion match
 export const PROMO_PASS_SCORE = 75;
