@@ -1813,6 +1813,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
           onClose={() => setRankUpData(null)}
         />
       )}
+
+      {/* Promotion Result */}
+      <PromotionResultModal
+        open={showPromoResult}
+        result={promoResult}
+        onClose={() => {
+          setShowPromoResult(false);
+          setPromoResult(null);
+          refreshProfile();
+        }}
+      />
     </>
   );
 };
