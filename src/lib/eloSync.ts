@@ -3,9 +3,9 @@ import { calculateEloDelta } from "./elo";
 
 /**
  * After a session, update the user's ELO in the database and log history.
- * Returns the new ELO or null if user is not logged in.
+ * Returns { newElo, delta } or null if user is not logged in.
  */
-export async function syncEloAfterSession(sessionScore: number): Promise<number | null> {
+export async function syncEloAfterSession(sessionScore: number): Promise<{ newElo: number; delta: number } | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -20,7 +20,6 @@ export async function syncEloAfterSession(sessionScore: number): Promise<number 
   const delta = calculateEloDelta(sessionScore, profile.elo);
   const newElo = Math.max(0, profile.elo + delta);
 
-  // Update profile and log history in parallel
   await Promise.all([
     supabase
       .from("profiles")
@@ -40,5 +39,5 @@ export async function syncEloAfterSession(sessionScore: number): Promise<number 
       }),
   ]);
 
-  return newElo;
+  return { newElo, delta };
 }
