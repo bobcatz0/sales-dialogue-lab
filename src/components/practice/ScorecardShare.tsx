@@ -498,8 +498,21 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
         ctx.fillText(`⚡ ${elo} ELO`, 32, y);
       }
 
-      if (weakestSkill) {
+      if (strongestSkill) {
         y += 28;
+        ctx.fillStyle = "#052e16";
+        ctx.roundRect(32, y - 14, width - 64, 44, 8);
+        ctx.fill();
+        ctx.fillStyle = "#86efac";
+        ctx.font = "600 10px 'Inter', system-ui, sans-serif";
+        ctx.fillText("💪 STRONGEST SKILL", 44, y);
+        ctx.fillStyle = "#f0fdf4";
+        ctx.font = "600 13px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`${strongestSkill.criterion}: ${strongestSkill.score}/100`, 44, y + 18);
+      }
+
+      if (weakestSkill) {
+        y += 28 + (strongestSkill ? 32 : 0);
         ctx.fillStyle = "#7f1d1d";
         ctx.roundRect(32, y - 14, width - 64, 44, 8);
         ctx.fill();
