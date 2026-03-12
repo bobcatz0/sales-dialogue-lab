@@ -230,7 +230,7 @@ export function FeedbackPanel({
         <p className="text-[10px] text-muted-foreground mt-0.5">
           {interview ? "Interview Readiness Score" : "Performance Score"}
         </p>
-        <div className="flex items-center gap-2 mt-1.5">
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap justify-center">
           <span
             className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${getRankColor(feedback.rank)} border-current/20`}
           >
@@ -240,6 +240,21 @@ export function FeedbackPanel({
             <Gauge className="h-3 w-3" />
             Level {feedback.peakDifficulty ?? 1}
           </span>
+          {eloDelta != null && (
+            <motion.span
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                eloDelta >= 0
+                  ? "bg-primary/10 text-primary"
+                  : "bg-destructive/10 text-destructive"
+              }`}
+            >
+              {eloDelta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+              {eloDelta >= 0 ? "+" : ""}{eloDelta} ELO
+            </motion.span>
+          )}
         </div>
         <div className="w-full max-w-[200px] h-1 bg-muted rounded-full overflow-hidden mt-3">
           <motion.div
