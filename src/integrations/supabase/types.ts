@@ -152,6 +152,41 @@ export type Database = {
           },
         ]
       }
+      clan_referrals: {
+        Row: {
+          clan_id: string
+          created_at: string
+          id: string
+          points_awarded: number
+          referred_by: string
+          referred_user_id: string
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          id?: string
+          points_awarded?: number
+          referred_by: string
+          referred_user_id: string
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          id?: string
+          points_awarded?: number
+          referred_by?: string
+          referred_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_referrals_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clans: {
         Row: {
           avatar_url: string | null
@@ -160,8 +195,10 @@ export type Database = {
           created_by: string
           description: string | null
           id: string
+          invite_code: string | null
           join_type: Database["public"]["Enums"]["clan_join_type"]
           name: string
+          referral_points: number
           total_members: number
           updated_at: string
         }
@@ -172,8 +209,10 @@ export type Database = {
           created_by: string
           description?: string | null
           id?: string
+          invite_code?: string | null
           join_type?: Database["public"]["Enums"]["clan_join_type"]
           name: string
+          referral_points?: number
           total_members?: number
           updated_at?: string
         }
@@ -184,8 +223,10 @@ export type Database = {
           created_by?: string
           description?: string | null
           id?: string
+          invite_code?: string | null
           join_type?: Database["public"]["Enums"]["clan_join_type"]
           name?: string
+          referral_points?: number
           total_members?: number
           updated_at?: string
         }
