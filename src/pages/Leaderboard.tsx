@@ -323,9 +323,13 @@ function NearYouSection({
                   <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
                     {entry.display_name}
                   </span>
-                  <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
-                    [{rank}]
-                  </span>
+                  {entry.total_sessions < PLACEMENT_SESSIONS_REQUIRED ? (
+                    <PlacingBadge />
+                  ) : (
+                    <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
+                      [{rank}]
+                    </span>
+                  )}
                   {isCurrentUser && <span className="text-[9px] text-muted-foreground shrink-0">(you)</span>}
                 </div>
 
