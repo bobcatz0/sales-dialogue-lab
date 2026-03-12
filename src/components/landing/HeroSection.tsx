@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AnimatedCounter, RankBadge, EloDelta } from "./AnimatedStats";
 import { Link } from "react-router-dom";
 
 const HeroSection = () => {
@@ -144,29 +145,39 @@ const HeroSection = () => {
 
               {/* Result bar */}
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.5 }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.5, type: "spring", stiffness: 200, damping: 20 }}
                 className="border-t border-border bg-muted/20 px-5 py-4"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-5">
                     <div>
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Score</p>
-                      <p className="text-2xl font-bold font-heading text-foreground">82</p>
+                      <p className="text-2xl font-bold font-heading text-foreground">
+                        <AnimatedCounter target={82} delay={1.8} duration={0.8} />
+                      </p>
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Rank</p>
-                      <p className="text-sm font-bold text-primary">Operator</p>
+                      <RankBadge rank="Operator" delay={2.0} />
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">ELO</p>
-                      <p className="text-sm font-bold text-foreground">1340 <span className="text-primary text-xs">+18</span></p>
+                      <p className="text-sm font-bold text-foreground">
+                        <AnimatedCounter target={1340} delay={1.8} duration={1.2} />{" "}
+                        <EloDelta delta={18} delay={2.4} />
+                      </p>
                     </div>
                   </div>
-                  <div className="text-[10px] text-muted-foreground">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 2.6, type: "spring", stiffness: 300 }}
+                    className="text-[10px] text-muted-foreground px-2 py-1 rounded-full border border-border bg-card/50"
+                  >
                     Top 12%
-                  </div>
+                  </motion.div>
                 </div>
               </motion.div>
             </div>
