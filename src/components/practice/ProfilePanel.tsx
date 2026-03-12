@@ -68,6 +68,9 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
         </div>
       )}
 
+      {/* Weekly Challenge Badges */}
+      {user && <WeeklyChallengeBadges userId={user.id} />}
+
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
