@@ -463,13 +463,30 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
-                          animate={{ width: `${r.score}%` }}
+                           animate={{ width: `${r.score}%` }}
                           transition={{ duration: 0.5, delay: 0.1 + i * 0.06 }}
-                          className="h-full rounded-full bg-primary"
+                          className={`h-full rounded-full ${
+                            weakestSkill && r.criterion === weakestSkill.criterion
+                              ? "bg-destructive"
+                              : "bg-primary"
+                          }`}
                         />
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Weakest Skill Callout */}
+              {weakestSkill && (
+                <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
+                  <p className="text-[10px] font-semibold text-destructive uppercase tracking-wider mb-1">
+                    ⚠ Weakest Skill
+                  </p>
+                  <p className="text-xs font-semibold text-foreground">{weakestSkill.criterion}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Score: {weakestSkill.score}/100{weakestSkill.note ? ` — ${weakestSkill.note}` : ""}
+                  </p>
                 </div>
               )}
 
