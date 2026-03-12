@@ -11,6 +11,17 @@ import { toast } from "sonner";
 import { syncEloAfterSession, type EloSyncResult } from "@/lib/eloSync";
 import { RankUpCelebration } from "@/components/practice/RankUpCelebration";
 import { useAuth } from "@/hooks/useAuth";
+import { PromotionBanner } from "@/components/practice/PromotionBanner";
+import { PromotionResultModal } from "@/components/practice/PromotionResult";
+import {
+  getPromotionEligibility,
+  loadLastFailedPromotion,
+  recordPromotionAttempt,
+  getPromotionPrompt,
+  PROMO_PASS_SCORE,
+  type PromotionEligibility,
+  type PromotionResult,
+} from "@/components/practice/promotionMatch";
 
 import { roles } from "@/components/practice/roleData";
 import type { ChatMessage, Feedback, SessionRecord, EvaluatorStyle } from "@/components/practice/types";
