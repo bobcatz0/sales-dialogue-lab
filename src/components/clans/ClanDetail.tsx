@@ -15,6 +15,7 @@ import Navbar from "@/components/landing/Navbar";
 import { Link } from "react-router-dom";
 import { ClanActivityFeed } from "./ClanActivityFeed";
 import { InviteLinkSection } from "./InviteLinkSection";
+import { ReferralLeaderboard } from "./ReferralLeaderboard";
 
 interface ClanDetailProps {
   clanId: string;
@@ -470,6 +471,21 @@ export function ClanDetail({ clanId, onBack }: ClanDetailProps) {
             })}
           </div>
         </motion.div>
+
+        {/* Referral Leaderboard */}
+        {isMember && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mt-6"
+          >
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <UserPlus className="h-3.5 w-3.5" /> Top Recruiters
+            </h2>
+            <ReferralLeaderboard clanId={clanId} memberUserIds={members.map((m) => m.user_id)} />
+          </motion.div>
+        )}
 
         {/* Activity Feed */}
         {isMember && members.length > 0 && (
