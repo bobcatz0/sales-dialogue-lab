@@ -90,7 +90,7 @@ const CompetitiveSection = () => {
                     {entry.tier}
                   </span>
                   <span className={`text-sm font-bold font-heading text-right ${i === 0 ? "text-primary" : "text-foreground"}`}>
-                    {entry.elo}
+                    {isInView ? <AnimatedCounter target={entry.elo} delay={0.3 + i * 0.1} duration={1} /> : "0"}
                   </span>
                 </motion.div>
               ))}
