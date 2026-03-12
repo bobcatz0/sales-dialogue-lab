@@ -276,7 +276,7 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
       const scale = 2;
       const width = 600;
       const hasElo = elo != null;
-      const height = 460 + rubric.length * 40 + (hasElo ? 50 : 0);
+      const height = 460 + rubric.length * 40 + (hasElo ? 50 : 0) + (strongestSkill ? 60 : 0) + (weakestSkill ? 60 : 0);
       canvas.width = width * scale;
       canvas.height = height * scale;
       const ctx = canvas.getContext("2d");
