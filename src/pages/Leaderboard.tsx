@@ -461,6 +461,13 @@ const LeaderboardPage = () => {
                 </div>
               </div>
             </motion.div>
+          ) : user && profile && profile.total_sessions < PLACEMENT_SESSIONS_REQUIRED ? (
+            <PlacementProgress
+              totalSessions={profile.total_sessions}
+              elo={profile.elo}
+              avatarUrl={profile.avatar_url}
+              displayName={profile.display_name}
+            />
           ) : (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
