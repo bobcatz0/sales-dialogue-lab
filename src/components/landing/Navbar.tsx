@@ -7,6 +7,7 @@ import { getEloRank } from "@/lib/elo";
 const navLinks = [
   { label: "Practice", href: "/practice" },
   { label: "Challenges", href: "/expert-challenges" },
+  { label: "Clans", href: "/clans" },
   { label: "Leaderboard", href: "/leaderboard" },
   { label: "Progress", href: "/progress" },
 ];
