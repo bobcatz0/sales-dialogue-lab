@@ -35,29 +35,38 @@ interface UnseenBadge {
 
 const confettiEmojis = ["🏆", "⭐", "🎉", "🔥", "👑", "💎"];
 
-async function playCelebrationSfx() {
+function playCelebrationSfx() {
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-sfx`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          prompt: "Triumphant victory fanfare with sparkle chimes and a crowd cheering, celebratory and exciting",
-          duration: 3,
-        }),
-      }
+    const ctx = new AudioContext();
+
+    // Triumphant fanfare chord
+    const playTone = (freq: number, start: number, dur: number, vol: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + start);
+      gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + start + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur);
+    };
+
+    // Rising fanfare notes
+    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => playTone(freq, i * 0.12, 0.6, 0.15));
+
+    // Sparkle chimes
+    [1568, 2093, 2637].forEach((freq, i) =>
+      playTone(freq, 0.6 + i * 0.08, 0.4, 0.08)
     );
-    if (!response.ok) return;
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    audio.volume = 0.6;
-    await audio.play();
+
+    // Final triumphant chord
+    [523, 659, 784, 1047].forEach((freq) =>
+      playTone(freq, 0.9, 1.2, 0.1)
+    );
   } catch {
     // Silent fail — SFX is non-critical
   }
