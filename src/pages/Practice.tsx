@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/landing/Navbar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { syncEloAfterSession } from "@/lib/eloSync";
+import { syncEloAfterSession, type EloSyncResult } from "@/lib/eloSync";
+import { RankUpCelebration } from "@/components/practice/RankUpCelebration";
 import { useAuth } from "@/hooks/useAuth";
 
 import { roles } from "@/components/practice/roleData";
