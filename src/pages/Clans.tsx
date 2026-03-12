@@ -12,6 +12,7 @@ import { getEloRank } from "@/lib/elo";
 import { CreateClanDialog } from "@/components/clans/CreateClanDialog";
 import { ClanDetail } from "@/components/clans/ClanDetail";
 import { ClanWeeklyChallenge } from "@/components/clans/ClanWeeklyChallenge";
+import { ClanRivalry } from "@/components/clans/ClanRivalry";
 
 interface ClanRow {
   id: string;
