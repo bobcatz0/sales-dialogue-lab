@@ -627,9 +627,13 @@ const LeaderboardPage = () => {
                             <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
                               {entry.display_name}
                             </span>
-                            <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
-                              [{rank}]
-                            </span>
+                            {entry.total_sessions < PLACEMENT_SESSIONS_REQUIRED ? (
+                              <PlacingBadge />
+                            ) : (
+                              <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
+                                [{rank}]
+                              </span>
+                            )}
                             {isCurrentUser && <span className="text-[9px] text-muted-foreground shrink-0">(you)</span>}
                             {entry.is_evaluator && (
                               <ShieldCheck className="h-3 w-3 text-blue-400 shrink-0" />
