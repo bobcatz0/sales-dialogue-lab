@@ -1450,12 +1450,13 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 ))}
                 {isLoading && messages[messages.length - 1]?.role === "user" && (
                   <div className="flex justify-start">
-                    <div className="bg-muted rounded-xl px-3.5 py-2.5 flex items-center gap-1">
+                    <div className="bg-muted rounded-xl px-3.5 py-2.5 flex items-center gap-1.5">
+                      <span className="text-xs text-muted-foreground">Thinking</span>
                       {[0, 1, 2].map((i) => (
                         <motion.span
                           key={i}
-                          className="block h-1.5 w-1.5 rounded-full bg-muted-foreground/50"
-                          animate={{ opacity: [0.4, 1, 0.4] }}
+                          className="block h-1 w-1 rounded-full bg-muted-foreground/50"
+                          animate={{ opacity: [0.3, 1, 0.3] }}
                           transition={{
                             duration: 1,
                             repeat: Infinity,
