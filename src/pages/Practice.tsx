@@ -1603,8 +1603,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         onClick={handleEndSession}
                         disabled={!selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages}
                       >
-                        <StopCircle className="h-3 w-3 mr-1" />
-                        End Session
+                        {isReadyForScore ? (
+                          <><Target className="h-3 w-3 mr-1" />Get My Score</>
+                        ) : (
+                          <><StopCircle className="h-3 w-3 mr-1" />End Session</>
+                        )}
                       </Button>
                     </div>
                   </>
