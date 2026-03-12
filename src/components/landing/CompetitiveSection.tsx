@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, User } from "lucide-react";
+import { Crown, Medal, User } from "lucide-react";
 
 const sampleLeaderboard = [
   { rank: 1, name: "Alex", tier: "Rainmaker", elo: 1620 },
@@ -40,10 +40,13 @@ const CompetitiveSection = () => {
           <h2 className="font-heading text-3xl font-bold md:text-4xl">
             Compete with other players
           </h2>
+          <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
+            Earn ELO, improve your skills, and climb the ranks.
+          </p>
         </motion.div>
 
         <div className="max-w-xl mx-auto">
-          {/* Sample leaderboard */}
+          {/* Leaderboard preview */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}

@@ -26,15 +26,29 @@ const HeroSection = () => {
         <div className="mx-auto max-w-5xl">
           {/* Headline area */}
           <div className="text-center max-w-3xl mx-auto">
+            {/* Live activity pulse */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border border-border bg-card/50"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+              </span>
+              <span className="text-xs text-muted-foreground">Top players are practicing right now</span>
+            </motion.div>
+
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               className="font-heading text-4xl font-bold leading-[1.1] tracking-tight md:text-6xl lg:text-7xl"
             >
-              Practice real interviews and sales conversations
+              Train your interview and sales skills
               <br />
-              <span className="text-gradient">before the real one.</span>
+              <span className="text-gradient">against AI.</span>
             </motion.h1>
 
             <motion.p
@@ -43,7 +57,7 @@ const HeroSection = () => {
               transition={{ duration: 0.5, delay: 0.15 }}
               className="mx-auto mt-6 max-w-lg text-lg md:text-xl text-muted-foreground"
             >
-              AI interviewer. Instant feedback. Competitive rankings.
+              Practice conversations, get scored, and climb the leaderboard.
             </motion.p>
 
             <motion.div
@@ -122,7 +136,7 @@ const HeroSection = () => {
                 >
                   <div className="bg-primary/10 rounded-xl rounded-tr-sm px-4 py-2.5 max-w-[85%]">
                     <p className="text-sm text-foreground">
-                      I worked with a customer that was hesitant about price. I anchored on the ROI and asked what their cost of inaction was…
+                      I worked with a customer who initially rejected our offer because of price. I anchored on the ROI and asked what their cost of inaction was…
                     </p>
                   </div>
                 </motion.div>
