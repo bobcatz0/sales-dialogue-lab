@@ -1681,6 +1681,6 @@ This evaluation style should subtly influence your questions and reactions. Do N
     </>
   );
 };
-};
+
 
 export default PracticePage;
