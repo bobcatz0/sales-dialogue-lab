@@ -410,16 +410,17 @@ export function ClanDetail({ clanId, onBack }: ClanDetailProps) {
                     <span className="text-xs font-bold tabular-nums text-muted-foreground w-6 text-center shrink-0">
                       {idx + 1}
                     </span>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-sm font-semibold text-foreground truncate">
-                          {profile?.display_name ?? "Unknown"}
-                        </span>
-                        <span className={`text-[10px] font-bold ${getRankColor(rank)}`}>[{rank}]</span>
-                        {getRoleBadge(member.role)}
-                        {isMe && <span className="text-[10px] text-muted-foreground">(you)</span>}
-                      </div>
-                    </div>
+                    <UserAvatar
+                      avatarUrl={profile?.avatar_url}
+                      displayName={profile?.display_name ?? "Unknown"}
+                      elo={elo}
+                      size="sm"
+                      showRankBadge={true}
+                      showName={true}
+                      isHighlighted={isMe}
+                    />
+                    {getRoleBadge(member.role)}
+                    {isMe && <span className="text-[10px] text-muted-foreground">(you)</span>}
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
