@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { PhoneCall, Shield, Search, Handshake, ArrowRight, Zap } from "lucide-react";
+import { PhoneCall, Shield, Search, Handshake, ArrowRight, Zap, Swords } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const scenarios = [
   {
