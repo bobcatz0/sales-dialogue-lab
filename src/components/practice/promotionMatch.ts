@@ -43,8 +43,9 @@ export function getPromotionEligibility(
   const currentRank = getEloRank(currentElo);
 
   // Find the next tier
-  const currentTierIdx = ELO_RANKS.findIndex((r) => r.name === currentRank);
-  const nextTier = currentTierIdx < ELO_RANKS.length - 1 ? ELO_RANKS[currentTierIdx + 1] : null;
+  const ranks = getEloRanks();
+  const currentTierIdx = ranks.findIndex((r) => r.name === currentRank);
+  const nextTier = currentTierIdx < ranks.length - 1 ? ranks[currentTierIdx + 1] : null;
 
   if (!nextTier) {
     return {
