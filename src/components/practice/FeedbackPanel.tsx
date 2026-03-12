@@ -638,6 +638,8 @@ export function FeedbackPanel({
           scenarioTitle={scenarioTitle || feedback.rank}
           alias={alias ?? null}
           isValidSession={!!isValidSession}
+          elo={eloDelta != null ? undefined : undefined}
+          eloDelta={eloDelta}
         />
 
         {/* Shareable summary — interview only */}
