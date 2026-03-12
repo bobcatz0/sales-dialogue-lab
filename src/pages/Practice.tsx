@@ -864,6 +864,9 @@ This evaluation style should subtly influence your questions and reactions. Do N
   };
 
   const hasEnoughMessages = messages.filter((m) => m.role === "user").length >= 2;
+  const userQuestionCount = messages.filter((m) => m.role === "prospect").length;
+  const totalExpectedQuestions = 6;
+  const isReadyForScore = messages.filter((m) => m.role === "user").length >= 4;
 
   return (
     <>
@@ -1395,6 +1398,23 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 )}
               </div>
 
+              {/* Progress indicator */}
+              {selectedRole && messages.length > 0 && !feedback && (
+                <div className="px-4 pt-3 pb-1 flex items-center gap-2">
+                  <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-primary rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min((userQuestionCount / totalExpectedQuestions) * 100, 100)}%` }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                    />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground font-mono shrink-0">
+                    Question {Math.min(userQuestionCount, totalExpectedQuestions)} / ~{totalExpectedQuestions}
+                  </span>
+                </div>
+              )}
+
               {/* Messages */}
               <div
                 ref={scrollRef}
@@ -1526,14 +1546,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         </Button>
                       )}
                       <Button
-                        variant={isColdCall ? "destructive" : "outline"}
+                        variant={isReadyForScore ? "hero" : isColdCall ? "destructive" : "outline"}
                         size="sm"
-                        className={`text-xs h-8 ${isColdCall ? "px-6" : ""}`}
+                        className={`text-xs h-8 ${isColdCall && !isReadyForScore ? "px-6" : ""}`}
                         onClick={handleEndSession}
                         disabled={!selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages}
                       >
-                        <StopCircle className="h-3 w-3 mr-1" />
-                        {isColdCall ? "End Call" : "End Session"}
+                        {isReadyForScore ? (
+                          <><Target className="h-3 w-3 mr-1" />Get My Score</>
+                        ) : (
+                          <><StopCircle className="h-3 w-3 mr-1" />{isColdCall ? "End Call" : "End Session"}</>
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -1574,14 +1597,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         Reset
                       </Button>
                       <Button
-                        variant="outline"
+                        variant={isReadyForScore ? "hero" : "outline"}
                         size="sm"
                         className="text-xs h-8"
                         onClick={handleEndSession}
                         disabled={!selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages}
                       >
-                        <StopCircle className="h-3 w-3 mr-1" />
-                        End Session
+                        {isReadyForScore ? (
+                          <><Target className="h-3 w-3 mr-1" />Get My Score</>
+                        ) : (
+                          <><StopCircle className="h-3 w-3 mr-1" />End Session</>
+                        )}
                       </Button>
                     </div>
                   </>
