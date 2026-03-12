@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AnimatedCounter, RankBadge, EloDelta } from "./AnimatedStats";
 import { Link } from "react-router-dom";
 
 const HeroSection = () => {
