@@ -379,7 +379,13 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
           variant="outline"
           size="sm"
           className="w-full h-9 text-xs text-muted-foreground gap-1.5"
-          onClick={() => setShowCard(true)}
+          onClick={() => {
+            setShowCard(true);
+            if (feedback.score >= 85) {
+              setShowConfetti(true);
+              setTimeout(() => setShowConfetti(false), 2000);
+            }
+          }}
         >
           <Trophy className="h-3.5 w-3.5" />
           View Scorecard
@@ -388,8 +394,9 @@ export function ScorecardShare({ feedback, scenarioTitle, alias, isValidSession,
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-3"
+          className="space-y-3 relative"
         >
+          {showConfetti && <ConfettiBurst />}
           {/* Preview Card */}
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             <div className="h-1 bg-gradient-to-r from-primary to-primary/60" />
