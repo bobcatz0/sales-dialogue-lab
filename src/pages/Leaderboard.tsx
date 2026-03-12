@@ -1,26 +1,20 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Flame, TrendingUp, TrendingDown, Target, Minus, Award, Zap, User, Medal, Crown } from "lucide-react";
+import { Trophy, Crown, Medal, LogIn, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import { Badge } from "@/components/ui/badge";
-import { loadConsistency, computeProfileStats, type ConsistencyData } from "@/components/practice/consistencyScoring";
-import { loadHistory } from "@/components/practice/sessionStorage";
-import { roles } from "@/components/practice/roleData";
-import { getRank } from "@/components/practice/progression";
-import { loadAlias, loadEarnedBadges } from "@/components/practice/achievements";
-import type { SessionRecord } from "@/components/practice/types";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { getEloRank, ELO_RANKS } from "@/lib/elo";
 
-const FRAMEWORK_LABELS: Record<string, string> = {
-  star: "STAR",
-  bant: "BANT",
-  meddic: "MEDDIC",
-  spin: "SPIN",
-};
-
-function getPercentile(score: number, allScores: number[]): number {
-  if (allScores.length < 2) return 99;
-  const below = allScores.filter((s) => s < score).length;
-  return Math.max(1, Math.min(99, Math.round((below / allScores.length) * 100)));
+interface LeaderboardEntry {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+  elo: number;
+  total_sessions: number;
 }
 
 function getMedalIcon(index: number) {
@@ -30,35 +24,43 @@ function getMedalIcon(index: number) {
   return null;
 }
 
+function getRankColor(rank: string) {
+  switch (rank) {
+    case "Sales Architect": return "text-purple-400";
+    case "Rainmaker": return "text-yellow-400";
+    case "Operator": return "text-blue-400";
+    case "Closer": return "text-primary";
+    case "Prospector": return "text-orange-400";
+    default: return "text-muted-foreground";
+  }
+}
+
 const LeaderboardPage = () => {
-  const [consistency, setConsistency] = useState<ConsistencyData | null>(null);
-  const [sessions, setSessions] = useState<SessionRecord[]>([]);
-  const [alias, setAlias] = useState<string | null>(null);
-  const [badgeCount, setBadgeCount] = useState(0);
+  const { user, profile } = useAuth();
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userRank, setUserRank] = useState<number | null>(null);
 
   useEffect(() => {
-    setConsistency(loadConsistency());
-    setSessions(loadHistory());
-    setAlias(loadAlias());
-    setBadgeCount(loadEarnedBadges().length);
-  }, []);
+    const fetchLeaderboard = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, display_name, avatar_url, elo, total_sessions")
+        .order("elo", { ascending: false })
+        .limit(50);
 
-  if (!consistency) return null;
+      if (data) {
+        setEntries(data);
+        if (user) {
+          const idx = data.findIndex((e) => e.id === user.id);
+          setUserRank(idx >= 0 ? idx + 1 : null);
+        }
+      }
+      setLoading(false);
+    };
 
-  const stats = computeProfileStats(sessions);
-  const mostPracticedRole = roles.find((r) => r.id === stats.mostPracticed);
-  const rank = getRank(consistency.score);
-  const allScores = sessions.map((s) => s.score);
-
-  // Top scores — best unique scores sorted descending
-  const topScores = [...sessions]
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10);
-
-  const trendIcon =
-    stats.trend === "up" ? <TrendingUp className="h-4 w-4 text-primary" /> :
-    stats.trend === "down" ? <TrendingDown className="h-4 w-4 text-destructive" /> :
-    <Minus className="h-4 w-4 text-muted-foreground" />;
+    fetchLeaderboard();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,147 +78,153 @@ const LeaderboardPage = () => {
               Leaderboard
             </h1>
             <p className="text-sm text-muted-foreground">
-              Your top simulation scores ranked by performance.
+              Compete against other sellers. Climb the ranks.
             </p>
           </div>
 
-          {/* Identity card */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.05 }}
-            className="card-elevated p-5 flex items-center gap-4"
-          >
-            <div className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
-              <User className="h-6 w-6 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-lg font-heading font-bold text-foreground truncate">
-                {alias ?? "Anonymous"}
-              </p>
-              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                <Badge variant="outline" className="text-[10px] font-semibold border-primary/40 text-primary">
-                  {rank}
-                </Badge>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Flame className="h-3 w-3" /> {consistency.currentStreak} day streak
-                </span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Award className="h-3 w-3" /> {badgeCount} badge{badgeCount !== 1 ? "s" : ""}
-                </span>
+          {/* User card or sign-in prompt */}
+          {user && profile ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.05 }}
+              className="card-elevated p-5 flex items-center gap-4"
+            >
+              <div className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center shrink-0 overflow-hidden">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
+                ) : (
+                  <User className="h-6 w-6 text-primary" />
+                )}
               </div>
-            </div>
-          </motion.div>
+              <div className="flex-1 min-w-0">
+                <p className="text-lg font-heading font-bold text-foreground truncate">
+                  {profile.display_name}
+                </p>
+                <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                  <span className="text-2xl font-bold font-heading text-foreground">{profile.elo}</span>
+                  <Badge variant="outline" className={`text-[10px] font-semibold border-primary/40 ${getRankColor(getEloRank(profile.elo))}`}>
+                    {getEloRank(profile.elo)}
+                  </Badge>
+                  {userRank && (
+                    <span className="text-xs text-muted-foreground">
+                      #{userRank} overall
+                    </span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.05 }}
+              className="card-elevated p-6 text-center space-y-3"
+            >
+              <p className="text-sm text-muted-foreground">
+                Sign in to track your ELO rating and appear on the leaderboard.
+              </p>
+              <Button variant="default" size="sm" asChild>
+                <Link to="/login" className="gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Sign In
+                </Link>
+              </Button>
+            </motion.div>
+          )}
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard
-              icon={<Target className="h-4 w-4 text-primary" />}
-              label="Total Sessions"
-              value={consistency.totalSessions.toString()}
-              delay={0.1}
-            />
-            <StatCard
-              icon={<Flame className="h-4 w-4 text-primary" />}
-              label="Current Streak"
-              value={`${consistency.currentStreak} day${consistency.currentStreak !== 1 ? "s" : ""}`}
-              delay={0.15}
-            />
-            <StatCard
-              icon={<Zap className="h-4 w-4 text-primary" />}
-              label="Consistency Score"
-              value={`${consistency.score}`}
-              delay={0.2}
-            />
-            <StatCard
-              icon={trendIcon}
-              label="Improvement"
-              value={stats.trend === "up" ? "Improving" : stats.trend === "down" ? "Declining" : "Steady"}
-              delay={0.25}
-            />
+          {/* Rank tiers legend */}
+          <div className="flex flex-wrap justify-center gap-2">
+            {ELO_RANKS.map((r) => (
+              <span key={r.name} className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-muted ${getRankColor(r.name)}`}>
+                {r.name} ({r.min}+)
+              </span>
+            ))}
           </div>
 
-          {/* Top Scores Leaderboard */}
-          {topScores.length > 0 && (
+          {/* Leaderboard table */}
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-sm text-muted-foreground">Loading leaderboard…</p>
+            </div>
+          ) : entries.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-sm text-muted-foreground">
+                No players yet. Be the first to{" "}
+                <Link to="/scenarios" className="text-primary hover:underline">practice</Link>!
+              </p>
+            </div>
+          ) : (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.2 }}
               className="card-elevated overflow-hidden"
             >
-              <div className="px-5 py-3 border-b border-border flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-primary" />
-                <h3 className="font-heading text-sm font-bold text-foreground">
-                  Top Scores
-                </h3>
+              {/* Table header */}
+              <div className="grid grid-cols-[3rem_1fr_5rem_7rem] md:grid-cols-[3rem_1fr_5rem_7rem_5rem] items-center px-5 py-3 border-b border-border text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                <span>Rank</span>
+                <span>Player</span>
+                <span className="text-right">ELO</span>
+                <span className="text-right">Tier</span>
+                <span className="hidden md:block text-right">Sessions</span>
               </div>
+
+              {/* Rows */}
               <div className="divide-y divide-border">
-                {topScores.map((s, i) => {
-                  const role = roles.find((r) => r.id === s.roleId);
-                  const Icon = role?.icon;
-                  const date = new Date(s.date);
-                  const percentile = getPercentile(s.score, allScores);
-                  const framework = s.frameworkId && s.frameworkId !== "none"
-                    ? FRAMEWORK_LABELS[s.frameworkId] || s.frameworkId.toUpperCase()
-                    : null;
+                {entries.map((entry, i) => {
+                  const rank = getEloRank(entry.elo);
+                  const isCurrentUser = user?.id === entry.id;
 
                   return (
                     <motion.div
-                      key={s.id}
+                      key={entry.id}
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.35 + i * 0.04 }}
-                      className={`flex items-center gap-3 py-3 px-5 hover:bg-muted/30 transition-colors ${
-                        i === 0 ? "bg-primary/5" : ""
-                      }`}
+                      transition={{ delay: 0.25 + i * 0.03 }}
+                      className={`grid grid-cols-[3rem_1fr_5rem_7rem] md:grid-cols-[3rem_1fr_5rem_7rem_5rem] items-center px-5 py-3 transition-colors ${
+                        isCurrentUser ? "bg-primary/5" : "hover:bg-muted/30"
+                      } ${i === 0 ? "bg-primary/5" : ""}`}
                     >
-                      {/* Rank */}
-                      <div className="w-8 flex items-center justify-center shrink-0">
+                      {/* Rank number */}
+                      <div className="flex items-center justify-center">
                         {getMedalIcon(i) || (
-                          <span className="text-xs text-muted-foreground font-bold">
-                            {i + 1}
-                          </span>
+                          <span className="text-xs text-muted-foreground font-bold">{i + 1}</span>
                         )}
                       </div>
 
-                      {/* Icon */}
-                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-foreground truncate">
-                            {s.scenarioTitle || s.roleTitle}
-                          </span>
-                          {framework && (
-                            <span className="text-[9px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
-                              {framework}
-                            </span>
+                      {/* Player */}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                          {entry.avatar_url ? (
+                            <img src={entry.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+                          ) : (
+                            <User className="h-4 w-4 text-muted-foreground" />
                           )}
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-muted-foreground">
-                            {date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">·</span>
-                          <span className="text-[10px] text-muted-foreground">{s.rank}</span>
-                          <span className="text-[10px] text-muted-foreground">·</span>
-                          <span className="text-[10px] font-medium text-green-500">
-                            Top {100 - percentile}%
-                          </span>
-                        </div>
+                        <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
+                          {entry.display_name}
+                          {isCurrentUser && <span className="text-[10px] text-muted-foreground ml-1">(you)</span>}
+                        </span>
                       </div>
 
-                      {/* Score */}
-                      <div className="text-right shrink-0">
-                        <span className={`text-lg font-bold font-heading ${
-                          i === 0 ? "text-primary" : "text-foreground"
-                        }`}>
-                          {s.score}
+                      {/* ELO */}
+                      <div className="text-right">
+                        <span className={`text-sm font-bold font-heading ${i === 0 ? "text-primary" : "text-foreground"}`}>
+                          {entry.elo}
                         </span>
-                        <span className="text-[10px] text-muted-foreground ml-0.5">/100</span>
+                      </div>
+
+                      {/* Rank tier */}
+                      <div className="text-right">
+                        <span className={`text-[11px] font-semibold ${getRankColor(rank)}`}>
+                          {rank}
+                        </span>
+                      </div>
+
+                      {/* Sessions */}
+                      <div className="hidden md:block text-right">
+                        <span className="text-xs text-muted-foreground">{entry.total_sessions}</span>
                       </div>
                     </motion.div>
                   );
@@ -224,108 +232,10 @@ const LeaderboardPage = () => {
               </div>
             </motion.div>
           )}
-
-          {/* Weekly + Profile */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="card-elevated p-5 space-y-3"
-            >
-              <h3 className="font-heading text-sm font-bold text-foreground flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary" />
-                This Week
-              </h3>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold font-heading text-foreground">
-                  {consistency.weeklyPoints}
-                </span>
-                <span className="text-sm text-muted-foreground">pts</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {consistency.sessionsThisWeek} session{consistency.sessionsThisWeek !== 1 ? "s" : ""} completed this week
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45 }}
-              className="card-elevated p-5 space-y-3"
-            >
-              <h3 className="font-heading text-sm font-bold text-foreground flex items-center gap-2">
-                <User className="h-4 w-4 text-primary" />
-                Profile
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Avg Score (last 10)</span>
-                  <span className="font-medium text-foreground">{stats.avgScore}/100</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Most Practiced</span>
-                  <span className="font-medium text-foreground">
-                    {mostPracticedRole?.title ?? "—"}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Best Streak</span>
-                  <span className="font-medium text-foreground">
-                    {consistency.bestStreak} day{consistency.bestStreak !== 1 ? "s" : ""}
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Sign up banner */}
-          <div className="bg-muted/50 rounded-lg p-3 border border-border text-center">
-            <p className="text-xs text-muted-foreground">
-              🔒 Accounts coming soon to sync across devices and compete on a global leaderboard.
-            </p>
-          </div>
-
-          {sessions.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-sm text-muted-foreground">
-                No sessions yet. Head to{" "}
-                <a href="/practice" className="text-primary hover:underline">
-                  Practice
-                </a>{" "}
-                to start building your score.
-              </p>
-            </div>
-          )}
         </motion.div>
       </div>
     </div>
   );
 };
-
-function StatCard({
-  icon,
-  label,
-  value,
-  delay,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  delay: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="card-elevated p-4 text-center space-y-1"
-    >
-      <div className="flex justify-center">{icon}</div>
-      <div className="text-lg font-bold font-heading text-foreground">{value}</div>
-      <div className="text-[11px] text-muted-foreground">{label}</div>
-    </motion.div>
-  );
-}
 
 export default LeaderboardPage;

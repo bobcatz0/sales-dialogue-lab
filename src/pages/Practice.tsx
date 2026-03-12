@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/landing/Navbar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { syncEloAfterSession } from "@/lib/eloSync";
+import { useAuth } from "@/hooks/useAuth";
 
 import { roles } from "@/components/practice/roleData";
 import type { ChatMessage, Feedback, SessionRecord, EvaluatorStyle } from "@/components/practice/types";
@@ -594,6 +596,13 @@ This evaluation style should subtly influence your questions and reactions. Do N
       };
       const updated = saveSession(session);
       setHistory(updated);
+
+      // Sync ELO to database if logged in
+      syncEloAfterSession(data.score).then((newElo) => {
+        if (newElo !== null) {
+          toast.success(`ELO updated: ${newElo}`, { duration: 3000 });
+        }
+      });
 
       // Process consistency scoring
       const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);

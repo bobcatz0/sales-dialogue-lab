@@ -1,6 +1,7 @@
-import { Phone, Menu, X } from "lucide-react";
+import { Phone, Menu, X, LogIn, User, LogOut, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { label: "Scenarios", href: "/scenarios" },
@@ -8,10 +9,12 @@ const navLinks = [
   { label: "Frameworks", href: "/frameworks" },
   { label: "Drills", href: "/drills" },
   { label: "Progress", href: "/progress" },
+  { label: "Leaderboard", href: "/leaderboard" },
 ];
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/90 backdrop-blur-xl">
@@ -37,9 +40,30 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="hero" size="sm" asChild className="hidden sm:inline-flex">
-            <a href="/scenarios">Start Practicing</a>
-          </Button>
+          {user ? (
+            <div className="hidden sm:flex items-center gap-3">
+              <a href="/leaderboard" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <div className="h-7 w-7 rounded-full bg-primary/15 flex items-center justify-center overflow-hidden">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
+                  ) : (
+                    <User className="h-3.5 w-3.5 text-primary" />
+                  )}
+                </div>
+                <span className="font-medium text-foreground text-xs">{profile?.elo ?? 1000}</span>
+              </a>
+              <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <Button variant="hero" size="sm" asChild className="hidden sm:inline-flex">
+              <a href="/login" className="gap-2">
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </a>
+            </Button>
+          )}
           <button
             className="md:hidden text-foreground p-1"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -62,9 +86,16 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
-          <Button variant="hero" size="sm" asChild className="w-full mt-2">
-            <a href="/scenarios">Start Practicing</a>
-          </Button>
+          {user ? (
+            <Button variant="ghost" size="sm" onClick={signOut} className="w-full mt-2 text-muted-foreground">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          ) : (
+            <Button variant="hero" size="sm" asChild className="w-full mt-2">
+              <a href="/login">Sign In</a>
+            </Button>
+          )}
         </div>
       )}
     </nav>
