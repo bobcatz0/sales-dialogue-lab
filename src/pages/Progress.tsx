@@ -144,6 +144,18 @@ const Progress = () => {
           </div>
         </motion.div>
 
+        {/* Weekly Challenge Badges */}
+        {user && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="mt-4 card-elevated p-5"
+          >
+            <WeeklyChallengeBadges userId={user.id} />
+          </motion.div>
+        )}
+
         {/* Skill bars */}
         {hasData ? (
           <motion.div
