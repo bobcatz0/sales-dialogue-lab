@@ -59,6 +59,7 @@ export interface Feedback {
   rubricScores?: RubricScore[];
   answerComparisons?: AnswerComparison[];
   timestampedMoments?: TimestampedMoment[];
+  humanReviewScore?: number | null;
 }
 
 export interface FinalRoundMetrics {
