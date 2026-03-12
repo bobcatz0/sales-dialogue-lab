@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Shield, ArrowLeft, Users, Crown, Settings, UserPlus, UserMinus,
-  Globe, Lock, LogIn, Ban, ChevronUp, ChevronDown, Activity
+  Globe, Lock, LogIn, Ban, ChevronUp, ChevronDown, Activity, Swords
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
