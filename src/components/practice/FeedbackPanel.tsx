@@ -8,7 +8,8 @@ import { ShareableSummary } from "./ShareableSummary";
 import { ScorecardShare } from "./ScorecardShare";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
-import { RubricScoresSection, AnswerComparisonSection, TimestampedMomentsSection } from "./FrameworkFeedback";
+import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
+import { ConversationBreakdown } from "./ConversationBreakdown";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
 
@@ -301,8 +302,8 @@ export function FeedbackPanel({
         {/* Framework Rubric Scores */}
         <RubricScoresSection scores={feedback.rubricScores || []} frameworkId={feedback.frameworkId} />
 
-        {/* Timestamped Transcript Highlights */}
-        <TimestampedMomentsSection moments={feedback.timestampedMoments || []} />
+        {/* Conversation Breakdown Timeline */}
+        <ConversationBreakdown moments={feedback.timestampedMoments || []} />
 
         {/* Answer vs Ideal Comparison */}
         <AnswerComparisonSection comparisons={feedback.answerComparisons || []} />

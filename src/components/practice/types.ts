@@ -31,6 +31,7 @@ export interface TimestampedMoment {
   label: string;
   quote: string;
   issue: string;
+  suggestedResponse?: string;
 }
 
 export interface Feedback {

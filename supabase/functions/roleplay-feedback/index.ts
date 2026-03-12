@@ -133,7 +133,8 @@ Return a JSON object with this EXACT structure — nothing else:
       "exchangeIndex": <1-based index of the exchange in the conversation>,
       "label": "<weak|missed-opportunity|strong>",
       "quote": "<exact user quote>",
-      "issue": "<1 sentence: why this was flagged>"
+      "issue": "<1 sentence: why this was flagged>",
+      "suggestedResponse": "<for weak or missed-opportunity labels ONLY: a concrete 1-2 sentence example of what the user should have said instead. Omit this field for strong moments.>"
     }
   ]
 }
