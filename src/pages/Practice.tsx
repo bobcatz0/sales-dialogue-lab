@@ -235,6 +235,8 @@ const PracticePage = () => {
   const elapsedRef = useRef(0);
   const callEndTriggeredRef = useRef(false);
   const [showOnboarding, setShowOnboarding] = useState(() => !hasSeenOnboarding());
+  const [showBriefing, setShowBriefing] = useState(false);
+  const [pendingStartId, setPendingStartId] = useState<string | null>(null);
   const [showHelpfulPrompt, setShowHelpfulPrompt] = useState(false);
   const [showRunAgainPrompt, setShowRunAgainPrompt] = useState(false);
   const sessionStartedWithRole = useRef(false);
