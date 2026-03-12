@@ -72,9 +72,9 @@ export default function ScorecardPage() {
       } else {
         setScorecard({
           ...data,
-          rubric_scores: (data.rubric_scores as RubricScore[]) || [],
-          strengths: (data.strengths as string[]) || [],
-          improvements: (data.improvements as string[]) || [],
+          rubric_scores: (data.rubric_scores as unknown as RubricScore[]) || [],
+          strengths: (data.strengths as unknown as string[]) || [],
+          improvements: (data.improvements as unknown as string[]) || [],
         });
       }
       setLoading(false);
