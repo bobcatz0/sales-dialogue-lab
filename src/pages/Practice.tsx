@@ -1544,6 +1544,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 </div>
               )}
 
+              {/* Pro Challenge Banner */}
+              {proChallengeScorecardId && proChallengeScore !== null && !feedback && (
+                <div className="mx-4 mt-3 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Swords className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-semibold text-primary">Beat the Pro Challenge</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">Pro scored <span className="font-bold text-foreground">{proChallengeScore}</span></span>
+                </div>
+              )}
+
               {/* Messages */}
               <div
                 ref={scrollRef}
