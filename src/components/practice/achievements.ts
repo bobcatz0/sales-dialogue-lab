@@ -26,6 +26,8 @@ export const BADGE_DEFINITIONS: BadgeDef[] = [
   { id: "streak-30", label: "30-Day Legend", description: "Practiced 30 consecutive days — elite discipline", icon: "trophy" },
   { id: "sessions-15", label: "15 Sessions", description: "Completed 15 valid sessions", icon: "target" },
   { id: "sessions-50", label: "50 Sessions", description: "Completed 50 valid sessions", icon: "star" },
+  // Pro challenge
+  { id: "pro-slayer", label: "Pro Slayer", description: "Beat 3 different pro benchmarks", icon: "swords" },
 ];
 
 export function loadEarnedBadges(): string[] {
