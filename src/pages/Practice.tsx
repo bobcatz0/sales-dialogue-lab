@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, MicOff, Volume2, VolumeX, Swords } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, MicOff, Volume2, VolumeX, Swords, Ghost } from "lucide-react";
+import { useGhostBattle, calculateGhostElo } from "@/components/practice/useGhostBattle";
+import { GhostBattleBanner, GhostBattleResult } from "@/components/practice/GhostBattle";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -250,12 +252,23 @@ const PracticePage = () => {
   const [showTextModeFallback, setShowTextModeFallback] = useState(false);
   const [showPlacementResult, setShowPlacementResult] = useState(false);
   const [proChallengeResult, setProChallengeResult] = useState<{ userScore: number; proScore: number; beatPro: boolean; bonusElo: number } | null>(null);
+  const [ghostResult, setGhostResult] = useState<{ userScore: number; ghostScore: number; ghostName: string; ghostAvatar: string | null; beatGhost: boolean; tied: boolean; eloDelta: number } | null>(null);
   const [placementElo, setPlacementElo] = useState<number>(1000);
   const [coldCallTextMode, setColdCallTextMode] = useState(false);
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
    const timer = useCallTimer(sessionActive);
   const voice = useVoiceSession();
   const mic = useMicPermission();
+
+  // Ghost Battle — auto-match a ghost opponent for every non-pro-challenge session
+  const isProChallenge = !!(proChallengeScorecardId && proChallengeScore !== null);
+  const ghostBattle = useGhostBattle({
+    scenarioEnv: selectedEnv,
+    scenarioRole: selectedRole,
+    userElo: profile?.elo ?? 1000,
+    isProChallenge,
+    sessionActive,
+  });
 
   const activeEnv = selectedEnv ? getEnvironment(selectedEnv) : undefined;
   const activeRole = roles.find((r) => r.id === selectedRole);
@@ -351,6 +364,7 @@ const PracticePage = () => {
     setLastPoints(null);
     setEloDelta(null);
     setHardCloseWin(false);
+    setGhostResult(null);
     setShowHelpfulPrompt(false);
     setShowRunAgainPrompt(false);
     callEndTriggeredRef.current = false;
@@ -621,6 +635,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
     setFeedback(null);
     setIsFeedbackLoading(false);
     setHardCloseWin(false);
+    setGhostResult(null);
     callEndTriggeredRef.current = false;
     setSessionActive(true);
     
@@ -790,6 +805,42 @@ This evaluation style should subtly influence your questions and reactions. Do N
           }
         } else {
           toast(`Pro scored ${proChallengeScore} — you scored ${data.score}. Keep practicing!`, { duration: 4000 });
+        }
+      }
+
+      // Ghost Battle — compare scores and adjust ELO
+      if (ghostBattle.ghost && !isProChallenge && user) {
+        const ghostResult = calculateGhostElo(data.score, ghostBattle.ghost.score);
+        setGhostResult({
+          userScore: data.score,
+          ghostScore: ghostBattle.ghost.score,
+          ghostName: ghostBattle.ghost.display_name,
+          ghostAvatar: ghostBattle.ghost.avatar_url,
+          ...ghostResult,
+        });
+
+        // Apply ghost battle ELO delta
+        if (ghostResult.eloDelta !== 0) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("elo")
+            .eq("id", user.id)
+            .single();
+          if (prof) {
+            const newElo = Math.max(100, prof.elo + ghostResult.eloDelta);
+            await supabase
+              .from("profiles")
+              .update({ elo: newElo, updated_at: new Date().toISOString() })
+              .eq("id", user.id);
+          }
+        }
+
+        if (ghostResult.beatGhost) {
+          toast.success(`👻 You beat ${ghostBattle.ghost.display_name}'s ghost! +${ghostResult.eloDelta} ELO`, { duration: 4000 });
+        } else if (ghostResult.tied) {
+          toast(`👻 Tied with ${ghostBattle.ghost.display_name}'s ghost. +${ghostResult.eloDelta} ELO`, { duration: 4000 });
+        } else {
+          toast(`👻 ${ghostBattle.ghost.display_name}'s ghost won. ${ghostResult.eloDelta} ELO`, { duration: 4000 });
         }
       }
 
@@ -1567,6 +1618,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 </div>
               )}
 
+              {/* Ghost Battle Banner — shows matched ghost opponent */}
+              {ghostBattle.ghost && !isProChallenge && !feedback && sessionActive && (
+                <GhostBattleBanner ghost={ghostBattle.ghost} />
+              )}
+
               {/* Messages */}
               <div
                 ref={scrollRef}
@@ -1849,6 +1905,18 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       )}
                     </motion.div>
                   )}
+                  {/* Ghost Battle result */}
+                  {ghostResult && (
+                    <GhostBattleResult
+                      userScore={ghostResult.userScore}
+                      ghostScore={ghostResult.ghostScore}
+                      ghostName={ghostResult.ghostName}
+                      ghostAvatar={ghostResult.ghostAvatar}
+                      beatGhost={ghostResult.beatGhost}
+                      tied={ghostResult.tied}
+                      eloDelta={ghostResult.eloDelta}
+                    />
+                  )}
                   {lastPoints !== null && lastPoints > 0 && selectedEnv !== "interview" && (
                     <motion.div
                       initial={{ opacity: 0 }}
@@ -1894,6 +1962,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           setActiveSDRRound(null);
                           setSdrProgress(loadSDRTrackProgress());
                           setActiveDrill(null);
+                          setGhostResult(null);
                         }}
                         onTrySameRole={() => {
                           markFirstSessionRetried();
