@@ -605,10 +605,11 @@ const LeaderboardPage = () => {
                   className="card-elevated overflow-hidden"
                 >
                   {/* Table header */}
-                  <div className="grid grid-cols-[2.5rem_1fr_4.5rem_4rem] md:grid-cols-[2.5rem_1fr_4.5rem_5rem_4rem] items-center px-4 py-2.5 border-b border-border text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <div className="grid grid-cols-[2.5rem_1fr_4.5rem_3rem_4rem] md:grid-cols-[2.5rem_1fr_4.5rem_3rem_5rem_4rem] items-center px-4 py-2.5 border-b border-border text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                     <span>#</span>
                     <span>Player</span>
                     <span className="text-right">ELO</span>
+                    <span className="text-center">🔥</span>
                     <span className="hidden md:block text-right">Sessions</span>
                     <span className="text-right">Move</span>
                   </div>
