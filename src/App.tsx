@@ -21,6 +21,7 @@ import BeatThePro from "./pages/BeatThePro";
 import Clans from "./pages/Clans";
 import JoinClan from "./pages/JoinClan";
 import ScorecardPage from "./pages/ScorecardPage";
+import Tournaments from "./pages/Tournaments";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { WeeklyChampionCelebration } from "./components/clans/WeeklyChampionCelebration";
 import { useRankThresholds } from "./hooks/useRankThresholds";
