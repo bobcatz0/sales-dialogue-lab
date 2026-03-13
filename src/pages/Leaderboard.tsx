@@ -25,6 +25,7 @@ interface LeaderboardEntry {
   weekly_elo_gain?: number;
   is_evaluator?: boolean;
   clan_name?: string;
+  current_streak?: number;
 }
 
 interface ClanMemberInfo {
@@ -367,7 +368,7 @@ const LeaderboardPage = () => {
       const orderCol = tab === "weekly" ? "weekly_elo_gain" : "elo";
       const { data } = await supabase
         .from("profiles")
-        .select("id, display_name, avatar_url, elo, total_sessions, weekly_elo_gain, is_evaluator")
+        .select("id, display_name, avatar_url, elo, total_sessions, weekly_elo_gain, is_evaluator, current_streak")
         .order(orderCol, { ascending: false })
         .limit(50);
 
@@ -456,6 +457,12 @@ const LeaderboardPage = () => {
                     <Badge variant="outline" className={`text-[10px] font-semibold border-primary/40 ${getRankColor(getEloRank(profile.elo))}`}>
                       {getEloRank(profile.elo)}
                     </Badge>
+                  )}
+                  {(profile as any).current_streak > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-orange-500">
+                      <Flame className="h-3 w-3" />
+                      {(profile as any).current_streak}d streak
+                    </span>
                   )}
                   {userRank && (
                     <span className="text-xs text-muted-foreground">
@@ -598,10 +605,11 @@ const LeaderboardPage = () => {
                   className="card-elevated overflow-hidden"
                 >
                   {/* Table header */}
-                  <div className="grid grid-cols-[2.5rem_1fr_4.5rem_4rem] md:grid-cols-[2.5rem_1fr_4.5rem_5rem_4rem] items-center px-4 py-2.5 border-b border-border text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <div className="grid grid-cols-[2.5rem_1fr_4.5rem_3rem_4rem] md:grid-cols-[2.5rem_1fr_4.5rem_3rem_5rem_4rem] items-center px-4 py-2.5 border-b border-border text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                     <span>#</span>
                     <span>Player</span>
                     <span className="text-right">ELO</span>
+                    <span className="text-center">🔥</span>
                     <span className="hidden md:block text-right">Sessions</span>
                     <span className="text-right">Move</span>
                   </div>
@@ -619,7 +627,7 @@ const LeaderboardPage = () => {
                           initial={{ opacity: 0, x: -6 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.35 + i * 0.02 }}
-                          className={`grid grid-cols-[2.5rem_1fr_4.5rem_4rem] md:grid-cols-[2.5rem_1fr_4.5rem_5rem_4rem] items-center px-4 py-2.5 transition-colors ${
+                          className={`grid grid-cols-[2.5rem_1fr_4.5rem_3rem_4rem] md:grid-cols-[2.5rem_1fr_4.5rem_3rem_5rem_4rem] items-center px-4 py-2.5 transition-colors ${
                             isCurrentUser
                               ? "bg-primary/5 border-l-2 border-l-primary"
                               : "hover:bg-muted/30"
@@ -665,6 +673,18 @@ const LeaderboardPage = () => {
                             <span className="text-sm font-bold font-heading text-foreground tabular-nums">
                               {entry.elo}
                             </span>
+                          </div>
+
+                          <div className="text-center">
+                            {(entry.current_streak ?? 0) >= 3 ? (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-orange-500">
+                                <Flame className="h-3 w-3" />{entry.current_streak}
+                              </span>
+                            ) : (entry.current_streak ?? 0) > 0 ? (
+                              <span className="text-[10px] text-muted-foreground tabular-nums">{entry.current_streak}</span>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground/30">—</span>
+                            )}
                           </div>
 
                           <div className="hidden md:block text-right">
