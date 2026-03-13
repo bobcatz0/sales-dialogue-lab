@@ -1903,6 +1903,18 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       )}
                     </motion.div>
                   )}
+                  {/* Ghost Battle result */}
+                  {ghostResult && (
+                    <GhostBattleResult
+                      userScore={ghostResult.userScore}
+                      ghostScore={ghostResult.ghostScore}
+                      ghostName={ghostResult.ghostName}
+                      ghostAvatar={ghostResult.ghostAvatar}
+                      beatGhost={ghostResult.beatGhost}
+                      tied={ghostResult.tied}
+                      eloDelta={ghostResult.eloDelta}
+                    />
+                  )}
                   {lastPoints !== null && lastPoints > 0 && selectedEnv !== "interview" && (
                     <motion.div
                       initial={{ opacity: 0 }}
