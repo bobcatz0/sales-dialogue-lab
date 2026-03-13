@@ -627,7 +627,7 @@ const LeaderboardPage = () => {
                           initial={{ opacity: 0, x: -6 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.35 + i * 0.02 }}
-                          className={`grid grid-cols-[2.5rem_1fr_4.5rem_4rem] md:grid-cols-[2.5rem_1fr_4.5rem_5rem_4rem] items-center px-4 py-2.5 transition-colors ${
+                          className={`grid grid-cols-[2.5rem_1fr_4.5rem_3rem_4rem] md:grid-cols-[2.5rem_1fr_4.5rem_3rem_5rem_4rem] items-center px-4 py-2.5 transition-colors ${
                             isCurrentUser
                               ? "bg-primary/5 border-l-2 border-l-primary"
                               : "hover:bg-muted/30"
@@ -673,6 +673,18 @@ const LeaderboardPage = () => {
                             <span className="text-sm font-bold font-heading text-foreground tabular-nums">
                               {entry.elo}
                             </span>
+                          </div>
+
+                          <div className="text-center">
+                            {(entry.current_streak ?? 0) >= 3 ? (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-orange-500">
+                                <Flame className="h-3 w-3" />{entry.current_streak}
+                              </span>
+                            ) : (entry.current_streak ?? 0) > 0 ? (
+                              <span className="text-[10px] text-muted-foreground tabular-nums">{entry.current_streak}</span>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground/30">—</span>
+                            )}
                           </div>
 
                           <div className="hidden md:block text-right">
