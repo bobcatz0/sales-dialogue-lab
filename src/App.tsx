@@ -17,6 +17,7 @@ import Scenarios from "./pages/Scenarios";
 import Progress from "./pages/Progress";
 import Packs from "./pages/Packs";
 import ExpertChallenges from "./pages/ExpertChallenges";
+import BeatThePro from "./pages/BeatThePro";
 import Clans from "./pages/Clans";
 import JoinClan from "./pages/JoinClan";
 import ScorecardPage from "./pages/ScorecardPage";
