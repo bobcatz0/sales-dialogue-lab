@@ -536,6 +536,53 @@ export type Database = {
         }
         Relationships: []
       }
+      pro_challenge_attempts: {
+        Row: {
+          beat_pro: boolean
+          bonus_elo: number
+          created_at: string
+          id: string
+          pro_score: number
+          scenario_env: string
+          scenario_role: string
+          scorecard_id: string
+          user_id: string
+          user_score: number
+        }
+        Insert: {
+          beat_pro?: boolean
+          bonus_elo?: number
+          created_at?: string
+          id?: string
+          pro_score: number
+          scenario_env: string
+          scenario_role: string
+          scorecard_id: string
+          user_id: string
+          user_score: number
+        }
+        Update: {
+          beat_pro?: boolean
+          bonus_elo?: number
+          created_at?: string
+          id?: string
+          pro_score?: number
+          scenario_env?: string
+          scenario_role?: string
+          scorecard_id?: string
+          user_id?: string
+          user_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pro_challenge_attempts_scorecard_id_fkey"
+            columns: ["scorecard_id"]
+            isOneToOne: false
+            referencedRelation: "scorecards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
