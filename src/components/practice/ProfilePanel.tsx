@@ -26,6 +26,13 @@ const BADGE_ICONS: Record<string, React.ElementType> = {
   swords: Swords,
 };
 
+// Pro challenge badge tier colors (bronze → silver → gold)
+const PRO_BADGE_TIERS: Record<string, { ring: string; bg: string; icon: string; label: string }> = {
+  "pro-slayer": { ring: "ring-amber-700/60", bg: "bg-amber-700/15", icon: "text-amber-700", label: "Bronze" },
+  "pro-hunter": { ring: "ring-gray-400/60", bg: "bg-gray-300/15", icon: "text-gray-400", label: "Silver" },
+  "pro-legend": { ring: "ring-yellow-400/60", bg: "bg-yellow-400/15", icon: "text-yellow-400", label: "Gold" },
+};
+
 interface ProfilePanelProps {
   alias: string;
   consistency: ConsistencyData;
@@ -430,14 +437,37 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
                     earned ? "opacity-100" : "opacity-30"
                   }`}
                 >
-                  <div className={`h-7 w-7 rounded-full flex items-center justify-center ${
-                    earned ? "bg-primary/15" : "bg-muted"
-                  }`}>
-                    <IconComp className={`h-3.5 w-3.5 ${earned ? "text-primary" : "text-muted-foreground"}`} />
-                  </div>
-                  <span className="text-[9px] text-muted-foreground text-center leading-tight truncate w-full">
-                    {b.label.split(" ")[0]}
-                  </span>
+                  {(() => {
+                    const tier = PRO_BADGE_TIERS[b.id];
+                    if (tier) {
+                      return (
+                        <>
+                          <div className={`h-7 w-7 rounded-full flex items-center justify-center ring-2 ${
+                            earned ? `${tier.bg} ${tier.ring}` : "bg-muted ring-transparent"
+                          }`}>
+                            <IconComp className={`h-3.5 w-3.5 ${earned ? tier.icon : "text-muted-foreground"}`} />
+                          </div>
+                          <span className={`text-[9px] text-center leading-tight truncate w-full font-semibold ${
+                            earned ? tier.icon : "text-muted-foreground"
+                          }`}>
+                            {tier.label}
+                          </span>
+                        </>
+                      );
+                    }
+                    return (
+                      <>
+                        <div className={`h-7 w-7 rounded-full flex items-center justify-center ${
+                          earned ? "bg-primary/15" : "bg-muted"
+                        }`}>
+                          <IconComp className={`h-3.5 w-3.5 ${earned ? "text-primary" : "text-muted-foreground"}`} />
+                        </div>
+                        <span className="text-[9px] text-muted-foreground text-center leading-tight truncate w-full">
+                          {b.label.split(" ")[0]}
+                        </span>
+                      </>
+                    );
+                  })()}
                 </div>
               );
             })}
