@@ -2161,13 +2161,5 @@ This evaluation style should subtly influence your questions and reactions. Do N
   );
 };
 
-      // Skill XP progression — award XP based on skill breakdown
-      if (user && data.skillBreakdown && data.skillBreakdown.length > 0) {
-        awardSkillXp(user.id, data.skillBreakdown).then(({ levelUps }) => {
-          for (const lu of levelUps) {
-            toast.success(`⚡ ${lu.skillName} → Lv.${lu.newLevel} (${lu.title})`, { duration: 4000 });
-          }
-        });
-      }
 
 export default PracticePage;
