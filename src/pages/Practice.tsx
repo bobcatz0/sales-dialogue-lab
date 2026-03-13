@@ -1580,6 +1580,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 </div>
               )}
 
+              {/* Ghost Battle Banner — shows matched ghost opponent */}
+              {ghostBattle.ghost && !isProChallenge && !feedback && sessionActive && (
+                <GhostBattleBanner ghost={ghostBattle.ghost} />
+              )}
+
               {/* Messages */}
               <div
                 ref={scrollRef}
