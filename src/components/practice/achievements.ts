@@ -54,6 +54,7 @@ export function evaluateBadges(opts: {
   currentStreak: number;
   totalValidSessions: number;
   isValidSession: boolean;
+  proWins?: number;
 }): string[] {
   if (!opts.isValidSession) return [];
 
