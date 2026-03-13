@@ -56,12 +56,11 @@ Return a JSON object with this EXACT structure — nothing else:
   "improvements": ["<improvement>"${isInterview ? "" : ', "<improvement>"'}],
   "nextDrill": "<one sentence>",
   "skillBreakdown": [
-    {"name": "Clarity", "score": <0-100>},
-    {"name": "Structure", "score": <0-100>},
+    {"name": "Communication", "score": <0-100>},
     {"name": "Objection Handling", "score": <0-100>},
-    {"name": "Conversational Control", "score": <0-100>},
-    {"name": "Conciseness", "score": <0-100>},
-    {"name": "Verbal Readiness", "score": <0-100>}
+    {"name": "Clarity", "score": <0-100>},
+    {"name": "Confidence", "score": <0-100>},
+    {"name": "Discovery Questions", "score": <0-100>}
   ],
   "trainingRecommendation": "<one sentence: suggest next environment + persona + specific skill>"${resumeHighlights ? `,
   "resumeAlignment": {
@@ -121,12 +120,11 @@ This is the highest SDR interview tier. The evaluator has hired 100+ SDRs and kn
 
 SKILL BREAKDOWN SCORING:
 Evaluate each skill dimension independently based on the conversation. Apply strict standards — do not inflate scores:
-- Clarity: How clear and specific were the user's statements? Any vague claim without a metric should reduce this score. Over-polished answers that sound smooth but lack substance should ALSO reduce this score.
-- Structure: Did responses follow logical flow? Were frameworks or patterns used?
-- Objection Handling: ${isInterview ? "How well did the candidate handle tough follow-up questions and challenges?" : "How effectively were objections acknowledged and addressed?"}
-- Conversational Control: Did the user drive the conversation forward, or were they reactive?
-- Conciseness: Were responses appropriately scoped? Target is 30-45 seconds of spoken equivalent (~75-115 words). Any response significantly over 130 words should reduce this score. In Final Round, the threshold is stricter.
-- Verbal Readiness: Does the response sound like a spoken interview answer or a written document? Penalize essay-style writing (semicolons, formal connectors like "furthermore/moreover", complex subordinate clauses, paragraph-length structure). Also penalize excessive filler phrases ("basically", "kind of", "you know", "I guess", "sort of", "honestly", "at the end of the day"). A strong verbal readiness score means the answer reads like natural speech — direct, conversational, and confident.
+- Communication: How clearly did the user express ideas? Score on delivery directness, absence of filler words ("basically", "kind of", "honestly", "you know"), and whether responses sounded conversational vs. essay-like. Penalize hedging language and over-formal phrasing.
+- Objection Handling: ${isInterview ? "How well did the candidate handle tough follow-up questions and pressure? Did they acknowledge the challenge before responding?" : "How effectively were objections acknowledged and addressed? Did the rep validate the concern before reframing?"}
+- Clarity: How specific and concrete were the user's statements? Any vague claim without a metric, example, or specific detail should reduce this score. Over-polished answers that sound smooth but lack substance should ALSO reduce this score.
+- Confidence: Did the user sound assured and direct? Penalize defensive postures, self-qualifying language ("I think maybe", "sort of", "I guess"), and any moment where the user backpedaled or over-explained under pressure. Reward calm, direct ownership language.
+- Discovery Questions: ${isInterview ? "Did the candidate ask thoughtful, relevant questions during the conversation? Penalize sessions where no questions were asked or questions were generic." : "Did the user ask targeted, intelligent questions to understand the prospect's situation? Penalize sessions with no questions asked or questions that were purely feature-driven."}
 
 OVER-SMOOTHING PENALTY:
 If answers sounded polished but lacked real substance — specific numbers, concrete examples, or authentic details — reduce the Clarity score by 5-10 points even if Structure is strong. Smooth delivery without evidence is a red flag, not a strength.

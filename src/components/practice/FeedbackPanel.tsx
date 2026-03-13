@@ -1,11 +1,12 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Mic } from "lucide-react";
+import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Mic, TrendingDown, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
+import { loadHistory } from "./sessionStorage";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
 
@@ -46,23 +47,54 @@ function getScoreBarColor(score: number) {
   return "bg-destructive";
 }
 
+// --- Skill improvement tips ---
+
+const SKILL_TIPS: Record<string, string> = {
+  "Communication": "Lead with your main point before adding context. Cut filler words and aim for direct, confident delivery.",
+  "Objection Handling": "Acknowledge the concern first, then reframe — avoid jumping to solutions before the prospect feels heard.",
+  "Clarity": "Open each answer with one concrete sentence. Add a specific metric or example before expanding.",
+  "Confidence": "Remove qualifier language (basically, kind of, sort of). State claims directly — hedging signals uncertainty.",
+  "Discovery Questions": "Prepare 3–5 targeted questions per call. Drive the conversation forward by asking before explaining.",
+};
+
 // --- Skill Breakdown Bar ---
 
-function SkillBar({ skill, delay }: { skill: SkillScore; delay: number }) {
+function SkillBar({ skill, delay, isLowest }: { skill: SkillScore; delay: number; isLowest?: boolean }) {
   return (
-    <div className="space-y-1">
+    <div className={`space-y-1 ${isLowest ? "rounded-md p-2 -mx-2 bg-amber-500/5 border border-amber-500/20" : ""}`}>
       <div className="flex items-center justify-between">
-        <span className="text-[11px] text-muted-foreground">{skill.name}</span>
-        <span className="text-[11px] font-medium text-foreground tabular-nums">{skill.score}</span>
+        <div className="flex items-center gap-1.5">
+          <span className={`text-[11px] ${isLowest ? "text-amber-500/90 font-medium" : "text-muted-foreground"}`}>
+            {skill.name}
+          </span>
+          {isLowest && (
+            <span className="text-[9px] font-semibold text-amber-500/80 uppercase tracking-wider bg-amber-500/10 px-1 py-0.5 rounded">
+              Focus Area
+            </span>
+          )}
+        </div>
+        <span className={`text-[11px] font-medium tabular-nums ${isLowest ? "text-amber-500/90" : "text-foreground"}`}>
+          {skill.score}
+        </span>
       </div>
       <div className="h-1 bg-muted rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${skill.score}%` }}
           transition={{ duration: 0.5, ease: "easeOut", delay }}
-          className={`h-full rounded-full ${getBarColor(skill.score)}`}
+          className={`h-full rounded-full ${isLowest ? "bg-amber-500/70" : getBarColor(skill.score)}`}
         />
       </div>
+      {isLowest && SKILL_TIPS[skill.name] && (
+        <motion.p
+          initial={{ opacity: 0, y: -2 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: delay + 0.2 }}
+          className="text-[10px] text-amber-500/80 leading-snug pt-0.5"
+        >
+          {SKILL_TIPS[skill.name]}
+        </motion.p>
+      )}
     </div>
   );
 }
@@ -155,6 +187,7 @@ export function FeedbackPanel({
   voiceMetrics,
   voiceFeedbackLines,
   voiceScoreAdjustment,
+  roleId,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
@@ -166,10 +199,26 @@ export function FeedbackPanel({
   voiceMetrics?: VoiceMetrics;
   voiceFeedbackLines?: string[];
   voiceScoreAdjustment?: number;
+  roleId?: string;
 }) {
   const interview = isInterviewRank(feedback.rank);
   const skills = feedback.skillBreakdown || [];
   const frm = feedback.finalRoundMetrics;
+
+  const lowestSkill = useMemo(() => {
+    if (skills.length === 0) return null;
+    return skills.reduce((min, s) => s.score < min.score ? s : min, skills[0]);
+  }, [skills]);
+
+  const personalBest = useMemo(() => {
+    if (!roleId) return null;
+    const history = loadHistory();
+    const roleSessions = history.filter(s => s.roleId === roleId);
+    if (roleSessions.length === 0) return null;
+    return Math.max(...roleSessions.map(s => s.score));
+  }, [roleId]);
+
+  const personalBestDelta = personalBest !== null ? feedback.score - personalBest : null;
 
   const handleDownload = useCallback(() => {
     downloadPDF(feedback, alias ?? null);
@@ -270,10 +319,69 @@ export function FeedbackPanel({
             </p>
             <div className="space-y-2.5">
               {skills.map((skill, i) => (
-                <SkillBar key={skill.name} skill={skill} delay={0.2 + i * 0.08} />
+                <SkillBar
+                  key={skill.name}
+                  skill={skill}
+                  delay={0.2 + i * 0.08}
+                  isLowest={lowestSkill?.name === skill.name}
+                />
               ))}
             </div>
           </div>
+        )}
+
+        {/* Personal Best Comparison */}
+        {personalBest !== null && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="rounded-lg border border-border bg-muted/30 p-3"
+          >
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              Personal Best — {isFinalRound ? "Final Round" : "This Role"}
+            </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="text-center">
+                  <p className="text-xl font-bold font-heading text-foreground">{feedback.score}</p>
+                  <p className="text-[9px] text-muted-foreground mt-0.5">This Session</p>
+                </div>
+                <div className="text-muted-foreground/40 text-xs">vs</div>
+                <div className="text-center">
+                  <p className="text-xl font-bold font-heading text-muted-foreground">{personalBest}</p>
+                  <p className="text-[9px] text-muted-foreground mt-0.5">Personal Best</p>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-0.5">
+                {personalBestDelta !== null && personalBestDelta > 0 && (
+                  <div className="flex items-center gap-1 text-primary">
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    <span className="text-sm font-bold">+{personalBestDelta}</span>
+                  </div>
+                )}
+                {personalBestDelta !== null && personalBestDelta < 0 && (
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <TrendingDown className="h-3.5 w-3.5" />
+                    <span className="text-sm font-bold">{personalBestDelta}</span>
+                  </div>
+                )}
+                {personalBestDelta === 0 && (
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Minus className="h-3.5 w-3.5" />
+                    <span className="text-sm font-bold">Tied</span>
+                  </div>
+                )}
+                <p className="text-[9px] text-muted-foreground">
+                  {personalBestDelta !== null && personalBestDelta > 0
+                    ? "New personal best"
+                    : personalBestDelta === 0
+                    ? "Matched best"
+                    : "vs your best"}
+                </p>
+              </div>
+            </div>
+          </motion.div>
         )}
 
         {/* Strongest Moment */}

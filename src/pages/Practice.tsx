@@ -1461,6 +1461,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         feedback={feedback}
                         alias={alias}
                         isValidSession={lastSessionValid}
+                        roleId={selectedRole ?? undefined}
                         voiceMetrics={voice.voiceMode ? voice.getSessionVoiceMetrics() ?? undefined : undefined}
                         voiceFeedbackLines={voice.voiceMode ? voice.getVoiceFeedbackLines() : undefined}
                         voiceScoreAdjustment={voice.voiceMode ? voice.getVoiceScoreAdjustment() : undefined}
