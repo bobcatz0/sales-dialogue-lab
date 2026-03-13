@@ -201,6 +201,8 @@ const PracticePage = () => {
   const [searchParams] = useSearchParams();
   const paramEnv = searchParams.get("env") as EnvironmentId | null;
   const paramRole = searchParams.get("role");
+  const proChallengeScorecardId = searchParams.get("pro_challenge");
+  const proChallengeScore = searchParams.get("pro_score") ? parseInt(searchParams.get("pro_score")!, 10) : null;
   const [selectedEnv, setSelectedEnv] = useState<EnvironmentId | null>(paramEnv || "interview");
   const [selectedRole, setSelectedRole] = useState<string | null>(paramRole || null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
