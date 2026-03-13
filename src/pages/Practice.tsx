@@ -108,6 +108,7 @@ import {
   captureDropOff,
   captureFeedbackSignal,
 } from "@/components/practice/signalCapture";
+import { awardSkillXp } from "@/lib/skillXp";
 
 // --- Framework mapping ---
 
