@@ -30,9 +30,9 @@ const HeroSection = () => {
             transition={{ duration: 0.6 }}
             className="font-heading text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl lg:text-6xl text-foreground"
           >
-            Practice Your Sales Interview
+            Train Your Sales Instincts.
             <br />
-            <span className="text-gradient">Before the Real One.</span>
+            <span className="text-gradient">Prove Your Skill.</span>
           </motion.h1>
 
           <motion.p
@@ -41,7 +41,7 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.15 }}
             className="mx-auto max-w-lg text-lg md:text-xl text-muted-foreground"
           >
-            Run a mock interview. Get scored instantly. Fix your weakest skill.
+            Answer real sales scenarios, get scored instantly, and climb the leaderboard.
           </motion.p>
 
           <motion.div
@@ -51,7 +51,7 @@ const HeroSection = () => {
           >
             <Button variant="hero" size="lg" className="gap-2 px-10 py-6 text-lg" asChild>
               <Link to="/practice">
-                Start Interview
+                Start Scenario
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
