@@ -635,6 +635,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
     setFeedback(null);
     setIsFeedbackLoading(false);
     setHardCloseWin(false);
+    setGhostResult(null);
     callEndTriggeredRef.current = false;
     setSessionActive(true);
     
