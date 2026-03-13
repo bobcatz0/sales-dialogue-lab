@@ -392,9 +392,24 @@ const LeaderboardPage = () => {
           }
         }
 
+        // Fetch pro wins counts
+        const { data: proWinsData } = await supabase
+          .from("pro_challenge_attempts")
+          .select("user_id")
+          .eq("beat_pro", true)
+          .in("user_id", userIds);
+
+        const proWinsMap = new Map<string, number>();
+        if (proWinsData) {
+          for (const row of proWinsData) {
+            proWinsMap.set(row.user_id, (proWinsMap.get(row.user_id) ?? 0) + 1);
+          }
+        }
+
         const enriched: LeaderboardEntry[] = filtered.map((e) => ({
           ...e,
           clan_name: clanMap.get(e.id),
+          pro_wins: proWinsMap.get(e.id) ?? 0,
         }));
 
         setEntries(enriched);
