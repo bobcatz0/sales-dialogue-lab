@@ -1,5 +1,6 @@
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
+import InterviewPrompt from "@/components/landing/InterviewPrompt";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import CompetitiveSection from "@/components/landing/CompetitiveSection";
 import ScenarioCards from "@/components/landing/ScenarioCards";
@@ -14,6 +15,7 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <ActivityTicker />
+      <InterviewPrompt />
       <SocialProofBar />
       <HowItWorksSection />
       <CompetitiveSection />
