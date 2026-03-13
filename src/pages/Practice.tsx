@@ -249,6 +249,7 @@ const PracticePage = () => {
   const [showExitQuestion, setShowExitQuestion] = useState(false);
   const [showTextModeFallback, setShowTextModeFallback] = useState(false);
   const [showPlacementResult, setShowPlacementResult] = useState(false);
+  const [proChallengeResult, setProChallengeResult] = useState<{ userScore: number; proScore: number; beatPro: boolean; bonusElo: number } | null>(null);
   const [placementElo, setPlacementElo] = useState<number>(1000);
   const [coldCallTextMode, setColdCallTextMode] = useState(false);
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
