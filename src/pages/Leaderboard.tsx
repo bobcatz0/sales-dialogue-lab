@@ -683,6 +683,12 @@ const LeaderboardPage = () => {
                               </Badge>
                             )}
                             <WeeklyChallengeBadges userId={entry.id} compact />
+                            {(entry.pro_wins ?? 0) > 0 && (
+                              <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 gap-0.5 border-primary/30 text-primary shrink-0 hidden md:inline-flex">
+                                <Swords className="h-2 w-2" />
+                                {entry.pro_wins} Pro {entry.pro_wins === 1 ? "Win" : "Wins"}
+                              </Badge>
+                            )}
                           </div>
 
                           <div className="text-right">
