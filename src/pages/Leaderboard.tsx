@@ -585,13 +585,13 @@ const LeaderboardPage = () => {
               {/* Podium for top 3 */}
               {podiumEntries.length >= 3 && (
                 <div className="flex items-end justify-center gap-4 pt-4 pb-2">
-                  {[1, 0, 2].map((idx) => (
+                  {([1, 0, 2] as const).map((podiumIdx) => (
                     <PodiumCard
-                      key={podiumEntries[idx].id}
-                      entry={podiumEntries[idx]}
-                      position={(idx + 1) as 1 | 2 | 3}
-                      isCurrentUser={user?.id === podiumEntries[idx].id}
-                      delay={0.1 + idx * 0.08}
+                      key={podiumEntries[podiumIdx].id}
+                      entry={podiumEntries[podiumIdx]}
+                      position={(podiumIdx + 1) as 1 | 2 | 3}
+                      isCurrentUser={user?.id === podiumEntries[podiumIdx].id}
+                      delay={0.1 + podiumIdx * 0.08}
                     />
                   ))}
                 </div>
