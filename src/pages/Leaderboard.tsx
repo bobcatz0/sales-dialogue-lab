@@ -25,6 +25,7 @@ interface LeaderboardEntry {
   weekly_elo_gain?: number;
   is_evaluator?: boolean;
   clan_name?: string;
+  current_streak?: number;
 }
 
 interface ClanMemberInfo {
