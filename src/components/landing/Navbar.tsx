@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Practice", href: "/practice" },
   { label: "Beat the Pro", href: "/beat-the-pro" },
   { label: "Challenges", href: "/expert-challenges" },
+  { label: "Tournaments", href: "/tournaments" },
   { label: "Clans", href: "/clans" },
   { label: "Leaderboard", href: "/leaderboard" },
   { label: "Progress", href: "/progress" },
