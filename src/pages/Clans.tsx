@@ -244,7 +244,7 @@ export default function Clans() {
                       <p className={`text-lg font-bold font-heading tabular-nums ${getClanRankColor(clan.clan_elo)}`}>
                         {clan.clan_elo}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">Avg ELO</p>
+                      <p className="text-[10px] text-muted-foreground">Top 5 ELO</p>
                     </div>
                   </div>
 
