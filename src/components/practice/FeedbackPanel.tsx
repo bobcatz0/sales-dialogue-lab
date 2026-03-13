@@ -1,12 +1,13 @@
 import { useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Mic, TrendingDown, Minus } from "lucide-react";
+import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Mic, TrendingDown, Minus, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { loadHistory } from "./sessionStorage";
+import type { PromoSeriesState } from "./promotionSeries";
 
 const INTERVIEW_RANKS = ["Interview Ready", "Strong Candidate", "Prepared", "Developing", "Not Ready"];
 
@@ -99,6 +100,137 @@ function SkillBar({ skill, delay, isLowest }: { skill: SkillScore; delay: number
   );
 }
 
+// --- Promotion Series Panel ---
+
+function GameDot({ filled, isWin }: { filled: boolean; isWin: boolean }) {
+  return (
+    <motion.div
+      initial={filled ? { scale: 0 } : false}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", stiffness: 500, damping: 22 }}
+      className={`h-3 w-3 rounded-full border-2 ${
+        filled
+          ? isWin
+            ? "bg-primary border-primary"
+            : "bg-destructive border-destructive"
+          : "bg-transparent border-muted-foreground/30"
+      }`}
+    />
+  );
+}
+
+function PromotionSeriesPanel({ promo }: { promo: PromoSeriesState }) {
+  const isWon = promo.status === "won";
+  const isFailed = promo.status === "failed";
+  const isActive = promo.status === "active";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 400, damping: 28, delay: 0.25 }}
+      className={`rounded-xl border overflow-hidden ${
+        isWon
+          ? "border-primary/50 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"
+          : isFailed
+          ? "border-destructive/30 bg-destructive/5"
+          : "border-border bg-muted/20"
+      }`}
+    >
+      {/* Header */}
+      <div className={`px-4 py-2.5 border-b flex items-center justify-between ${
+        isWon ? "border-primary/20" : isFailed ? "border-destructive/20" : "border-border"
+      }`}>
+        <div className="flex items-center gap-2">
+          {isWon && (
+            <motion.div
+              initial={{ rotate: -15, scale: 0 }}
+              animate={{ rotate: 0, scale: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.4 }}
+            >
+              <Award className="h-3.5 w-3.5 text-primary" />
+            </motion.div>
+          )}
+          {isFailed && <Target className="h-3.5 w-3.5 text-destructive/70" />}
+          {isActive && <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />}
+          <p className={`text-[10px] font-bold uppercase tracking-wider ${
+            isWon ? "text-primary" : isFailed ? "text-destructive/80" : "text-muted-foreground"
+          }`}>
+            {isWon ? "Promotion Complete" : isFailed ? "Promotion Failed" : "Promotion Series"}
+          </p>
+        </div>
+        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
+          isWon
+            ? "bg-primary/15 text-primary"
+            : isFailed
+            ? "bg-destructive/10 text-destructive/70"
+            : "bg-muted text-muted-foreground"
+        }`}>
+          Best of 3
+        </span>
+      </div>
+
+      <div className="px-4 py-3 space-y-3">
+        {/* Rank progression */}
+        <div className="flex items-center justify-center gap-2">
+          <span className={`text-[11px] font-bold ${
+            isWon ? "text-muted-foreground line-through" : isFailed ? "text-foreground" : "text-foreground"
+          }`}>
+            {promo.fromRank}
+          </span>
+          <motion.div
+            animate={isWon ? { x: [0, 4, 0], opacity: [1, 0.6, 1] } : {}}
+            transition={{ repeat: isWon ? 2 : 0, duration: 0.4, delay: 0.5 }}
+            className="flex items-center"
+          >
+            <svg className={`h-3 w-5 ${isWon ? "text-primary" : isFailed ? "text-destructive/50" : "text-muted-foreground/50"}`} viewBox="0 0 20 12" fill="none">
+              <path d="M1 6h16M13 1l6 5-6 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.div>
+          <span className={`text-[11px] font-bold ${
+            isWon ? "text-primary" : isFailed ? "text-muted-foreground" : "text-muted-foreground"
+          }`}>
+            {promo.toRank}
+          </span>
+        </div>
+
+        {/* Win/Loss dots */}
+        <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider mr-0.5">W</span>
+            {[0, 1].map((i) => (
+              <GameDot key={`w${i}`} filled={i < promo.wins} isWin={true} />
+            ))}
+          </div>
+          <div className="h-3 w-px bg-border" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider mr-0.5">L</span>
+            {[0, 1].map((i) => (
+              <GameDot key={`l${i}`} filled={i < promo.losses} isWin={false} />
+            ))}
+          </div>
+        </div>
+
+        {/* Status message */}
+        <p className={`text-[10px] text-center leading-snug ${
+          isWon ? "text-primary font-medium" : isFailed ? "text-destructive/70" : "text-muted-foreground"
+        }`}>
+          {isWon && `You've ranked up to ${promo.toRank}. Series complete.`}
+          {isFailed && `${promo.wins}W · ${promo.losses}L — Score adjusted. Re-enter the zone to retry.`}
+          {isActive && promo.wins === 0 && promo.losses === 0 && `Score 65+ in your next 2 sessions to rank up.`}
+          {isActive && (promo.wins > 0 || promo.losses > 0) && (
+            promo.wins > promo.losses
+              ? `${2 - promo.wins} more win${2 - promo.wins > 1 ? "s" : ""} needed. Don't drop it.`
+              : promo.losses > promo.wins
+              ? `${2 - promo.losses} loss${2 - promo.losses > 1 ? "es" : ""} away from failure. Score 65+ to recover.`
+              : `Tied. Next session decides.`
+          )}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
 // --- PDF Download ---
 
 function formatDate() {
@@ -188,6 +320,7 @@ export function FeedbackPanel({
   voiceFeedbackLines,
   voiceScoreAdjustment,
   roleId,
+  promoSeries,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
@@ -200,6 +333,7 @@ export function FeedbackPanel({
   voiceFeedbackLines?: string[];
   voiceScoreAdjustment?: number;
   roleId?: string;
+  promoSeries?: PromoSeriesState;
 }) {
   const interview = isInterviewRank(feedback.rank);
   const skills = feedback.skillBreakdown || [];
@@ -383,6 +517,9 @@ export function FeedbackPanel({
             </div>
           </motion.div>
         )}
+
+        {/* Promotion Series */}
+        {promoSeries && <PromotionSeriesPanel promo={promoSeries} />}
 
         {/* Strongest Moment */}
         {feedback.bestMoment && (

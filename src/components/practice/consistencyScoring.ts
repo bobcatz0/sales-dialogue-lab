@@ -141,6 +141,18 @@ export function resetConsistency() {
   localStorage.removeItem(CONSISTENCY_KEY);
 }
 
+/**
+ * Adjusts the consistency score by `delta` points.
+ * `floor` sets a minimum value (e.g. to prevent going below the promo zone start).
+ * Returns the new score.
+ */
+export function adjustConsistencyScore(delta: number, floor = 0): number {
+  const data = loadConsistency();
+  data.score = Math.max(floor, Math.min(1000, data.score + delta));
+  saveConsistency(data);
+  return data.score;
+}
+
 // Helper to compute user profile stats from session history
 export function computeProfileStats(sessions: SessionRecord[]) {
   const last10 = sessions.slice(0, 10);

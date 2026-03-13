@@ -86,6 +86,7 @@ import {
   captureDropOff,
   captureFeedbackSignal,
 } from "@/components/practice/signalCapture";
+import { processPromoSession, loadPromoSeries, type PromoSeriesState } from "@/components/practice/promotionSeries";
 
 // --- Streaming ---
 
@@ -188,6 +189,7 @@ const PracticePage = () => {
   const [hardCloseWin, setHardCloseWin] = useState(false);
   const [challengeCompleted, setChallengeCompleted] = useState(() => getTodayChallenge().completed);
   const [lastSessionValid, setLastSessionValid] = useState(false);
+  const [promoSeries, setPromoSeries] = useState<PromoSeriesState>(() => loadPromoSeries());
   const [sessionActive, setSessionActive] = useState(false);
   const [activeSDRRound, setActiveSDRRound] = useState<SDRRound | null>(null);
   const [sdrProgress, setSdrProgress] = useState<SDRTrackProgress>(() => loadSDRTrackProgress());
@@ -583,6 +585,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
       const recentScores = updated.slice(1, 6).map((s) => s.score); // previous 5
       const isValidSession = durationSeconds >= 90 && userMsgCount >= 6;
       setLastSessionValid(isValidSession);
+      const scoreBefore = loadConsistency().score;
       const { points } = processSession({
         roleId: activeRole.id,
         sessionScore: data.score,
@@ -593,6 +596,20 @@ This evaluation style should subtly influence your questions and reactions. Do N
       // Hard close bonus
       const finalPoints = hardCloseWin ? points + 20 : points;
       setLastPoints(finalPoints);
+
+      // Promotion series check
+      const scoreAfter = loadConsistency().score;
+      const prevPromoStatus = loadPromoSeries().status;
+      const newPromo = processPromoSession({
+        scoreBefore,
+        scoreAfter,
+        sessionScore: data.score,
+        isValidSession,
+      });
+      setPromoSeries(newPromo);
+      if (prevPromoStatus === "idle" && newPromo.status === "active") {
+        toast(`Promotion Series — win 2 sessions to reach ${newPromo.toRank}`, { duration: 4500 });
+      }
 
       // Update progression & check unlocks
       const { newUnlocks, data: progData } = updateProgression({
@@ -1462,6 +1479,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         alias={alias}
                         isValidSession={lastSessionValid}
                         roleId={selectedRole ?? undefined}
+                        promoSeries={promoSeries.status !== "idle" ? promoSeries : undefined}
                         voiceMetrics={voice.voiceMode ? voice.getSessionVoiceMetrics() ?? undefined : undefined}
                         voiceFeedbackLines={voice.voiceMode ? voice.getVoiceFeedbackLines() : undefined}
                         voiceScoreAdjustment={voice.voiceMode ? voice.getVoiceScoreAdjustment() : undefined}
