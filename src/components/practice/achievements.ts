@@ -9,7 +9,7 @@ export interface BadgeDef {
   id: string;
   label: string;
   description: string;
-  icon: "shield" | "target" | "zap" | "flame" | "award" | "star" | "trophy" | "cpu";
+  icon: "shield" | "target" | "zap" | "flame" | "award" | "star" | "trophy" | "cpu" | "swords";
 }
 
 export const BADGE_DEFINITIONS: BadgeDef[] = [
