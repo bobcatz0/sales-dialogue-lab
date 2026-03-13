@@ -252,12 +252,23 @@ const PracticePage = () => {
   const [showTextModeFallback, setShowTextModeFallback] = useState(false);
   const [showPlacementResult, setShowPlacementResult] = useState(false);
   const [proChallengeResult, setProChallengeResult] = useState<{ userScore: number; proScore: number; beatPro: boolean; bonusElo: number } | null>(null);
+  const [ghostResult, setGhostResult] = useState<{ userScore: number; ghostScore: number; ghostName: string; ghostAvatar: string | null; beatGhost: boolean; tied: boolean; eloDelta: number } | null>(null);
   const [placementElo, setPlacementElo] = useState<number>(1000);
   const [coldCallTextMode, setColdCallTextMode] = useState(false);
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
    const timer = useCallTimer(sessionActive);
   const voice = useVoiceSession();
   const mic = useMicPermission();
+
+  // Ghost Battle — auto-match a ghost opponent for every non-pro-challenge session
+  const isProChallenge = !!(proChallengeScorecardId && proChallengeScore !== null);
+  const ghostBattle = useGhostBattle({
+    scenarioEnv: selectedEnv,
+    scenarioRole: selectedRole,
+    userElo: profile?.elo ?? 1000,
+    isProChallenge,
+    sessionActive,
+  });
 
   const activeEnv = selectedEnv ? getEnvironment(selectedEnv) : undefined;
   const activeRole = roles.find((r) => r.id === selectedRole);
