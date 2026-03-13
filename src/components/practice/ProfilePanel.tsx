@@ -36,6 +36,17 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
   const interviewReady = getInterviewReadyStatus();
   const drillStats = getDrillStats();
   const { profile, user } = useAuth();
+  const [proWins, setProWins] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("pro_challenge_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("beat_pro", true)
+      .then(({ count }) => setProWins(count ?? 0));
+  }, [user]);
 
   return (
     <motion.div
