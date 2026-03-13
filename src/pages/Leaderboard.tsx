@@ -458,6 +458,12 @@ const LeaderboardPage = () => {
                       {getEloRank(profile.elo)}
                     </Badge>
                   )}
+                  {(profile as any).current_streak > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-orange-500">
+                      <Flame className="h-3 w-3" />
+                      {(profile as any).current_streak}d streak
+                    </span>
+                  )}
                   {userRank && (
                     <span className="text-xs text-muted-foreground">
                       #{userRank} {tab === "weekly" ? "this week" : "overall"}
