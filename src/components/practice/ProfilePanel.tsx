@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2, TrendingUp, ShieldCheck } from "lucide-react";
+import { Flame, Target, Award, Shield, Zap, Star, Cpu, Trophy, CheckCircle2, TrendingUp, ShieldCheck, Swords } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BADGE_DEFINITIONS, loadEarnedBadges } from "@/components/practice/achievements";
 import type { ConsistencyData } from "@/components/practice/consistencyScoring";
@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { EvaluatorBadge, EvaluatorReputation } from "./EvaluatorBadges";
 import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
 import { UserAvatar } from "@/components/UserAvatar";
+import { supabase } from "@/integrations/supabase/client";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
@@ -35,6 +36,17 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
   const interviewReady = getInterviewReadyStatus();
   const drillStats = getDrillStats();
   const { profile, user } = useAuth();
+  const [proWins, setProWins] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("pro_challenge_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("beat_pro", true)
+      .then(({ count }) => setProWins(count ?? 0));
+  }, [user]);
 
   return (
     <motion.div
@@ -77,7 +89,7 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
       {user && <WeeklyChallengeBadges userId={user.id} />}
 
       {/* Quick stats */}
-      <div className="grid grid-cols-3 gap-2 text-center">
+      <div className="grid grid-cols-4 gap-2 text-center">
         <div>
           <div className="text-lg font-bold font-heading text-foreground">{consistency.totalSessions}</div>
           <div className="text-[10px] text-muted-foreground">Sessions</div>
@@ -89,6 +101,10 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
         <div>
           <div className="text-lg font-bold font-heading text-foreground">{consistency.sessionsThisWeek}</div>
           <div className="text-[10px] text-muted-foreground">This Week</div>
+        </div>
+        <div>
+          <div className={`text-lg font-bold font-heading ${proWins > 0 ? "text-primary" : "text-foreground"}`}>{proWins}</div>
+          <div className="text-[10px] text-muted-foreground">Pro Wins</div>
         </div>
       </div>
 

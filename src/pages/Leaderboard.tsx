@@ -26,6 +26,7 @@ interface LeaderboardEntry {
   is_evaluator?: boolean;
   clan_name?: string;
   current_streak?: number;
+  pro_wins?: number;
 }
 
 interface ClanMemberInfo {
@@ -391,9 +392,24 @@ const LeaderboardPage = () => {
           }
         }
 
+        // Fetch pro wins counts
+        const { data: proWinsData } = await supabase
+          .from("pro_challenge_attempts")
+          .select("user_id")
+          .eq("beat_pro", true)
+          .in("user_id", userIds);
+
+        const proWinsMap = new Map<string, number>();
+        if (proWinsData) {
+          for (const row of proWinsData) {
+            proWinsMap.set(row.user_id, (proWinsMap.get(row.user_id) ?? 0) + 1);
+          }
+        }
+
         const enriched: LeaderboardEntry[] = filtered.map((e) => ({
           ...e,
           clan_name: clanMap.get(e.id),
+          pro_wins: proWinsMap.get(e.id) ?? 0,
         }));
 
         setEntries(enriched);
@@ -667,6 +683,12 @@ const LeaderboardPage = () => {
                               </Badge>
                             )}
                             <WeeklyChallengeBadges userId={entry.id} compact />
+                            {(entry.pro_wins ?? 0) > 0 && (
+                              <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 gap-0.5 border-primary/30 text-primary shrink-0 hidden md:inline-flex">
+                                <Swords className="h-2 w-2" />
+                                {entry.pro_wins} Pro {entry.pro_wins === 1 ? "Win" : "Wins"}
+                              </Badge>
+                            )}
                           </div>
 
                           <div className="text-right">
