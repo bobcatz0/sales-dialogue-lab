@@ -108,6 +108,7 @@ import {
   captureDropOff,
   captureFeedbackSignal,
 } from "@/components/practice/signalCapture";
+import { awardSkillXp } from "@/lib/skillXp";
 
 // --- Framework mapping ---
 
@@ -904,6 +905,15 @@ This evaluation style should subtly influence your questions and reactions. Do N
       });
       if (newBadges.length > 0) {
         setBadgeQueue(newBadges);
+      }
+
+      // Skill XP progression — award XP based on skill breakdown
+      if (user && data.skillBreakdown && data.skillBreakdown.length > 0) {
+        awardSkillXp(user.id, data.skillBreakdown).then(({ levelUps }) => {
+          for (const lu of levelUps) {
+            toast.success(`⚡ ${lu.skillName} → Lv.${lu.newLevel} (${lu.title})`, { duration: 4000 });
+          }
+        });
       }
 
       // Daily Challenge completion check

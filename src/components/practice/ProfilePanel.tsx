@@ -13,6 +13,7 @@ import { EvaluatorBadge, EvaluatorReputation } from "./EvaluatorBadges";
 import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
 import { UserAvatar } from "@/components/UserAvatar";
 import { supabase } from "@/integrations/supabase/client";
+import { SkillLevelsDisplay } from "./SkillLevelsDisplay";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
@@ -421,6 +422,9 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
           </div>
         );
       })()}
+
+      {/* Skill Levels */}
+      {user && <SkillLevelsDisplay userId={user.id} />}
 
       {BADGE_DEFINITIONS.length > 0 && (
         <div>
