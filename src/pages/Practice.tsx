@@ -1805,7 +1805,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                             handleSend();
                           }
                         }}
-                        placeholder="Type your response… (Shift+Enter for new line)"
+                        placeholder="Tip: include metrics, ownership, and outcome."
                         disabled={!selectedRole || isLoading}
                         className="flex-1 min-h-[120px] max-h-[300px] text-sm resize-y"
                         rows={5}

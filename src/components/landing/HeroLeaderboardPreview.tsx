@@ -104,6 +104,9 @@ export default function HeroLeaderboardPreview() {
               <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
                 {rank}
               </span>
+              <span className="text-[10px] text-muted-foreground tabular-nums shrink-0 hidden sm:inline">
+                {player.total_sessions} sess
+              </span>
               <span className="text-xs font-bold font-heading text-foreground tabular-nums shrink-0">
                 {player.elo}
               </span>
