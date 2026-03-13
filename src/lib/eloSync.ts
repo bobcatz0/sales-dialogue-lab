@@ -24,6 +24,10 @@ export interface EloSyncResult {
   placementComplete: boolean;
   /** How many sessions completed total (including this one) */
   totalSessions: number;
+  /** Current daily practice streak */
+  currentStreak: number;
+  /** Longest streak ever */
+  longestStreak: number;
 }
 
 /**
@@ -37,7 +41,7 @@ export async function syncEloAfterSession(sessionScore: number): Promise<EloSync
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("elo, total_sessions, weekly_elo_gain, week_start")
+    .select("elo, total_sessions, weekly_elo_gain, week_start, current_streak, longest_streak, last_session_date")
     .eq("id", user.id)
     .single();
 
@@ -73,7 +77,27 @@ export async function syncEloAfterSession(sessionScore: number): Promise<EloSync
   const currentWeekStart = getWeekStart();
   const profileWeekStart = profile.week_start ? new Date(profile.week_start) : new Date(0);
   const isNewWeek = currentWeekStart.getTime() > profileWeekStart.getTime();
-  const weeklyGain = isNewWeek ? Math.max(0, delta) : (profile.weekly_elo_gain ?? 0) + Math.max(0, delta);
+  const weeklyGain = isNewWeek ? Math.max(0, delta) : ((profile.weekly_elo_gain as number) ?? 0) + Math.max(0, delta);
+
+  // Streak tracking
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const lastDate = (profile as any).last_session_date as string | null;
+  let currentStreak = ((profile as any).current_streak as number) ?? 0;
+  let longestStreak = ((profile as any).longest_streak as number) ?? 0;
+
+  if (lastDate === todayStr) {
+    // Already practiced today — no streak change
+  } else {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+    if (lastDate === yesterdayStr) {
+      currentStreak += 1;
+    } else {
+      currentStreak = 1;
+    }
+    longestStreak = Math.max(longestStreak, currentStreak);
+  }
 
   await Promise.all([
     supabase
@@ -84,7 +108,10 @@ export async function syncEloAfterSession(sessionScore: number): Promise<EloSync
         weekly_elo_gain: weeklyGain,
         week_start: currentWeekStart.toISOString(),
         updated_at: new Date().toISOString(),
-      })
+        current_streak: currentStreak,
+        longest_streak: longestStreak,
+        last_session_date: todayStr,
+      } as any)
       .eq("id", user.id),
     supabase
       .from("elo_history")
@@ -139,5 +166,7 @@ export async function syncEloAfterSession(sessionScore: number): Promise<EloSync
     rankedUp: newRank !== oldRank && newElo > oldElo,
     placementComplete,
     totalSessions: newTotalSessions,
+    currentStreak,
+    longestStreak,
   };
 }

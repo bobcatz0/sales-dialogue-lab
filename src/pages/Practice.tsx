@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RankProgressCard } from "@/components/practice/RankProgressCard";
+import { PracticeStreak } from "@/components/practice/PracticeStreak";
 import Navbar from "@/components/landing/Navbar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
@@ -1663,27 +1664,35 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 ) : (
                   /* Text Mode: standard input */
                   <>
-                    <div className="flex gap-1.5 sm:gap-2">
-                      <Input
+                    <div className="flex gap-1.5 sm:gap-2 items-end">
+                      <Textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Type…"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                        placeholder="Type your response… (Shift+Enter for new line)"
                         disabled={!selectedRole || isLoading}
-                        className="flex-1 h-9 text-sm"
+                        className="flex-1 min-h-[80px] max-h-[200px] text-sm resize-none"
+                        rows={3}
                       />
-                      <VoiceInputButton
-                        onTranscript={(text) => setInput((prev) => (prev ? prev + " " + text : text))}
-                        disabled={!selectedRole || isLoading}
-                      />
-                      <Button
-                        onClick={handleSend}
-                        disabled={!selectedRole || !input.trim() || isLoading}
-                        size="icon"
-                        className="h-9 w-9 shrink-0"
-                      >
-                        <Send className="h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex flex-col gap-1.5 shrink-0">
+                        <VoiceInputButton
+                          onTranscript={(text) => setInput((prev) => (prev ? prev + " " + text : text))}
+                          disabled={!selectedRole || isLoading}
+                        />
+                        <Button
+                          onClick={handleSend}
+                          disabled={!selectedRole || !input.trim() || isLoading}
+                          size="icon"
+                          className="h-9 w-9 shrink-0"
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex gap-1.5 sm:gap-2 mt-2">
                       <Button
@@ -1730,6 +1739,13 @@ This evaluation style should subtly influence your questions and reactions. Do N
               )}
               {feedback && !isFeedbackLoading && (
                 <>
+                  {/* Rank Progress + Streak */}
+                  {profile && rankUpData && (
+                    <>
+                      <RankProgressCard elo={rankUpData.newElo} eloDelta={rankUpData.delta} />
+                      <PracticeStreak currentStreak={rankUpData.currentStreak} longestStreak={rankUpData.longestStreak} />
+                    </>
+                  )}
                   {lastPoints !== null && lastPoints > 0 && selectedEnv !== "interview" && (
                     <motion.div
                       initial={{ opacity: 0 }}

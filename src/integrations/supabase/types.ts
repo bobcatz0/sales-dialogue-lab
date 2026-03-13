@@ -540,11 +540,14 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          current_streak: number
           display_name: string
           elo: number
           evaluator_reputation: number
           id: string
           is_evaluator: boolean
+          last_session_date: string | null
+          longest_streak: number
           reviews_given: number
           total_sessions: number
           updated_at: string
@@ -554,11 +557,14 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          current_streak?: number
           display_name?: string
           elo?: number
           evaluator_reputation?: number
           id: string
           is_evaluator?: boolean
+          last_session_date?: string | null
+          longest_streak?: number
           reviews_given?: number
           total_sessions?: number
           updated_at?: string
@@ -568,11 +574,14 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          current_streak?: number
           display_name?: string
           elo?: number
           evaluator_reputation?: number
           id?: string
           is_evaluator?: boolean
+          last_session_date?: string | null
+          longest_streak?: number
           reviews_given?: number
           total_sessions?: number
           updated_at?: string
