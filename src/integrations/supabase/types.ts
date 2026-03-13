@@ -748,6 +748,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_skills: {
+        Row: {
+          id: string
+          level: number
+          skill_name: string
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          id?: string
+          level?: number
+          skill_name: string
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          id?: string
+          level?: number
+          skill_name?: string
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       weekly_challenge_badges: {
         Row: {
           badge_type: string
