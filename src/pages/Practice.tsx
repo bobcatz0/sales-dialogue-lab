@@ -1788,6 +1788,44 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       <PracticeStreak currentStreak={rankUpData.currentStreak} longestStreak={rankUpData.longestStreak} />
                     </>
                   )}
+                  {/* Beat the Pro result */}
+                  {proChallengeResult && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className={`card-elevated px-4 py-3 border ${proChallengeResult.beatPro ? "border-primary/30 bg-primary/5" : "border-border"}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          Beat the Pro Result
+                        </span>
+                        {proChallengeResult.beatPro && (
+                          <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                            🏆 YOU WON
+                          </span>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="text-center">
+                          <p className="text-[10px] text-muted-foreground">Your Score</p>
+                          <p className={`text-xl font-bold font-heading ${proChallengeResult.beatPro ? "text-primary" : "text-foreground"}`}>
+                            {proChallengeResult.userScore}
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[10px] text-muted-foreground">Pro Score</p>
+                          <p className="text-xl font-bold font-heading text-muted-foreground">
+                            {proChallengeResult.proScore}
+                          </p>
+                        </div>
+                      </div>
+                      {proChallengeResult.beatPro && (
+                        <p className="text-[11px] text-primary font-semibold text-center mt-2">
+                          +{proChallengeResult.bonusElo} bonus ELO awarded!
+                        </p>
+                      )}
+                    </motion.div>
+                  )}
                   {lastPoints !== null && lastPoints > 0 && selectedEnv !== "interview" && (
                     <motion.div
                       initial={{ opacity: 0 }}
