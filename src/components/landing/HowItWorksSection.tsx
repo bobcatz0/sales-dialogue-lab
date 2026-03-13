@@ -2,58 +2,42 @@ import { motion } from "framer-motion";
 import { Target, MessageSquare, TrendingUp } from "lucide-react";
 
 const steps = [
-  {
-    num: "1",
-    icon: Target,
-    title: "Practice a scenario",
-  },
-  {
-    num: "2",
-    icon: MessageSquare,
-    title: "Get AI feedback",
-  },
-  {
-    num: "3",
-    icon: TrendingUp,
-    title: "Climb the leaderboard",
-  },
+  { num: "01", icon: Target, title: "Pick a scenario", desc: "Cold call, discovery, objection handling" },
+  { num: "02", icon: MessageSquare, title: "Get AI feedback", desc: "Instant scoring on your response" },
+  { num: "03", icon: TrendingUp, title: "Climb the ranks", desc: "Earn ELO and track your progress" },
 ];
 
 const HowItWorksSection = () => {
   return (
-    <section id="how-it-works" className="py-20">
-      <div className="container mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+    <section className="py-12 md:py-16 border-t border-border/30">
+      <div className="container mx-auto px-6 max-w-3xl">
+        <motion.h2
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-14"
+          className="font-heading text-xl font-bold text-center mb-10 text-foreground md:text-2xl"
         >
-          <h2 className="font-heading text-3xl font-bold md:text-4xl">
-            How it works
-          </h2>
-        </motion.div>
+          How it works
+        </motion.h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto relative">
-          {/* Connecting line */}
-          <div className="hidden md:block absolute top-12 left-[25%] right-[25%] h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border/30 rounded-xl overflow-hidden border border-border/40">
           {steps.map((step, i) => (
             <motion.div
               key={step.num}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.12 }}
-              className="text-center"
+              transition={{ delay: i * 0.08 }}
+              className="bg-card/60 p-6 text-center flex flex-col items-center gap-3"
             >
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 relative z-10">
-                <step.icon className="h-5 w-5" />
+              <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <step.icon className="h-4.5 w-4.5 text-primary" />
               </div>
-              <p className="text-xs font-mono text-primary/60 mb-1">{step.num}</p>
-              <h3 className="font-heading text-lg font-semibold text-foreground">
-                {step.title}
-              </h3>
+              <div>
+                <p className="text-[10px] font-mono text-primary/50 mb-0.5">{step.num}</p>
+                <h3 className="font-heading text-sm font-semibold text-foreground">{step.title}</h3>
+                <p className="text-[11px] text-muted-foreground mt-1">{step.desc}</p>
+              </div>
             </motion.div>
           ))}
         </div>
