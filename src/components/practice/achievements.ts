@@ -21,7 +21,9 @@ export const BADGE_DEFINITIONS: BadgeDef[] = [
   { id: "sdr-interview-ready", label: "SDR Interview Ready", description: "Completed the SDR Interview Track", icon: "award" },
   // Consistency milestones
   { id: "streak-3", label: "3-Day Consistency", description: "Practiced 3 consecutive days", icon: "flame" },
-  { id: "streak-7", label: "7-Day Consistency", description: "Practiced 7 consecutive days", icon: "flame" },
+  { id: "streak-7", label: "Weekly Warrior", description: "Practiced 7 consecutive days", icon: "flame" },
+  { id: "streak-14", label: "Two-Week Titan", description: "Practiced 14 consecutive days", icon: "flame" },
+  { id: "streak-30", label: "30-Day Legend", description: "Practiced 30 consecutive days — elite discipline", icon: "trophy" },
   { id: "sessions-15", label: "15 Sessions", description: "Completed 15 valid sessions", icon: "target" },
   { id: "sessions-50", label: "50 Sessions", description: "Completed 50 valid sessions", icon: "star" },
 ];
