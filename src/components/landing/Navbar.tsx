@@ -2,17 +2,11 @@ import { Phone, Menu, X, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { getEloRank } from "@/lib/elo";
 import { NotificationBell } from "@/components/NotificationBell";
 import { UserAvatar } from "@/components/UserAvatar";
-import { EditableProfile } from "@/components/EditableProfile";
 
 const navLinks = [
   { label: "Practice", href: "/practice" },
-  { label: "Beat the Pro", href: "/beat-the-pro" },
-  { label: "Challenges", href: "/expert-challenges" },
-  { label: "Tournaments", href: "/tournaments" },
-  { label: "Clans", href: "/clans" },
   { label: "Leaderboard", href: "/leaderboard" },
   { label: "Progress", href: "/progress" },
 ];

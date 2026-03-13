@@ -46,7 +46,7 @@ export default function HeroLeaderboardPreview() {
 
   if (!loaded) {
     return (
-      <div className="h-[180px] flex items-center justify-center">
+      <div className="h-[140px] flex items-center justify-center">
         <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -61,10 +61,15 @@ export default function HeroLeaderboardPreview() {
   ];
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="card-elevated overflow-hidden"
+    >
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50">
         <div className="flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-primary" />
+          <Trophy className="h-3.5 w-3.5 text-primary" />
           <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">Top Players</span>
         </div>
         <Button variant="ghost" size="sm" className="h-6 text-[10px] text-primary gap-1 px-2" asChild>
@@ -74,15 +79,16 @@ export default function HeroLeaderboardPreview() {
         </Button>
       </div>
 
-      <div className="divide-y divide-border/30">
+      <div className="divide-y divide-border/20">
         {players.map((player, i) => {
           const rank = getEloRank(player.elo);
           return (
             <motion.div
               key={player.id}
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.06 }}
+              initial={{ opacity: 0, x: -8 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
               className="flex items-center gap-3 px-4 py-2 hover:bg-muted/20 transition-colors"
             >
               <span className="w-5 shrink-0 flex justify-center">
@@ -104,9 +110,6 @@ export default function HeroLeaderboardPreview() {
               <span className={`text-[9px] font-bold shrink-0 ${getRankColor(rank)}`}>
                 {rank}
               </span>
-              <span className="text-[10px] text-muted-foreground tabular-nums shrink-0 hidden sm:inline">
-                {player.total_sessions} sess
-              </span>
               <span className="text-xs font-bold font-heading text-foreground tabular-nums shrink-0">
                 {player.elo}
               </span>
@@ -114,6 +117,6 @@ export default function HeroLeaderboardPreview() {
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 }
