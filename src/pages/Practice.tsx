@@ -754,6 +754,45 @@ This evaluation style should subtly influence your questions and reactions. Do N
         }
       });
 
+      // Beat the Pro challenge tracking
+      if (proChallengeScorecardId && proChallengeScore !== null && user) {
+        const PRO_BONUS_ELO = 15;
+        const beatPro = data.score > proChallengeScore;
+        const bonusElo = beatPro ? PRO_BONUS_ELO : 0;
+
+        setProChallengeResult({ userScore: data.score, proScore: proChallengeScore, beatPro, bonusElo });
+
+        // Record the attempt
+        await supabase.from("pro_challenge_attempts").insert({
+          user_id: user.id,
+          scorecard_id: proChallengeScorecardId,
+          user_score: data.score,
+          pro_score: proChallengeScore,
+          beat_pro: beatPro,
+          bonus_elo: bonusElo,
+          scenario_env: selectedEnv || "interview",
+          scenario_role: selectedRole || "hiring-manager",
+        });
+
+        // Award bonus ELO
+        if (beatPro) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("elo")
+            .eq("id", user.id)
+            .single();
+          if (prof) {
+            await supabase
+              .from("profiles")
+              .update({ elo: prof.elo + PRO_BONUS_ELO, updated_at: new Date().toISOString() })
+              .eq("id", user.id);
+            toast.success(`🏆 You beat the pro! +${PRO_BONUS_ELO} bonus ELO awarded!`, { duration: 5000 });
+          }
+        } else {
+          toast(`Pro scored ${proChallengeScore} — you scored ${data.score}. Keep practicing!`, { duration: 4000 });
+        }
+      }
+
       // Process consistency scoring
       const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
       const recentScores = updated.slice(1, 6).map((s) => s.score); // previous 5
