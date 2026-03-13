@@ -23,6 +23,7 @@ const BADGE_ICONS: Record<string, React.ElementType> = {
   star: Star,
   trophy: Trophy,
   cpu: Cpu,
+  swords: Swords,
 };
 
 interface ProfilePanelProps {

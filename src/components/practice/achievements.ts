@@ -9,7 +9,7 @@ export interface BadgeDef {
   id: string;
   label: string;
   description: string;
-  icon: "shield" | "target" | "zap" | "flame" | "award" | "star" | "trophy" | "cpu";
+  icon: "shield" | "target" | "zap" | "flame" | "award" | "star" | "trophy" | "cpu" | "swords";
 }
 
 export const BADGE_DEFINITIONS: BadgeDef[] = [
@@ -26,6 +26,8 @@ export const BADGE_DEFINITIONS: BadgeDef[] = [
   { id: "streak-30", label: "30-Day Legend", description: "Practiced 30 consecutive days — elite discipline", icon: "trophy" },
   { id: "sessions-15", label: "15 Sessions", description: "Completed 15 valid sessions", icon: "target" },
   { id: "sessions-50", label: "50 Sessions", description: "Completed 50 valid sessions", icon: "star" },
+  // Pro challenge
+  { id: "pro-slayer", label: "Pro Slayer", description: "Beat 3 different pro benchmarks", icon: "swords" },
 ];
 
 export function loadEarnedBadges(): string[] {
@@ -52,6 +54,7 @@ export function evaluateBadges(opts: {
   currentStreak: number;
   totalValidSessions: number;
   isValidSession: boolean;
+  proWins?: number;
 }): string[] {
   if (!opts.isValidSession) return [];
 
@@ -75,6 +78,9 @@ export function evaluateBadges(opts: {
   check("streak-30", opts.currentStreak >= 30);
   check("sessions-15", opts.totalValidSessions >= 15);
   check("sessions-50", opts.totalValidSessions >= 50);
+
+  // Pro Slayer
+  check("pro-slayer", (opts.proWins ?? 0) >= 3);
 
   if (newBadges.length > 0) {
     saveBadges([...earned, ...newBadges]);

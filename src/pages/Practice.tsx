@@ -830,6 +830,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
         toast.success("Weekly goal reached! Nice work staying consistent.", { duration: 4000 });
       }
 
+      // Fetch pro wins count for badge evaluation
+      let proWinsCount = 0;
+      if (user) {
+        const { count } = await supabase
+          .from("pro_challenge_attempts")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("beat_pro", true);
+        proWinsCount = count ?? 0;
+      }
+
       // Evaluate badges
       const newBadges = evaluateBadges({
         roleId: activeRole.id,
@@ -838,6 +849,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
         currentStreak: updatedConsistency.currentStreak,
         totalValidSessions: updatedConsistency.totalSessions,
         isValidSession,
+        proWins: proWinsCount,
       });
       if (newBadges.length > 0) {
         setBadgeQueue(newBadges);
