@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { EvaluatorBadge, EvaluatorReputation } from "./EvaluatorBadges";
 import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
 import { UserAvatar } from "@/components/UserAvatar";
+import { supabase } from "@/integrations/supabase/client";
 
 const BADGE_ICONS: Record<string, React.ElementType> = {
   shield: Shield,
