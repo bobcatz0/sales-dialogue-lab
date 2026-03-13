@@ -79,6 +79,9 @@ export function evaluateBadges(opts: {
   check("sessions-15", opts.totalValidSessions >= 15);
   check("sessions-50", opts.totalValidSessions >= 50);
 
+  // Pro Slayer
+  check("pro-slayer", (opts.proWins ?? 0) >= 3);
+
   if (newBadges.length > 0) {
     saveBadges([...earned, ...newBadges]);
   }
