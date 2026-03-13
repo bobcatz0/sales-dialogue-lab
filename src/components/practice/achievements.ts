@@ -83,6 +83,8 @@ export function evaluateBadges(opts: {
 
   // Pro Slayer
   check("pro-slayer", (opts.proWins ?? 0) >= 3);
+  check("pro-hunter", (opts.proWins ?? 0) >= 5);
+  check("pro-legend", (opts.proWins ?? 0) >= 10);
 
   if (newBadges.length > 0) {
     saveBadges([...earned, ...newBadges]);
