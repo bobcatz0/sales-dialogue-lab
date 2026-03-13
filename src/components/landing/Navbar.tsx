@@ -9,6 +9,7 @@ import { EditableProfile } from "@/components/EditableProfile";
 
 const navLinks = [
   { label: "Practice", href: "/practice" },
+  { label: "Beat the Pro", href: "/beat-the-pro" },
   { label: "Challenges", href: "/expert-challenges" },
   { label: "Clans", href: "/clans" },
   { label: "Leaderboard", href: "/leaderboard" },

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, MicOff, Volume2, VolumeX, Swords } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -201,6 +201,8 @@ const PracticePage = () => {
   const [searchParams] = useSearchParams();
   const paramEnv = searchParams.get("env") as EnvironmentId | null;
   const paramRole = searchParams.get("role");
+  const proChallengeScorecardId = searchParams.get("pro_challenge");
+  const proChallengeScore = searchParams.get("pro_score") ? parseInt(searchParams.get("pro_score")!, 10) : null;
   const [selectedEnv, setSelectedEnv] = useState<EnvironmentId | null>(paramEnv || "interview");
   const [selectedRole, setSelectedRole] = useState<string | null>(paramRole || null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -247,6 +249,7 @@ const PracticePage = () => {
   const [showExitQuestion, setShowExitQuestion] = useState(false);
   const [showTextModeFallback, setShowTextModeFallback] = useState(false);
   const [showPlacementResult, setShowPlacementResult] = useState(false);
+  const [proChallengeResult, setProChallengeResult] = useState<{ userScore: number; proScore: number; beatPro: boolean; bonusElo: number } | null>(null);
   const [placementElo, setPlacementElo] = useState<number>(1000);
   const [coldCallTextMode, setColdCallTextMode] = useState(false);
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
@@ -750,6 +753,45 @@ This evaluation style should subtly influence your questions and reactions. Do N
           }
         }
       });
+
+      // Beat the Pro challenge tracking
+      if (proChallengeScorecardId && proChallengeScore !== null && user) {
+        const PRO_BONUS_ELO = 15;
+        const beatPro = data.score > proChallengeScore;
+        const bonusElo = beatPro ? PRO_BONUS_ELO : 0;
+
+        setProChallengeResult({ userScore: data.score, proScore: proChallengeScore, beatPro, bonusElo });
+
+        // Record the attempt
+        await supabase.from("pro_challenge_attempts").insert({
+          user_id: user.id,
+          scorecard_id: proChallengeScorecardId,
+          user_score: data.score,
+          pro_score: proChallengeScore,
+          beat_pro: beatPro,
+          bonus_elo: bonusElo,
+          scenario_env: selectedEnv || "interview",
+          scenario_role: selectedRole || "hiring-manager",
+        });
+
+        // Award bonus ELO
+        if (beatPro) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("elo")
+            .eq("id", user.id)
+            .single();
+          if (prof) {
+            await supabase
+              .from("profiles")
+              .update({ elo: prof.elo + PRO_BONUS_ELO, updated_at: new Date().toISOString() })
+              .eq("id", user.id);
+            toast.success(`🏆 You beat the pro! +${PRO_BONUS_ELO} bonus ELO awarded!`, { duration: 5000 });
+          }
+        } else {
+          toast(`Pro scored ${proChallengeScore} — you scored ${data.score}. Keep practicing!`, { duration: 4000 });
+        }
+      }
 
       // Process consistency scoring
       const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
@@ -1502,6 +1544,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 </div>
               )}
 
+              {/* Pro Challenge Banner */}
+              {proChallengeScorecardId && proChallengeScore !== null && !feedback && (
+                <div className="mx-4 mt-3 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Swords className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-semibold text-primary">Beat the Pro Challenge</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">Pro scored <span className="font-bold text-foreground">{proChallengeScore}</span></span>
+                </div>
+              )}
+
               {/* Messages */}
               <div
                 ref={scrollRef}
@@ -1745,6 +1798,44 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       <RankProgressCard elo={rankUpData.newElo} eloDelta={rankUpData.delta} />
                       <PracticeStreak currentStreak={rankUpData.currentStreak} longestStreak={rankUpData.longestStreak} />
                     </>
+                  )}
+                  {/* Beat the Pro result */}
+                  {proChallengeResult && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className={`card-elevated px-4 py-3 border ${proChallengeResult.beatPro ? "border-primary/30 bg-primary/5" : "border-border"}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          Beat the Pro Result
+                        </span>
+                        {proChallengeResult.beatPro && (
+                          <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                            🏆 YOU WON
+                          </span>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="text-center">
+                          <p className="text-[10px] text-muted-foreground">Your Score</p>
+                          <p className={`text-xl font-bold font-heading ${proChallengeResult.beatPro ? "text-primary" : "text-foreground"}`}>
+                            {proChallengeResult.userScore}
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[10px] text-muted-foreground">Pro Score</p>
+                          <p className="text-xl font-bold font-heading text-muted-foreground">
+                            {proChallengeResult.proScore}
+                          </p>
+                        </div>
+                      </div>
+                      {proChallengeResult.beatPro && (
+                        <p className="text-[11px] text-primary font-semibold text-center mt-2">
+                          +{proChallengeResult.bonusElo} bonus ELO awarded!
+                        </p>
+                      )}
+                    </motion.div>
                   )}
                   {lastPoints !== null && lastPoints > 0 && selectedEnv !== "interview" && (
                     <motion.div

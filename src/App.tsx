@@ -17,6 +17,7 @@ import Scenarios from "./pages/Scenarios";
 import Progress from "./pages/Progress";
 import Packs from "./pages/Packs";
 import ExpertChallenges from "./pages/ExpertChallenges";
+import BeatThePro from "./pages/BeatThePro";
 import Clans from "./pages/Clans";
 import JoinClan from "./pages/JoinClan";
 import ScorecardPage from "./pages/ScorecardPage";
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/packs" element={<Packs />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/expert-challenges" element={<ExpertChallenges />} />
+            <Route path="/beat-the-pro" element={<BeatThePro />} />
             <Route path="/clans" element={<Clans />} />
             <Route path="/join/:code" element={<JoinClan />} />
             <Route path="/scorecard/:id" element={<ScorecardPage />} />
