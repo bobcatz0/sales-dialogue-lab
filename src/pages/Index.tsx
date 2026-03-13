@@ -1,12 +1,8 @@
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
-import InterviewPrompt from "@/components/landing/InterviewPrompt";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
-import CompetitiveSection from "@/components/landing/CompetitiveSection";
-import ScenarioCards from "@/components/landing/ScenarioCards";
-import CTASection from "@/components/landing/CTASection";
-import SocialProofBar from "@/components/landing/SocialProofBar";
 import ActivityTicker from "@/components/landing/ActivityTicker";
+import HeroLeaderboardPreview from "@/components/landing/HeroLeaderboardPreview";
 import Footer from "@/components/landing/Footer";
 
 const Index = () => {
@@ -15,12 +11,12 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <ActivityTicker />
-      <InterviewPrompt />
-      <SocialProofBar />
       <HowItWorksSection />
-      <CompetitiveSection />
-      <ScenarioCards />
-      <CTASection />
+      <section className="py-16">
+        <div className="container mx-auto px-6 max-w-2xl">
+          <HeroLeaderboardPreview />
+        </div>
+      </section>
       <Footer />
     </div>
   );
