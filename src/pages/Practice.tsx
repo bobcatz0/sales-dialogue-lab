@@ -806,6 +806,42 @@ This evaluation style should subtly influence your questions and reactions. Do N
         }
       }
 
+      // Ghost Battle — compare scores and adjust ELO
+      if (ghostBattle.ghost && !isProChallenge && user) {
+        const ghostResult = calculateGhostElo(data.score, ghostBattle.ghost.score);
+        setGhostResult({
+          userScore: data.score,
+          ghostScore: ghostBattle.ghost.score,
+          ghostName: ghostBattle.ghost.display_name,
+          ghostAvatar: ghostBattle.ghost.avatar_url,
+          ...ghostResult,
+        });
+
+        // Apply ghost battle ELO delta
+        if (ghostResult.eloDelta !== 0) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("elo")
+            .eq("id", user.id)
+            .single();
+          if (prof) {
+            const newElo = Math.max(100, prof.elo + ghostResult.eloDelta);
+            await supabase
+              .from("profiles")
+              .update({ elo: newElo, updated_at: new Date().toISOString() })
+              .eq("id", user.id);
+          }
+        }
+
+        if (ghostResult.beatGhost) {
+          toast.success(`👻 You beat ${ghostBattle.ghost.display_name}'s ghost! +${ghostResult.eloDelta} ELO`, { duration: 4000 });
+        } else if (ghostResult.tied) {
+          toast(`👻 Tied with ${ghostBattle.ghost.display_name}'s ghost. +${ghostResult.eloDelta} ELO`, { duration: 4000 });
+        } else {
+          toast(`👻 ${ghostBattle.ghost.display_name}'s ghost won. ${ghostResult.eloDelta} ELO`, { duration: 4000 });
+        }
+      }
+
       // Process consistency scoring
       const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
       const recentScores = updated.slice(1, 6).map((s) => s.score); // previous 5
