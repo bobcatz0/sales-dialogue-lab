@@ -156,29 +156,61 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
         );
       })()}
 
-      {/* Streak Display */}
-      <div className={`rounded-lg p-3 border ${consistency.currentStreak >= 3 ? "border-primary/25 bg-primary/5" : "border-border bg-muted/30"}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Flame className={`h-4 w-4 ${consistency.currentStreak >= 3 ? "text-primary" : "text-muted-foreground"}`} />
-            <div>
-              <p className={`text-sm font-bold ${consistency.currentStreak >= 3 ? "text-primary" : "text-foreground"}`}>
-                {consistency.currentStreak} day{consistency.currentStreak !== 1 ? "s" : ""}
-              </p>
-              <p className="text-[9px] text-muted-foreground">Current streak</p>
+      {/* Streak Display — uses DB-backed streak from profile */}
+      {(() => {
+        const dbStreak = (profile as any)?.current_streak ?? consistency.currentStreak;
+        const dbBest = (profile as any)?.longest_streak ?? consistency.bestStreak;
+        const streak = Math.max(dbStreak, consistency.currentStreak);
+        const best = Math.max(dbBest, consistency.bestStreak);
+        const isOnFire = streak >= 3;
+
+        const MILESTONES = [7, 14, 30];
+        const nextMilestone = MILESTONES.find((m) => streak < m) ?? null;
+        const milestoneProgress = nextMilestone
+          ? Math.min(100, (streak / nextMilestone) * 100)
+          : 100;
+        const milestoneLabel = nextMilestone === 7 ? "Weekly Warrior 🏅" : nextMilestone === 14 ? "Two-Week Titan 🏅" : nextMilestone === 30 ? "30-Day Legend 🏆" : null;
+
+        return (
+          <div className={`rounded-lg p-3 border space-y-2 ${isOnFire ? "border-primary/25 bg-primary/5" : "border-border bg-muted/30"}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Flame className={`h-4 w-4 ${isOnFire ? "text-primary" : "text-muted-foreground"}`} />
+                <div>
+                  <p className={`text-sm font-bold ${isOnFire ? "text-primary" : "text-foreground"}`}>
+                    {streak} day{streak !== 1 ? "s" : ""}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground">Current streak</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-foreground">{best}</p>
+                <p className="text-[9px] text-muted-foreground">Best</p>
+              </div>
             </div>
+            {nextMilestone && milestoneLabel && (
+              <div className="space-y-1">
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${milestoneProgress}%` }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70"
+                  />
+                </div>
+                <p className="text-[9px] text-muted-foreground text-right tabular-nums">
+                  {streak}/{nextMilestone} to <span className="font-semibold text-foreground">{milestoneLabel}</span>
+                </p>
+              </div>
+            )}
+            {isOnFire && !nextMilestone && (
+              <p className="text-[9px] text-primary/80 font-medium text-center">
+                🔥 All milestones unlocked. Legendary discipline.
+              </p>
+            )}
           </div>
-          <div className="text-right">
-            <p className="text-sm font-bold text-foreground">{consistency.bestStreak}</p>
-            <p className="text-[9px] text-muted-foreground">Best</p>
-          </div>
-        </div>
-        {consistency.currentStreak >= 5 && (
-          <p className="text-[9px] text-primary/80 font-medium mt-1.5 text-center">
-            Consistency compounds. Keep building.
-          </p>
-        )}
-      </div>
+        );
+      })()}
 
       {/* 7-Day Activity Heatmap */}
       {(() => {
