@@ -87,6 +87,7 @@ import {
   captureFeedbackSignal,
 } from "@/components/practice/signalCapture";
 import { processPromoSession, loadPromoSeries, type PromoSeriesState } from "@/components/practice/promotionSeries";
+import { pushActivityEvent } from "@/components/practice/activityFeed";
 
 // --- Streaming ---
 
@@ -609,6 +610,33 @@ This evaluation style should subtly influence your questions and reactions. Do N
       setPromoSeries(newPromo);
       if (prevPromoStatus === "idle" && newPromo.status === "active") {
         toast(`Promotion Series — win 2 sessions to reach ${newPromo.toRank}`, { duration: 4500 });
+      }
+
+      // Emit activity feed events
+      if (isValidSession) {
+        const displayName = alias ? `${alias}` : "You";
+        const prevBest = updated.slice(1).reduce((best, s) => Math.max(best, s.score), 0);
+        const isPersonalBest = data.score > prevBest && updated.length > 1;
+
+        if (isPersonalBest) {
+          pushActivityEvent({ type: "personal_best", text: `${displayName} set a new personal best: ${data.score} in ${activeRole.title}`, isReal: true });
+        } else {
+          pushActivityEvent({ type: "score", text: `${displayName} scored ${data.score} in ${activeRole.title}`, isReal: true });
+        }
+
+        if (finalPoints > 0) {
+          pushActivityEvent({ type: "elo", text: `${displayName} gained +${finalPoints} ELO`, isReal: true });
+        }
+
+        const rankBefore = getRank(scoreBefore);
+        const rankNow = getRank(scoreAfter);
+        if (rankBefore !== rankNow) {
+          pushActivityEvent({ type: "rank_up", text: `${displayName} ranked up to ${rankNow}`, isReal: true });
+        }
+
+        if (prevPromoStatus === "idle" && newPromo.status === "active") {
+          pushActivityEvent({ type: "promo", text: `${displayName} entered Promotion Series: ${newPromo.fromRank} → ${newPromo.toRank}`, isReal: true });
+        }
       }
 
       // Update progression & check unlocks
