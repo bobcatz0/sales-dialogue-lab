@@ -89,7 +89,7 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
       {user && <WeeklyChallengeBadges userId={user.id} />}
 
       {/* Quick stats */}
-      <div className="grid grid-cols-3 gap-2 text-center">
+      <div className="grid grid-cols-4 gap-2 text-center">
         <div>
           <div className="text-lg font-bold font-heading text-foreground">{consistency.totalSessions}</div>
           <div className="text-[10px] text-muted-foreground">Sessions</div>
@@ -101,6 +101,10 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
         <div>
           <div className="text-lg font-bold font-heading text-foreground">{consistency.sessionsThisWeek}</div>
           <div className="text-[10px] text-muted-foreground">This Week</div>
+        </div>
+        <div>
+          <div className={`text-lg font-bold font-heading ${proWins > 0 ? "text-primary" : "text-foreground"}`}>{proWins}</div>
+          <div className="text-[10px] text-muted-foreground">Pro Wins</div>
         </div>
       </div>
 

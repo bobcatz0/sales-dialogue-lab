@@ -26,6 +26,7 @@ interface LeaderboardEntry {
   is_evaluator?: boolean;
   clan_name?: string;
   current_streak?: number;
+  pro_wins?: number;
 }
 
 interface ClanMemberInfo {
