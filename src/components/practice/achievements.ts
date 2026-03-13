@@ -21,7 +21,9 @@ export const BADGE_DEFINITIONS: BadgeDef[] = [
   { id: "sdr-interview-ready", label: "SDR Interview Ready", description: "Completed the SDR Interview Track", icon: "award" },
   // Consistency milestones
   { id: "streak-3", label: "3-Day Consistency", description: "Practiced 3 consecutive days", icon: "flame" },
-  { id: "streak-7", label: "7-Day Consistency", description: "Practiced 7 consecutive days", icon: "flame" },
+  { id: "streak-7", label: "Weekly Warrior", description: "Practiced 7 consecutive days", icon: "flame" },
+  { id: "streak-14", label: "Two-Week Titan", description: "Practiced 14 consecutive days", icon: "flame" },
+  { id: "streak-30", label: "30-Day Legend", description: "Practiced 30 consecutive days — elite discipline", icon: "trophy" },
   { id: "sessions-15", label: "15 Sessions", description: "Completed 15 valid sessions", icon: "target" },
   { id: "sessions-50", label: "50 Sessions", description: "Completed 50 valid sessions", icon: "star" },
 ];
@@ -69,6 +71,8 @@ export function evaluateBadges(opts: {
   // Consistency badges
   check("streak-3", opts.currentStreak >= 3);
   check("streak-7", opts.currentStreak >= 7);
+  check("streak-14", opts.currentStreak >= 14);
+  check("streak-30", opts.currentStreak >= 30);
   check("sessions-15", opts.totalValidSessions >= 15);
   check("sessions-50", opts.totalValidSessions >= 50);
 
