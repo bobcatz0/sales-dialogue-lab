@@ -1962,6 +1962,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           setActiveSDRRound(null);
                           setSdrProgress(loadSDRTrackProgress());
                           setActiveDrill(null);
+                          setGhostResult(null);
                         }}
                         onTrySameRole={() => {
                           markFirstSessionRetried();
