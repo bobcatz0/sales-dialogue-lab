@@ -1676,8 +1676,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         }}
                         placeholder="Type your response… (Shift+Enter for new line)"
                         disabled={!selectedRole || isLoading}
-                        className="flex-1 min-h-[80px] max-h-[200px] text-sm resize-none"
-                        rows={3}
+                        className="flex-1 min-h-[120px] max-h-[300px] text-sm resize-y"
+                        rows={5}
                       />
                       <div className="flex flex-col gap-1.5 shrink-0">
                         <VoiceInputButton
