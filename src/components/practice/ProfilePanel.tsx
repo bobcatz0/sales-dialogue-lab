@@ -26,6 +26,13 @@ const BADGE_ICONS: Record<string, React.ElementType> = {
   swords: Swords,
 };
 
+// Pro challenge badge tier colors (bronze → silver → gold)
+const PRO_BADGE_TIERS: Record<string, { ring: string; bg: string; icon: string; label: string }> = {
+  "pro-slayer": { ring: "ring-amber-700/60", bg: "bg-amber-700/15", icon: "text-amber-700", label: "Bronze" },
+  "pro-hunter": { ring: "ring-gray-400/60", bg: "bg-gray-300/15", icon: "text-gray-400", label: "Silver" },
+  "pro-legend": { ring: "ring-yellow-400/60", bg: "bg-yellow-400/15", icon: "text-yellow-400", label: "Gold" },
+};
+
 interface ProfilePanelProps {
   alias: string;
   consistency: ConsistencyData;
