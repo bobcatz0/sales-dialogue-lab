@@ -26,8 +26,10 @@ export const BADGE_DEFINITIONS: BadgeDef[] = [
   { id: "streak-30", label: "30-Day Legend", description: "Practiced 30 consecutive days — elite discipline", icon: "trophy" },
   { id: "sessions-15", label: "15 Sessions", description: "Completed 15 valid sessions", icon: "target" },
   { id: "sessions-50", label: "50 Sessions", description: "Completed 50 valid sessions", icon: "star" },
-  // Pro challenge
+  // Pro challenge tiers
   { id: "pro-slayer", label: "Pro Slayer", description: "Beat 3 different pro benchmarks", icon: "swords" },
+  { id: "pro-hunter", label: "Pro Hunter", description: "Beat 5 different pro benchmarks", icon: "swords" },
+  { id: "pro-legend", label: "Pro Legend", description: "Beat 10 different pro benchmarks — elite challenger", icon: "trophy" },
 ];
 
 export function loadEarnedBadges(): string[] {
@@ -81,6 +83,8 @@ export function evaluateBadges(opts: {
 
   // Pro Slayer
   check("pro-slayer", (opts.proWins ?? 0) >= 3);
+  check("pro-hunter", (opts.proWins ?? 0) >= 5);
+  check("pro-legend", (opts.proWins ?? 0) >= 10);
 
   if (newBadges.length > 0) {
     saveBadges([...earned, ...newBadges]);
