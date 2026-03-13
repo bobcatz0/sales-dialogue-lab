@@ -364,6 +364,7 @@ const PracticePage = () => {
     setLastPoints(null);
     setEloDelta(null);
     setHardCloseWin(false);
+    setGhostResult(null);
     setShowHelpfulPrompt(false);
     setShowRunAgainPrompt(false);
     callEndTriggeredRef.current = false;
