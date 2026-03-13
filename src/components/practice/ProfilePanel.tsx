@@ -423,6 +423,9 @@ export function ProfilePanel({ alias, consistency }: ProfilePanelProps) {
         );
       })()}
 
+      {/* Skill Levels */}
+      {user && <SkillLevelsDisplay userId={user.id} />}
+
       {BADGE_DEFINITIONS.length > 0 && (
         <div>
           <p className="text-[11px] text-muted-foreground mb-2 font-medium">Milestones</p>
