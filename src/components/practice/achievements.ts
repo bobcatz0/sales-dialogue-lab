@@ -71,6 +71,8 @@ export function evaluateBadges(opts: {
   // Consistency badges
   check("streak-3", opts.currentStreak >= 3);
   check("streak-7", opts.currentStreak >= 7);
+  check("streak-14", opts.currentStreak >= 14);
+  check("streak-30", opts.currentStreak >= 30);
   check("sessions-15", opts.totalValidSessions >= 15);
   check("sessions-50", opts.totalValidSessions >= 50);
 
