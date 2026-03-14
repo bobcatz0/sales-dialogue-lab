@@ -55,11 +55,60 @@ export function useProspectVoice() {
 
   const speak = useCallback(
     async (text: string) => {
-      // TTS temporarily disabled — focusing on STT input first
-      console.log("[TTS] DISABLED — skipping speech for:", text.slice(0, 60));
-      return;
+      if (isMuted || !text.trim()) return;
+
+      cleanup(); // stop any previous playback
+
+      try {
+        console.log("[TTS] Requesting ElevenLabs TTS for:", text.slice(0, 60));
+        const response = await fetch(TTS_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          console.error("[TTS] ElevenLabs error:", response.status, err);
+          // Fall back to browser native TTS
+          console.log("[TTS] Falling back to browser native TTS");
+          await speakBrowserNative(text);
+          return;
+        }
+
+        const audioBlob = await response.blob();
+        const url = URL.createObjectURL(audioBlob);
+        objectUrlRef.current = url;
+
+        const audio = new Audio(url);
+        audio.volume = volume;
+        audioRef.current = audio;
+
+        setIsPlaying(true);
+        audio.onended = () => {
+          setIsPlaying(false);
+          audioRef.current = null;
+          if (objectUrlRef.current) {
+            URL.revokeObjectURL(objectUrlRef.current);
+            objectUrlRef.current = null;
+          }
+        };
+        audio.onerror = () => {
+          console.error("[TTS] Audio playback error, falling back to browser TTS");
+          setIsPlaying(false);
+          speakBrowserNative(text);
+        };
+
+        await audio.play();
+      } catch (err) {
+        console.error("[TTS] Request failed, falling back to browser TTS:", err);
+        await speakBrowserNative(text);
+      }
     },
-    []
+    [isMuted, volume, cleanup, speakBrowserNative]
   );
 
   const toggleMute = useCallback(() => {
