@@ -1046,7 +1046,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "evaluator" | "user"
+      app_role: "admin" | "evaluator" | "user" | "manager"
       clan_join_type: "public" | "invite_only"
       clan_role: "leader" | "officer" | "member"
       tournament_status: "upcoming" | "active" | "completed" | "cancelled"
@@ -1177,7 +1177,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "evaluator", "user"],
+      app_role: ["admin", "evaluator", "user", "manager"],
       clan_join_type: ["public", "invite_only"],
       clan_role: ["leader", "officer", "member"],
       tournament_status: ["upcoming", "active", "completed", "cancelled"],
