@@ -672,6 +672,15 @@ export function FeedbackPanel({
           Download Full Report
         </Button>
 
+        {/* Share Result Card */}
+        <ShareResultCard
+          scenarioTitle={scenarioTitle || feedback.rank}
+          score={feedback.score}
+          rank={feedback.rank}
+          eloDelta={eloDelta}
+          elo={profile?.elo ?? null}
+        />
+
         {/* Scorecard */}
         <ScorecardShare feedback={feedback} scenarioTitle={scenarioTitle || feedback.rank} alias={alias ?? null} isValidSession={!!isValidSession} elo={profile?.elo ?? null} eloDelta={eloDelta} />
 
