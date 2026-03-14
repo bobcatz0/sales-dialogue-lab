@@ -18,6 +18,7 @@ import { RetryLoopPanel } from "./RetryLoopPanel";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
+import { SkillXpSummary } from "./SkillXpSummary";
 import { ConversationBreakdown } from "./ConversationBreakdown";
 import { useAuth } from "@/hooks/useAuth";
 import { loadHistory } from "./sessionStorage";
