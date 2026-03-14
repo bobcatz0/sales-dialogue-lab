@@ -451,12 +451,22 @@ export function FeedbackPanel({
           </motion.div>
         )}
 
+        {/* ═══════════════ STREAK REWARD ═══════════════ */}
+        {(currentStreak ?? 0) > 0 && (
+          <StreakReward
+            currentStreak={currentStreak ?? 0}
+            longestStreak={longestStreak ?? 0}
+            justIncreased={streakJustIncreased}
+          />
+        )}
+
         {/* ═══════════════ SKILL XP SUMMARY ═══════════════ */}
         {user && skills.length > 0 && (
           <SkillXpSummary
             userId={user.id}
             skillBreakdown={skills}
             onXpAwarded={() => setSkillRefreshKey((k) => k + 1)}
+            currentStreak={currentStreak}
           />
         )}
 
