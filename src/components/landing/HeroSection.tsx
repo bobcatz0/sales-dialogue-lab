@@ -51,7 +51,7 @@ const HeroSection = () => {
             transition={{ duration: 0.4, delay: 0.12 }}
             className="mx-auto max-w-md text-base md:text-lg text-muted-foreground leading-relaxed"
           >
-            Pick a scenario. Answer honestly. Get scored instantly and see where you rank.
+            Compete in real sales scenarios, get scored instantly, and improve your rank.
           </motion.p>
 
           <motion.div
