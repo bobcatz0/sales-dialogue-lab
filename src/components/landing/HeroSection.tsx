@@ -40,9 +40,9 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.05 }}
             className="font-heading text-4xl font-bold leading-[1.08] tracking-tight md:text-5xl lg:text-[3.5rem] text-foreground"
           >
-            Train Your Sales Instincts.
+            Test Your Sales Instincts.
             <br />
-            <span className="text-gradient">Prove Your Skill.</span>
+            <span className="text-gradient">Climb the Leaderboard.</span>
           </motion.h1>
 
           <motion.p
