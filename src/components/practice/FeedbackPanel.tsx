@@ -13,6 +13,7 @@ import { ScorecardShare } from "./ScorecardShare";
 import { ChallengeButton } from "./ChallengeButton";
 import { HumanReviewedBadge } from "./EvaluatorBadges";
 import { AnimatedScore } from "./AnimatedScore";
+import { RetryLoopPanel } from "./RetryLoopPanel";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
@@ -654,35 +655,15 @@ export function FeedbackPanel({
           </div>
         )}
 
-        {/* ═══════════════ BOTTOM SECTION: Personal Best + Actions ═══════════════ */}
-        <PersonalBestComparison currentScore={feedback.score} scenarioRole={scenarioRole} />
-
-        {/* Action Buttons */}
-        {interview && feedback.score < 80 && onStartDrill ? (
-          <div className="space-y-2 pt-2 border-t border-border">
-            <div className="rounded-lg p-3 bg-muted/50 border border-border">
-              <p className="text-[11px] font-medium text-foreground text-center">Focused Improvement Recommended Before Reattempt.</p>
-            </div>
-            <Button variant="default" size="sm" className="w-full h-10" onClick={onStartDrill}>
-              <Target className="h-3.5 w-3.5 mr-1.5" />
-              Start Targeted Drill
-            </Button>
-            <Button variant="ghost" size="sm" className="w-full h-8 text-xs text-muted-foreground" onClick={onStartNew}>
-              Skip to New Scenario
-            </Button>
-          </div>
-        ) : (
-          <div className="flex gap-3 pt-2 border-t border-border">
-            <Button variant="outline" size="sm" className="flex-1 h-10" onClick={onTrySameRole}>
-              <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-              Retry Scenario
-            </Button>
-            <Button variant="default" size="sm" className="flex-1 h-10" onClick={onStartNew}>
-              <Play className="h-3.5 w-3.5 mr-1.5" />
-              Start New Scenario
-            </Button>
-          </div>
-        )}
+        {/* ═══════════════ BOTTOM SECTION: Retry Loop ═══════════════ */}
+        <RetryLoopPanel
+          currentScore={feedback.score}
+          scenarioRole={scenarioRole}
+          scenarioEnv={scenarioEnv}
+          scenarioTitle={scenarioTitle}
+          onRetry={onTrySameRole}
+          onNewScenario={onStartNew}
+        />
 
         {/* Download */}
         <Button variant="ghost" size="sm" className="w-full h-8 text-xs text-muted-foreground" onClick={handleDownload}>
