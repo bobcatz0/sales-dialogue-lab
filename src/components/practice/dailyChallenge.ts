@@ -201,3 +201,6 @@ export function markChallengeCompleted(): void {
 }
 
 export const CHALLENGE_BONUS_POINTS = 25;
+
+/** ELO bonus for daily challenge top finishers */
+export const DAILY_ELO_BONUSES: Record<number, number> = { 1: 30, 2: 20, 3: 10 };
