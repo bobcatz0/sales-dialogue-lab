@@ -14,6 +14,14 @@ import { SCENARIO_CHAINS } from "@/components/scenarios/chainData";
 import ScenarioChainCard from "@/components/scenarios/ScenarioChainCard";
 import { loadChainProgress, resetChainProgress } from "@/components/scenarios/chainStorage";
 import type { ChainProgress } from "@/components/scenarios/types";
+import { PromotionSeriesBanner, SeriesResultModal } from "@/components/practice/PromotionSeriesUI";
+import {
+  getSeriesEligibility,
+  loadLastFailedSeriesElo,
+  startPromotionSeries,
+  type SeriesEligibility,
+  type PromotionSeries,
+} from "@/components/practice/promotionSeries";
 
 interface Scenario {
   id: string;
