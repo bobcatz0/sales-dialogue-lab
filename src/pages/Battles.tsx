@@ -11,6 +11,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { ENVIRONMENTS, type EnvironmentId } from "@/components/practice/environments";
 import { roles } from "@/components/practice/roleData";
 import { syncEloAfterSession } from "@/lib/eloSync";
+import { ShareResultCard } from "@/components/practice/ShareResultCard";
+import { getEloRank } from "@/lib/elo";
 
 const BATTLE_PROMPTS: Record<string, { prospect: string; goal: string }[]> = {
   "cold-call": [
