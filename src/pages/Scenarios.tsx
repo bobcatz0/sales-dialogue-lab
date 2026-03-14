@@ -284,6 +284,11 @@ const Scenarios = () => {
           </div>
         )}
 
+        {/* Flash Challenge */}
+        <div className="max-w-5xl mx-auto mb-8">
+          <FlashChallengeBanner />
+        </div>
+
         {/* Scenario Chains */}
         <div className="max-w-5xl mx-auto mb-14">
           <div className="flex items-center gap-2 mb-6">
