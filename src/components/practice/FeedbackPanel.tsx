@@ -18,6 +18,7 @@ import { RetryLoopPanel } from "./RetryLoopPanel";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
+import { SkillXpSummary } from "./SkillXpSummary";
 import { ConversationBreakdown } from "./ConversationBreakdown";
 import { useAuth } from "@/hooks/useAuth";
 import { loadHistory } from "./sessionStorage";
@@ -276,7 +277,8 @@ export function FeedbackPanel({
   const skills = feedback.skillBreakdown || [];
   const frm = feedback.finalRoundMetrics;
   const [progressUpdated, setProgressUpdated] = useState(false);
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const [skillRefreshKey, setSkillRefreshKey] = useState(0);
 
   const strongest = skills.length > 0 ? skills.reduce((a, b) => (a.score >= b.score ? a : b)) : null;
   const weakest = skills.length > 0 ? skills.reduce((a, b) => (a.score <= b.score ? a : b)) : null;
@@ -440,6 +442,15 @@ export function FeedbackPanel({
               </div>
             )}
           </motion.div>
+        )}
+
+        {/* ═══════════════ SKILL XP SUMMARY ═══════════════ */}
+        {user && skills.length > 0 && (
+          <SkillXpSummary
+            userId={user.id}
+            skillBreakdown={skills}
+            onXpAwarded={() => setSkillRefreshKey((k) => k + 1)}
+          />
         )}
 
         {/* Framework Rubric Scores */}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
+import { SkillLevelsDisplay } from "@/components/practice/SkillLevelsDisplay";
 import {
   loadProgress,
   getSkillLevel,
@@ -57,6 +58,7 @@ function SkillProgressBar({
 const Progress = () => {
   const [progress, setProgress] = useState<ProgressState | null>(null);
   const { user } = useAuth();
+  const [refreshKey] = useState(0);
 
   useEffect(() => {
     setProgress(loadProgress());
@@ -153,6 +155,21 @@ const Progress = () => {
             className="mt-4 card-elevated p-5"
           >
             <WeeklyChallengeBadges userId={user.id} />
+          </motion.div>
+        )}
+
+        {/* DB-backed Skill Levels (XP system) */}
+        {user && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.4 }}
+            className="mt-6 card-elevated p-6"
+          >
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+              Skill Levels &amp; XP
+            </p>
+            <SkillLevelsDisplay userId={user.id} refreshKey={refreshKey} />
           </motion.div>
         )}
 
