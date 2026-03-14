@@ -74,7 +74,9 @@ const ScenariosSection = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-          {scenarios.map((s, i) => (
+          {scenarios.map((s, i) => {
+            const isLocked = !!s.requiredRank && !isRankSufficient(userRank, s.requiredRank);
+            return (
             <motion.div
               key={s.title}
               initial={{ opacity: 0, y: 16 }}
@@ -82,6 +84,28 @@ const ScenariosSection = () => {
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
             >
+              {isLocked ? (
+                <div className="card-elevated p-5 flex flex-col gap-3 border-border/50 opacity-60 block">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-muted/40 text-muted-foreground shrink-0">
+                      <Lock className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-foreground">{s.title}</p>
+                      <p className="text-[11px] text-muted-foreground">{s.desc}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${getDifficultyColor(s.difficulty)}`}>
+                      {s.difficulty}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Lock className="h-3 w-3" />
+                      Requires {s.requiredRank}
+                    </span>
+                  </div>
+                </div>
+              ) : (
               <Link
                 to={`/practice?env=${s.env}`}
                 className="card-elevated p-5 flex flex-col gap-3 hover:border-primary/30 transition-all duration-200 group block"
@@ -106,8 +130,10 @@ const ScenariosSection = () => {
                   </div>
                 </div>
               </Link>
+              )}
             </motion.div>
-          ))}
+            );
+          })}
           {/* Expert Challenges CTA */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
