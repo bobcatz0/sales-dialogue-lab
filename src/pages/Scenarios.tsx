@@ -117,6 +117,7 @@ const SCENARIOS: Scenario[] = [
     env: "enterprise",
     role: "technical-evaluator",
     duration: "~6 min",
+    requiredRank: "Rainmaker",
   },
   {
     id: "champion-enablement",
@@ -128,6 +129,7 @@ const SCENARIOS: Scenario[] = [
     env: "enterprise",
     role: "champion",
     duration: "~6 min",
+    requiredRank: "Sales Architect",
   },
 ];
 
