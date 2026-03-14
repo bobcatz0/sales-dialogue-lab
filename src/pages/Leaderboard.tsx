@@ -362,6 +362,7 @@ const LeaderboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [tab, setTab] = useState<Tab>("all-time");
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
