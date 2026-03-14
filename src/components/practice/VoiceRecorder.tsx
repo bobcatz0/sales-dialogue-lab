@@ -37,7 +37,6 @@ export function VoiceRecorder({
   const [elapsed, setElapsed] = useState(0);
   const [waveformLevels, setWaveformLevels] = useState<number[]>(Array(20).fill(0.1));
   const [rmsDb, setRmsDb] = useState<number>(-Infinity);
-  const [peakDb, setPeakDb] = useState<number>(-Infinity);
   const [hasReceivedAudio, setHasReceivedAudio] = useState(false);
   const [sttBanner, setSttBanner] = useState<string | null>(null);
   const [sttFallbackState, setSttFallbackState] = useState<"idle" | "switching" | "failed">("idle");
@@ -133,7 +132,6 @@ export function VoiceRecorder({
         const transcript = typeof payload?.transcript === "string" ? payload.transcript.trim() : "";
         if (transcript.length > 2) {
           logEvent("backend-stt", `transcript ok (${transcript.length} chars)`);
-          console.log("[VoiceRecorder] backend transcript:", transcript);
           return transcript;
         }
 
@@ -166,17 +164,18 @@ export function VoiceRecorder({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      // Debug: log device info
-      const track = stream.getTracks()[0];
-      if (track) {
-        console.log("[VoiceRecorder] Audio track label:", track.label);
-        console.log("[VoiceRecorder] Audio track settings:", JSON.stringify(track.getSettings()));
+      if (DEV) {
+        const track = stream.getTracks()[0];
+        if (track) {
+          console.log("[VoiceRecorder] Audio track label:", track.label);
+          console.log("[VoiceRecorder] Audio track settings:", JSON.stringify(track.getSettings()));
+        }
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const audioInputs = devices.filter(d => d.kind === "audioinput");
+          console.log("[VoiceRecorder] Audio input devices:", audioInputs.map(d => d.label || d.deviceId));
+        } catch { /* ignore */ }
       }
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const audioInputs = devices.filter(d => d.kind === "audioinput");
-        console.log("[VoiceRecorder] Audio input devices:", audioInputs.map(d => d.label || d.deviceId));
-      } catch { /* ignore */ }
 
       // Capture microphone audio so we can optionally use backend Whisper fallback
       if (typeof MediaRecorder !== "undefined") {
@@ -193,7 +192,6 @@ export function VoiceRecorder({
             const audioBlob = new Blob(audioChunksRef.current, { type: recorder.mimeType || "audio/webm" });
             recordedAudioBlobRef.current = audioBlob;
             logEvent("media-stop", `${Math.round(audioBlob.size / 1024)} KB captured`);
-            console.log("[VoiceRecorder] audio blob length:", audioBlob.size);
           };
           recorder.start(1000);
           mediaRecorderRef.current = recorder;
@@ -208,7 +206,7 @@ export function VoiceRecorder({
       const ctx = new AudioCtx();
       // iOS requires explicit resume inside user gesture
       await ctx.resume();
-      console.log("[VoiceRecorder] AudioContext state after resume:", ctx.state);
+      if (DEV) console.log("[VoiceRecorder] AudioContext state after resume:", ctx.state);
       audioCtxRef.current = ctx;
 
       const source = ctx.createMediaStreamSource(stream);
@@ -230,7 +228,6 @@ export function VoiceRecorder({
       const SPEECH_THRESHOLD_DB = -72;
       const SILENCE_FLOOR_DB = -82;
       const SILENCE_CUTOFF_MS = 1500;
-      let frameCount = 0;
 
       const update = () => {
         // Time-domain RMS calculation
@@ -244,7 +241,6 @@ export function VoiceRecorder({
         const db = 20 * Math.log10(rms || 1e-9);
 
         setRmsDb(Math.round(db * 10) / 10);
-        setPeakDb(prev => Math.max(prev, Math.round(db * 10) / 10));
 
         // Track RMS history for debug summary
         rmsHistoryRef.current.push(db);
@@ -266,14 +262,6 @@ export function VoiceRecorder({
           if (lastAboveSilenceRef.current > 0 && now - lastAboveSilenceRef.current > SILENCE_CUTOFF_MS) {
             lastAboveSilenceRef.current = 0;
           }
-        }
-
-        // Debug logging every ~60 frames (~1s at 60fps)
-        frameCount++;
-        if (frameCount % 60 === 0) {
-          const history = rmsHistoryRef.current;
-          const avgRms = history.length > 0 ? history.reduce((a, b) => a + b, 0) / history.length : -Infinity;
-          console.log(`[VoiceRecorder] RMS: ${db.toFixed(1)} dB | avg: ${avgRms.toFixed(1)} dB | threshold: ${SPEECH_THRESHOLD_DB} dB | signalMs: ${signalDurationRef.current.toFixed(0)} | hadAudio: ${hadAnyAudioRef.current}`);
         }
 
         // Frequency data for waveform visualization
@@ -368,11 +356,13 @@ export function VoiceRecorder({
       let transcript = transcriptRef.current.trim();
       const confidence = confidenceRef.current;
 
-      const history = rmsHistoryRef.current;
-      const avgRms = history.length > 0 ? history.reduce((a, b) => a + b, 0) / history.length : -Infinity;
-      console.log(
-        `[VoiceRecorder] STOP — duration: ${duration.toFixed(1)}s | avgRMS: ${avgRms.toFixed(1)} dB | signalMs: ${signalDurationRef.current.toFixed(0)} | hadAudio: ${hadAnyAudioRef.current} | transcript: "${transcript.slice(0, 50)}" | confidence: ${confidence !== null ? confidence.toFixed(2) : "n/a"}`
-      );
+      if (DEV) {
+        const history = rmsHistoryRef.current;
+        const avgRms = history.length > 0 ? history.reduce((a, b) => a + b, 0) / history.length : -Infinity;
+        console.log(
+          `[VoiceRecorder] STOP — duration: ${duration.toFixed(1)}s | avgRMS: ${avgRms.toFixed(1)} dB | signalMs: ${signalDurationRef.current.toFixed(0)} | hadAudio: ${hadAnyAudioRef.current} | transcript: "${transcript.slice(0, 50)}" | confidence: ${confidence !== null ? confidence.toFixed(2) : "n/a"}`
+        );
+      }
 
       // If native STT returned nothing useful, try backend Whisper fallback
       const shouldFallback = backendOnlyModeRef.current || transcript.length <= 2;
@@ -451,7 +441,6 @@ export function VoiceRecorder({
     confidenceRef.current = null;
     recordedAudioBlobRef.current = null;
     setHasReceivedAudio(false);
-    setPeakDb(-Infinity);
     setSttBanner(isSpeechRecognitionSupported ? null : UNSUPPORTED_STT_MESSAGE);
 
     if (!isSpeechRecognitionSupported) {
@@ -476,7 +465,7 @@ export function VoiceRecorder({
     recognitionAny.maxAlternatives = 3;
     recognition.lang = "en-US";
 
-    console.log("[VoiceRecorder] Recognition config:", {
+    if (DEV) console.log("[VoiceRecorder] Recognition config:", {
       continuous: recognition.continuous,
       interimResults: recognition.interimResults,
       maxAlternatives: recognitionAny.maxAlternatives,
@@ -487,7 +476,6 @@ export function VoiceRecorder({
       hasSpeechStartOrResultRef.current = true;
       clearHealthCheck();
       logEvent("onspeechstart", "speech started");
-      console.log("[VoiceRecorder] onspeechstart event fired");
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -496,7 +484,6 @@ export function VoiceRecorder({
       clearHealthCheck();
 
       logEvent("onresult", `${event.results.length} result(s)`);
-      console.log("[VoiceRecorder] onresult fired:", event);
 
       let finalTranscript = "";
       let interimTranscript = "";
@@ -508,7 +495,7 @@ export function VoiceRecorder({
         const confidence = typeof result[0]?.confidence === "number" ? result[0].confidence : null;
         if (confidence !== null) latestConfidence = confidence;
 
-        console.log(
+        if (DEV) console.log(
           `[VoiceRecorder] Raw transcript (${result.isFinal ? "final" : "interim"}): "${transcriptChunk}" | confidence: ${
             confidence !== null ? confidence.toFixed(2) : "n/a"
           }`
@@ -528,18 +515,14 @@ export function VoiceRecorder({
         "onresult",
         `"${transcriptRef.current.slice(0, 40)}" conf=${latestConfidence !== null ? latestConfidence.toFixed(2) : "n/a"}`
       );
-      console.log(`[VoiceRecorder] transcript: "${transcriptRef.current}"`);
-      console.log(`[VoiceRecorder] confidence: ${latestConfidence !== null ? latestConfidence.toFixed(2) : "n/a"}`);
     };
 
     recognitionAny.onspeechend = () => {
       logEvent("onspeechend", "speech ended");
-      console.log("[VoiceRecorder] onspeechend event fired");
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       logEvent("onerror", event.error);
-      console.error("[VoiceRecorder] onerror event:", event.error, event);
 
       if (event.error === "not-allowed") {
         isListeningRef.current = false;
@@ -560,7 +543,6 @@ export function VoiceRecorder({
 
       // Do not reject on silence/no-speech; keep flow user-controlled.
       if (event.error === "no-speech") {
-        console.log("[VoiceRecorder] no-speech event received");
         return;
       }
 
@@ -572,7 +554,6 @@ export function VoiceRecorder({
     recognition.onend = () => {
       clearHealthCheck();
       logEvent("onend", "recognition session ended");
-      console.log("[VoiceRecorder] onend fired");
 
       if (stopRequestedRef.current || sessionFailedRef.current) return;
 

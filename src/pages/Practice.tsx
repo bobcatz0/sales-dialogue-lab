@@ -920,8 +920,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
               </div>
             )}
 
-            {/* Voice Mode Toggle — interview modes only, before persona selection */}
-            {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
+            {/* Voice Mode Toggle — all non-cold-call environments */}
+            {selectedEnv !== "cold-call" && selectedEnv !== null && !selectedRole && (
               <div className="mb-4 space-y-2">
                 <VoiceModeBanner
                   enabled={voice.voiceMode}
