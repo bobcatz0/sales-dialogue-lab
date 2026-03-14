@@ -14,6 +14,14 @@ import { SCENARIO_CHAINS } from "@/components/scenarios/chainData";
 import ScenarioChainCard from "@/components/scenarios/ScenarioChainCard";
 import { loadChainProgress, resetChainProgress } from "@/components/scenarios/chainStorage";
 import type { ChainProgress } from "@/components/scenarios/types";
+import { PromotionSeriesBanner, SeriesResultModal } from "@/components/practice/PromotionSeriesUI";
+import {
+  getSeriesEligibility,
+  loadLastFailedSeriesElo,
+  startPromotionSeries,
+  type SeriesEligibility,
+  type PromotionSeries,
+} from "@/components/practice/promotionSeries";
 
 interface Scenario {
   id: string;
@@ -198,7 +206,9 @@ function getLeaderboardRank(sessions: SessionRecord[], env: string, role: string
 const Scenarios = () => {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [chainProgressMap, setChainProgressMap] = useState<Record<string, ChainProgress>>({});
-  const { profile } = useAuth();
+  const [seriesEligibility, setSeriesEligibility] = useState<SeriesEligibility | null>(null);
+  const [completedSeries, setCompletedSeries] = useState<PromotionSeries | null>(null);
+  const { profile, user } = useAuth();
   const userElo = profile?.elo ?? 1000;
   const userRank = getEloRank(userElo);
 
@@ -207,9 +217,35 @@ const Scenarios = () => {
     setChainProgressMap(loadChainProgress());
   }, []);
 
+  useEffect(() => {
+    if (!user?.id || !profile) return;
+    const checkEligibility = async () => {
+      const ranks = getRankThresholds();
+      const currentIdx = ranks.findIndex((r) => r.name === userRank);
+      const nextRank = currentIdx < ranks.length - 1 ? ranks[currentIdx + 1]?.name : null;
+      const lastFailed = nextRank ? await loadLastFailedSeriesElo(user.id, nextRank) : null;
+      setSeriesEligibility(getSeriesEligibility(user.id, userElo, lastFailed));
+    };
+    checkEligibility();
+  }, [user?.id, userElo, userRank, profile]);
+
   const handleResetChain = (chainId: string) => {
     resetChainProgress(chainId);
     setChainProgressMap(loadChainProgress());
+  };
+
+  const handleStartSeries = () => {
+    if (!user?.id || !seriesEligibility?.nextRank) return;
+    const series = startPromotionSeries(user.id, userRank, seriesEligibility.nextRank, userElo);
+    setSeriesEligibility((prev) => prev ? { ...prev, activeSeries: series, eligible: true } : prev);
+  };
+
+  const handleContinueSeries = () => {
+    // Navigate to practice with promotion series params
+    if (seriesEligibility?.activeSeries) {
+      const s = seriesEligibility.activeSeries;
+      window.location.href = `/practice?env=cold-call&role=b2b-prospect&promoSeries=${s.id}&game=${s.games.length}`;
+    }
   };
 
   return (
@@ -235,6 +271,17 @@ const Scenarios = () => {
             Select a scenario. Get scored. Climb the leaderboard. Each challenge tests different sales skills under real pressure.
           </p>
         </motion.div>
+
+        {/* Promotion Series Banner */}
+        {seriesEligibility && (
+          <div className="max-w-5xl mx-auto mb-8">
+            <PromotionSeriesBanner
+              eligibility={seriesEligibility}
+              onStartSeries={handleStartSeries}
+              onContinueSeries={handleContinueSeries}
+            />
+          </div>
+        )}
 
         {/* Scenario Chains */}
         <div className="max-w-5xl mx-auto mb-14">
@@ -433,6 +480,13 @@ const Scenarios = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Series Result Modal */}
+      <SeriesResultModal
+        open={!!completedSeries}
+        series={completedSeries}
+        onClose={() => setCompletedSeries(null)}
+      />
     </div>
   );
 };
