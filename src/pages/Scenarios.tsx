@@ -55,6 +55,7 @@ const SCENARIOS: Scenario[] = [
     env: "enterprise",
     role: "skeptical-buyer",
     duration: "~5 min",
+    requiredRank: "Prospector",
   },
   {
     id: "cold-call-gatekeeper",
