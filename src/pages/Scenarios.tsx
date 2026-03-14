@@ -93,6 +93,7 @@ const SCENARIOS: Scenario[] = [
     role: "decision-maker",
     duration: "~5 min",
     framework: { id: "meddic", label: "MEDDIC" },
+    requiredRank: "Operator",
   },
   {
     id: "interview-pressure",
