@@ -84,13 +84,15 @@ export function getSkillLevelInfo(xp: number): SkillLevelInfo {
  * Calculate XP to award for a skill based on the session score.
  * Higher scores = more XP. Minimum 5 XP per skill per session.
  */
-function calculateXpAward(skillScore: number): number {
-  if (skillScore >= 90) return 30;
-  if (skillScore >= 80) return 25;
-  if (skillScore >= 70) return 20;
-  if (skillScore >= 60) return 15;
-  if (skillScore >= 50) return 10;
-  return 5;
+function calculateXpAward(skillScore: number, streakMultiplier: number = 1.0): number {
+  let base: number;
+  if (skillScore >= 90) base = 30;
+  else if (skillScore >= 80) base = 25;
+  else if (skillScore >= 70) base = 20;
+  else if (skillScore >= 60) base = 15;
+  else if (skillScore >= 50) base = 10;
+  else base = 5;
+  return Math.round(base * streakMultiplier);
 }
 
 /**
