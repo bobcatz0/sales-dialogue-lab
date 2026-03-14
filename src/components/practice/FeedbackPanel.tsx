@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import {
   Star, TrendingUp, TrendingDown, Target, RotateCcw, Play, Quote, Gauge,
   Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle,
-  ShieldCheck, Mic, BarChart3, Trophy, ArrowUp, Lightbulb, Flame, Snowflake
+  ShieldCheck, Mic, BarChart3, Trophy, ArrowUp, Lightbulb, Flame, Snowflake,
+  Users
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
@@ -205,7 +207,51 @@ function PersonalBestComparison({ currentScore, scenarioRole }: { currentScore: 
   );
 }
 
-// --- PDF Download ---
+// --- Percentile Ranking ---
+function PercentileRanking({ score }: { score: number }) {
+  const [percentile, setPercentile] = useState<number | null>(null);
+  const [totalPlayers, setTotalPlayers] = useState(0);
+
+  useEffect(() => {
+    async function calc() {
+      const [{ count: below }, { count: total }] = await Promise.all([
+        supabase.from("scorecards").select("id", { count: "exact", head: true }).lt("score", score),
+        supabase.from("scorecards").select("id", { count: "exact", head: true }),
+      ]);
+      if (total && total > 0) {
+        const pct = Math.round(((below ?? 0) / total) * 100);
+        setPercentile(pct);
+        setTotalPlayers(total);
+      }
+    }
+    calc();
+  }, [score]);
+
+  if (percentile === null) return null;
+
+  const topPct = 100 - percentile;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 3.4 }}
+      className="flex items-center justify-center gap-2 mt-2"
+    >
+      <Users className="h-3.5 w-3.5 text-muted-foreground" />
+      <span className={`text-sm font-bold ${
+        topPct <= 5 ? "text-primary" : topPct <= 15 ? "text-accent-foreground" : "text-foreground"
+      }`}>
+        Top {topPct}%
+      </span>
+      <span className="text-[10px] text-muted-foreground">
+        of {totalPlayers.toLocaleString()} players
+      </span>
+    </motion.div>
+  );
+}
+
+
 function formatDate() {
   return new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
@@ -396,6 +442,9 @@ export function FeedbackPanel({
             className={`h-full rounded-full ${getScoreBarColor(feedback.score)}`}
           />
         </motion.div>
+
+        {/* Percentile ranking */}
+        <PercentileRanking score={feedback.score} />
       </div>
 
       <div className="p-5 space-y-5">
