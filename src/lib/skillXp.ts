@@ -100,12 +100,13 @@ function calculateXpAward(skillScore: number, streakMultiplier: number = 1.0): n
  */
 export async function awardSkillXp(
   userId: string,
-  skillBreakdown: { name: string; score: number }[]
+  skillBreakdown: { name: string; score: number }[],
+  streakMultiplier: number = 1.0
 ): Promise<{ levelUps: { skillName: string; newLevel: number; title: string }[] }> {
   const levelUps: { skillName: string; newLevel: number; title: string }[] = [];
 
   for (const skill of skillBreakdown) {
-    const xpAward = calculateXpAward(skill.score);
+    const xpAward = calculateXpAward(skill.score, streakMultiplier);
     const skillName = skill.name;
 
     // Try to get existing skill record
