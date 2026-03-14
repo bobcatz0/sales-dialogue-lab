@@ -793,6 +793,93 @@ export type Database = {
         }
         Relationships: []
       }
+      team_challenge_members: {
+        Row: {
+          challenge_id: string
+          completed_at: string | null
+          id: string
+          joined_at: string
+          score: number | null
+          scorecard_id: string | null
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string | null
+          id?: string
+          joined_at?: string
+          score?: number | null
+          scorecard_id?: string | null
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string | null
+          id?: string
+          joined_at?: string
+          score?: number | null
+          scorecard_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_challenge_members_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "team_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_challenge_members_scorecard_id_fkey"
+            columns: ["scorecard_id"]
+            isOneToOne: false
+            referencedRelation: "scorecards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_challenges: {
+        Row: {
+          created_at: string
+          custom_prompt: string | null
+          deadline: string
+          description: string | null
+          id: string
+          invite_code: string
+          manager_id: string
+          scenario_env: string
+          scenario_role: string
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          custom_prompt?: string | null
+          deadline: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          manager_id: string
+          scenario_env: string
+          scenario_role: string
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          custom_prompt?: string | null
+          deadline?: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          manager_id?: string
+          scenario_env?: string
+          scenario_role?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       tournament_matches: {
         Row: {
           completed_at: string | null
@@ -1042,6 +1129,10 @@ export type Database = {
       }
       is_clan_member: {
         Args: { _clan_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_team_challenge_member: {
+        Args: { _challenge_id: string; _user_id: string }
         Returns: boolean
       }
     }
