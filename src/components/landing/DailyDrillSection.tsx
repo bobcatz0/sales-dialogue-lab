@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Flame, Clock, ArrowRight, Trophy, Check, Crown, Zap, Target } from "lucide-react";
+import { Flame, Clock, ArrowRight, Trophy, Check, Crown, Zap, Target, TrendingUp, Medal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTodayChallenge } from "@/components/practice/dailyChallenge";
 import { ENVIRONMENTS } from "@/components/practice/environments";
@@ -21,30 +21,58 @@ const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 5, name: "Chris L.", score: 79 },
 ];
 
-function getTimeRemaining(): string {
-  const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-  const diff = tomorrow.getTime() - now.getTime();
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  return `${hours}h ${minutes}m`;
+/** ELO bonus tiers for top daily performers */
+export const DAILY_ELO_BONUS = [
+  { rank: 1, bonus: 30, label: "🥇 +30 ELO" },
+  { rank: 2, bonus: 20, label: "🥈 +20 ELO" },
+  { rank: 3, bonus: 10, label: "🥉 +10 ELO" },
+];
+
+function useCountdown() {
+  const [remaining, setRemaining] = useState({ hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    function calc() {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const diff = Math.max(0, tomorrow.getTime() - now.getTime());
+      return {
+        hours: Math.floor(diff / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+      };
+    }
+    setRemaining(calc());
+    const interval = setInterval(() => setRemaining(calc()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return remaining;
+}
+
+function CountdownDisplay() {
+  const { hours, minutes, seconds } = useCountdown();
+  return (
+    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground shrink-0 bg-muted/50 px-3 py-1.5 rounded-full border border-border">
+      <Clock className="h-3 w-3" />
+      <span className="tabular-nums font-mono font-semibold">
+        {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+      </span>
+    </div>
+  );
 }
 
 export default function DailyDrillSection() {
   const { challenge, completed } = getTodayChallenge();
   const env = ENVIRONMENTS.find((e) => e.id === challenge.environmentId);
   const persona = roles.find((r) => r.id === challenge.personaId);
-  const [timeLeft, setTimeLeft] = useState(getTimeRemaining());
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(MOCK_LEADERBOARD);
+  const [avgScore, setAvgScore] = useState<number | null>(null);
+  const [totalPlayers, setTotalPlayers] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => setTimeLeft(getTimeRemaining()), 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Try to fetch real top scores for today
+  // Fetch real top scores and avg for today
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     supabase
@@ -52,16 +80,19 @@ export default function DailyDrillSection() {
       .select("display_name, score")
       .gte("created_at", `${today}T00:00:00`)
       .order("score", { ascending: false })
-      .limit(5)
+      .limit(10)
       .then(({ data }) => {
-        if (data && data.length >= 3) {
+        if (data && data.length >= 1) {
           setLeaderboard(
-            data.map((d, i) => ({
+            data.slice(0, 5).map((d, i) => ({
               rank: i + 1,
               name: d.display_name,
               score: d.score,
             }))
           );
+          const avg = Math.round(data.reduce((s, d) => s + d.score, 0) / data.length);
+          setAvgScore(avg);
+          setTotalPlayers(data.length);
         }
       });
   }, []);
@@ -95,7 +126,6 @@ export default function DailyDrillSection() {
 
           {/* Main card */}
           <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-lg shadow-primary/5">
-            {/* Top accent */}
             <div className="h-1 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
 
             <div className="p-6 md:p-8">
@@ -116,10 +146,7 @@ export default function DailyDrillSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground shrink-0 bg-muted/50 px-3 py-1.5 rounded-full border border-border">
-                  <Clock className="h-3 w-3" />
-                  {timeLeft} left
-                </div>
+                <CountdownDisplay />
               </div>
 
               {/* Challenge details + Leaderboard grid */}
@@ -154,13 +181,38 @@ export default function DailyDrillSection() {
                     <div className="flex items-center gap-4 pt-2 mt-1 border-t border-border/40">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] text-muted-foreground">Avg Score:</span>
-                        <span className="text-xs font-bold font-heading text-foreground tabular-nums">71</span>
+                        <span className="text-xs font-bold font-heading text-foreground tabular-nums">
+                          {avgScore ?? 71}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] text-muted-foreground">Top Score:</span>
                         <span className="text-xs font-bold font-heading text-primary tabular-nums">
                           {leaderboard[0]?.score ?? 94}
                         </span>
+                      </div>
+                      {totalPlayers > 0 && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-muted-foreground">Players:</span>
+                          <span className="text-xs font-bold font-heading text-foreground tabular-nums">
+                            {totalPlayers}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ELO bonus callout */}
+                  <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary/5 border border-primary/15">
+                    <TrendingUp className="h-4 w-4 text-primary shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-wider">ELO Bonus for Top 3</p>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        {DAILY_ELO_BONUS.map((b) => (
+                          <span key={b.rank} className="text-[10px] text-muted-foreground">
+                            {b.label}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -178,7 +230,7 @@ export default function DailyDrillSection() {
                       className="w-full h-11 text-sm gap-2"
                       asChild
                     >
-                      <a href={`/practice?env=${challenge.environmentId}&role=${challenge.personaId}`}>
+                      <a href={`/practice?env=${challenge.environmentId}&role=${challenge.personaId}&daily=1`}>
                         Start Daily Drill
                         <ArrowRight className="h-4 w-4" />
                       </a>
@@ -215,11 +267,18 @@ export default function DailyDrillSection() {
                           }`}>
                             {entry.name}
                           </span>
-                          <span className={`text-xs font-bold tabular-nums font-heading ${
-                            entry.rank === 1 ? "text-primary" : "text-foreground"
-                          }`}>
-                            {entry.score}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-xs font-bold tabular-nums font-heading ${
+                              entry.rank === 1 ? "text-primary" : "text-foreground"
+                            }`}>
+                              {entry.score}
+                            </span>
+                            {entry.rank <= 3 && (
+                              <span className="text-[9px] text-primary/70">
+                                +{DAILY_ELO_BONUS.find((b) => b.rank === entry.rank)?.bonus}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
