@@ -281,9 +281,32 @@ const Scenarios = () => {
                   </div>
 
                   {/* Description */}
-                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {scenario.description}
                   </p>
+
+                  {/* Goal */}
+                  <div className="px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-primary mb-0.5">Goal</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{scenario.goal}</p>
+                  </div>
+
+                  {/* Evaluation Criteria */}
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Scored on</p>
+                    <div className="flex flex-wrap gap-1">
+                      {scenario.evaluationCriteria.slice(0, 3).map((c) => (
+                        <span key={c} className="text-[10px] px-2 py-0.5 rounded-full bg-muted/50 border border-border/50 text-muted-foreground">
+                          {c}
+                        </span>
+                      ))}
+                      {scenario.evaluationCriteria.length > 3 && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/30 text-muted-foreground/60">
+                          +{scenario.evaluationCriteria.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Stats Row: Best Score + Leaderboard Rank */}
                   <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-muted/30 border border-border/50">
