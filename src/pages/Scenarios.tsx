@@ -22,6 +22,7 @@ import {
   type SeriesEligibility,
   type PromotionSeries,
 } from "@/components/practice/promotionSeries";
+import FlashChallengeBanner from "@/components/scenarios/FlashChallengeBanner";
 
 interface Scenario {
   id: string;
@@ -282,6 +283,11 @@ const Scenarios = () => {
             />
           </div>
         )}
+
+        {/* Flash Challenge */}
+        <div className="max-w-5xl mx-auto mb-8">
+          <FlashChallengeBanner />
+        </div>
 
         {/* Scenario Chains */}
         <div className="max-w-5xl mx-auto mb-14">
