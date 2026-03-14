@@ -1638,29 +1638,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 <GhostBattleBanner ghost={ghostBattle.ghost} />
               )}
 
-              {/* Voice Call Interface — replaces chat when voice mode active */}
-              {voice.voiceMode && selectedRole && sessionActive && !feedback ? (
-                <VoiceCallInterface
-                  isActive={sessionActive}
-                  isRecording={false}
-                  isAISpeaking={voice.isAISpeaking}
-                  isProcessing={isLoading}
-                  isMuted={voice.isMuted}
-                  volume={voice.volume}
-                  timerDisplay={timer.display}
-                  roleTitle={activeRole?.title ?? "Interviewer"}
-                  scenarioLabel={activeEnv?.title ?? "Session"}
-                  lastAIMessage={messages.filter(m => m.role === "prospect").pop()?.text}
-                  questionProgress={`${Math.min(userQuestionCount, totalExpectedQuestions)}/~${totalExpectedQuestions}`}
-                  onStartRecording={() => {}}
-                  onStopRecording={() => {}}
-                  onEndCall={handleEndSession}
-                  onToggleMute={voice.toggleMute}
-                  onVolumeChange={voice.setVolume}
-                  canScore={isReadyForScore}
-                  comingSoon={true}
-                />
-              ) : (
+              {/* Chat messages + input (used for both text and voice modes) */}
               <>
               {/* Messages */}
               <div
@@ -1883,7 +1861,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 )}
               </div>
               </>
-              )}
+
             </motion.main>
 
             {/* Feedback Section */}
