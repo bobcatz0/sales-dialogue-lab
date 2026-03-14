@@ -15,6 +15,7 @@ import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges"
 import { PlacementProgress, PlacingBadge } from "@/components/practice/PlacementSystem";
 import { PLACEMENT_SESSIONS_REQUIRED } from "@/lib/eloSync";
 import { LiveActivityFeed } from "@/components/LiveActivityFeed";
+import { SeasonSelector, SeasonResultsLeaderboard, PastSeasonBadges } from "@/components/seasons/SeasonComponents";
 
 interface LeaderboardEntry {
   id: string;
@@ -361,6 +362,7 @@ const LeaderboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [tab, setTab] = useState<Tab>("all-time");
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -448,6 +450,17 @@ const LeaderboardPage = () => {
             </p>
           </div>
 
+          {/* Season Selector */}
+          <SeasonSelector
+            onSeasonChange={setSelectedSeasonId}
+            currentSeasonId={selectedSeasonId}
+          />
+
+          {/* Past season archive view */}
+          {selectedSeasonId ? (
+            <SeasonResultsLeaderboard seasonId={selectedSeasonId} />
+          ) : (
+          <>
           {/* User card or sign-in prompt */}
           {user && profile ? (
             <motion.div
@@ -489,6 +502,8 @@ const LeaderboardPage = () => {
                     <MovementIndicator gain={entries[userRank - 1].weekly_elo_gain ?? 0} />
                   )}
                 </div>
+                {/* Past Season Badges */}
+                <PastSeasonBadges userId={user.id} />
               </div>
             </motion.div>
           ) : user && profile && profile.total_sessions < PLACEMENT_SESSIONS_REQUIRED ? (
@@ -725,6 +740,8 @@ const LeaderboardPage = () => {
                 </motion.div>
               )}
             </>
+          )}
+          </>
           )}
         </motion.div>
 
