@@ -11,6 +11,7 @@ import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRound
 import { ShareableSummary } from "./ShareableSummary";
 import { ScorecardShare } from "./ScorecardShare";
 import { ChallengeButton } from "./ChallengeButton";
+import { ShareResultCard } from "./ShareResultCard";
 import { HumanReviewedBadge } from "./EvaluatorBadges";
 import { AnimatedScore } from "./AnimatedScore";
 import { RetryLoopPanel } from "./RetryLoopPanel";
