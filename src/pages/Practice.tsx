@@ -2022,6 +2022,9 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         scenarioTitle={activeRole?.title}
                         scenarioEnv={selectedEnv}
                         scenarioRole={selectedRole ?? undefined}
+                        currentStreak={streakInfo?.current}
+                        longestStreak={streakInfo?.longest}
+                        streakJustIncreased={streakInfo?.justIncreased}
                       />
                       {/* Post-session prompts */}
                       {showHelpfulPrompt && (
