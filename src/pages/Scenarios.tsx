@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Phone, Building2, ShieldAlert, Users, Cpu, RotateCcw, ArrowRight, Zap,
-  Briefcase, Mic, Trophy, Crown, Target, Swords, TrendingUp, Lock, Flame
+  Briefcase, Mic, Trophy, Crown, Target, Swords, TrendingUp, Lock, Flame, Link2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
