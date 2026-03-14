@@ -272,6 +272,17 @@ const Scenarios = () => {
           </p>
         </motion.div>
 
+        {/* Promotion Series Banner */}
+        {seriesEligibility && (
+          <div className="max-w-5xl mx-auto mb-8">
+            <PromotionSeriesBanner
+              eligibility={seriesEligibility}
+              onStartSeries={handleStartSeries}
+              onContinueSeries={handleContinueSeries}
+            />
+          </div>
+        )}
+
         {/* Scenario Chains */}
         <div className="max-w-5xl mx-auto mb-14">
           <div className="flex items-center gap-2 mb-6">
