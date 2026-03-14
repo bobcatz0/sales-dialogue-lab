@@ -42,7 +42,7 @@ function CreateAssessmentForm({ onCreated }: { onCreated: () => void }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
 
-    const { error } = await supabase.from("assessments").insert({
+    const { error } = await (supabase.from("assessments") as any).insert({
       created_by: user.id,
       title: title.trim(),
       description: description.trim() || null,
