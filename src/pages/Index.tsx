@@ -5,6 +5,7 @@ import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import RankTiersSection from "@/components/landing/RankTiersSection";
 import HeroLeaderboardPreview from "@/components/landing/HeroLeaderboardPreview";
 import WeeklyChallengeSection from "@/components/landing/WeeklyChallengeSection";
+import DailyDrillSection from "@/components/landing/DailyDrillSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import Footer from "@/components/landing/Footer";
 
@@ -14,6 +15,7 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <LiveFeed />
+      <DailyDrillSection />
       <HowItWorksSection />
       <WeeklyChallengeSection />
       <section className="py-10 md:py-14">
