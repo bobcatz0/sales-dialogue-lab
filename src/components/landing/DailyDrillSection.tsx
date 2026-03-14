@@ -6,6 +6,8 @@ import { getTodayChallenge } from "@/components/practice/dailyChallenge";
 import { ENVIRONMENTS } from "@/components/practice/environments";
 import { roles } from "@/components/practice/roleData";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { getStreakXpMultiplier } from "@/components/practice/StreakReward";
 
 interface LeaderboardEntry {
   rank: number;
