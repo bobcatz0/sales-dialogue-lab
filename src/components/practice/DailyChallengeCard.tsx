@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Check, ArrowRight, Clock, Trophy, Crown, TrendingUp } from "lucide-react";
+import { Calendar, Check, ArrowRight, Clock, Trophy, Crown, TrendingUp, Flame } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getTodayChallenge } from "./dailyChallenge";
 import { ENVIRONMENTS } from "./environments";
 import { roles } from "./roleData";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { getStreakXpMultiplier } from "./StreakReward";
 import type { EnvironmentId } from "./environments";
 
 interface DailyChallengeCardProps {
