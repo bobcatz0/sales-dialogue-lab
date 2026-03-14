@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type ActivityEventType = "rank_up" | "high_score" | "elo_gain" | "clan_join" | "personal_best";
+export type ActivityEventType = "rank_up" | "high_score" | "elo_gain" | "clan_join" | "personal_best" | "streak_milestone";
 
 interface PublishEventOpts {
   eventType: ActivityEventType;
