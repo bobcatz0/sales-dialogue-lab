@@ -36,6 +36,8 @@ import { loadHistory, saveSession } from "@/components/practice/sessionStorage";
 import { VoiceInputButton } from "@/components/practice/VoiceInputButton";
 import { VoiceRecorder } from "@/components/practice/VoiceRecorder";
 import { VoiceModeBanner } from "@/components/practice/VoiceModeBanner";
+import { VoiceModeToggle } from "@/components/practice/VoiceModeToggle";
+import { VoiceCallInterface } from "@/components/practice/VoiceCallInterface";
 import { useVoiceSession } from "@/components/practice/useVoiceSession";
 import { MicPreflight, useMicPermission } from "@/components/practice/MicPreflight";
 import { processSession, loadConsistency } from "@/components/practice/consistencyScoring";
@@ -1167,12 +1169,12 @@ This evaluation style should subtly influence your questions and reactions. Do N
               </div>
             )}
 
-            {/* Voice Mode Toggle — interview modes only, before persona selection */}
+            {/* Voice / Text Mode Toggle — interview modes only, before persona selection */}
             {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
               <div className="mb-4 space-y-2">
-                <VoiceModeBanner
-                  enabled={voice.voiceMode}
-                  onToggle={voice.setVoiceMode}
+                <VoiceModeToggle
+                  mode={voice.voiceMode ? "voice" : "text"}
+                  onToggle={(m) => voice.setVoiceMode(m === "voice")}
                 />
                 {voice.voiceMode && (
                   <MicPreflight
@@ -1633,6 +1635,30 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 <GhostBattleBanner ghost={ghostBattle.ghost} />
               )}
 
+              {/* Voice Call Interface — replaces chat when voice mode active */}
+              {voice.voiceMode && selectedRole && sessionActive && !feedback ? (
+                <VoiceCallInterface
+                  isActive={sessionActive}
+                  isRecording={false}
+                  isAISpeaking={voice.isAISpeaking}
+                  isProcessing={isLoading}
+                  isMuted={voice.isMuted}
+                  volume={voice.volume}
+                  timerDisplay={timer.display}
+                  roleTitle={activeRole?.title ?? "Interviewer"}
+                  scenarioLabel={activeEnv?.title ?? "Session"}
+                  lastAIMessage={messages.filter(m => m.role === "prospect").pop()?.text}
+                  questionProgress={`${Math.min(userQuestionCount, totalExpectedQuestions)}/~${totalExpectedQuestions}`}
+                  onStartRecording={() => {}}
+                  onStopRecording={() => {}}
+                  onEndCall={handleEndSession}
+                  onToggleMute={voice.toggleMute}
+                  onVolumeChange={voice.setVolume}
+                  canScore={isReadyForScore}
+                  comingSoon={true}
+                />
+              ) : (
+              <>
               {/* Messages */}
               <div
                 ref={scrollRef}
@@ -1853,6 +1879,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   </>
                 )}
               </div>
+              </>
+              )}
             </motion.main>
 
             {/* Feedback Section */}
