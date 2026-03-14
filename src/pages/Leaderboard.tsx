@@ -16,7 +16,6 @@ import { PlacementProgress, PlacingBadge } from "@/components/practice/Placement
 import { PLACEMENT_SESSIONS_REQUIRED } from "@/lib/eloSync";
 import { LiveActivityFeed } from "@/components/LiveActivityFeed";
 import { SeasonSelector, SeasonResultsLeaderboard, PastSeasonBadges } from "@/components/seasons/SeasonComponents";
-import { LiveActivityFeed } from "@/components/LiveActivityFeed";
 
 interface LeaderboardEntry {
   id: string;
