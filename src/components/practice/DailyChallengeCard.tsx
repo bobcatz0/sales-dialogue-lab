@@ -114,7 +114,28 @@ export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
           <span>Top 3 earn bonus ELO: 🥇+30 🥈+20 🥉+10</span>
         </div>
 
-        {/* Mini leaderboard */}
+        {/* Streak display */}
+        {currentStreak > 0 && (
+          <div className={`flex items-center justify-between px-3 py-2 rounded-lg border ${
+            isOnFire ? "border-primary/20 bg-primary/5" : "border-border bg-muted/30"
+          }`}>
+            <div className="flex items-center gap-2">
+              <Flame className={`h-3.5 w-3.5 ${isOnFire ? "text-primary" : "text-muted-foreground"}`} />
+              <span className={`text-xs font-bold tabular-nums ${isOnFire ? "text-primary" : "text-foreground"}`}>
+                {currentStreak} day streak
+              </span>
+              {currentStreak >= longestStreak && currentStreak > 1 && (
+                <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">BEST</span>
+              )}
+            </div>
+            {xpMultiplier > 1 && (
+              <span className="text-[10px] font-semibold text-primary">
+                {Math.round((xpMultiplier - 1) * 100)}% XP bonus
+              </span>
+            )}
+          </div>
+        )}
+
         {topScores.length > 0 && (
           <div className="space-y-1 pt-1 border-t border-border/40">
             <div className="flex items-center gap-1 text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">
