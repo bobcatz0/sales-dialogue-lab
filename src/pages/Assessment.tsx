@@ -92,7 +92,7 @@ export default function AssessmentPage() {
       return { name: stage?.title ?? s.stageId, score: s.score };
     });
 
-    await supabase.from("assessment_submissions").insert({
+    await (supabase.from("assessment_submissions") as any).insert({
       assessment_id: assessment.id,
       candidate_name: candidateName.trim(),
       candidate_email: candidateEmail.trim(),
