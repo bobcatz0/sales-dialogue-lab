@@ -69,6 +69,8 @@ const COACHING_TIPS: Record<string, string> = {
   "Structure": "Open with a brief agenda, follow a logical progression, and close with a summary of key points discussed.",
   "Rapport Building": "Mirror the prospect's energy and pace. Reference specific details they've shared to show active listening.",
   "Closing": "Summarize value delivered, confirm alignment on next steps, and propose a specific action with a timeline.",
+  "Cold Call Opening": "Lead with a hook or pattern interrupt. State your value proposition within 10 seconds. Don't ask 'How are you?'",
+  "Conciseness": "Keep responses to 30-45 seconds. Lead with the answer, then support. Cut filler phrases ruthlessly.",
 };
 
 function getCoachingTip(skillName: string): string {
