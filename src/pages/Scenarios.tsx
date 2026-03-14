@@ -16,6 +16,8 @@ interface Scenario {
   title: string;
   subtitle: string;
   description: string;
+  goal: string;
+  evaluationCriteria: string[];
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   icon: React.ElementType;
   env: string;
@@ -34,22 +36,25 @@ function isRankSufficient(userRank: RankTier, requiredRank: RankTier): boolean {
 
 const SCENARIOS: Scenario[] = [
   {
-    id: "discovery-call",
-    title: "Discovery Call",
-    subtitle: "Uncover pain, qualify the deal",
-    description: "A guarded B2B prospect who won't volunteer information. Ask the right questions to uncover needs.",
+    id: "cold-call-gatekeeper",
+    title: "Cold Call Gatekeeper",
+    subtitle: "Get past the front desk",
+    description: "An executive assistant screens every call. You have 20 seconds of patience before they hang up. Earn the transfer or lose the opportunity forever.",
+    goal: "Navigate past a protective gatekeeper to reach the decision maker without being deceptive or aggressive.",
+    evaluationCriteria: ["Confident, concise opener", "Name-drop or trigger event reference", "Reason-based transfer request", "Composure under resistance", "Appropriate urgency without pushiness"],
     difficulty: "Beginner",
-    icon: Users,
+    icon: Phone,
     env: "cold-call",
-    role: "b2b-prospect",
-    duration: "~5 min",
-    framework: { id: "bant", label: "BANT" },
+    role: "gatekeeper",
+    duration: "~3 min",
   },
   {
-    id: "objection-handling",
-    title: "Pricing Objection",
-    subtitle: "Turn no into yes",
-    description: "A skeptical buyer hits you with price, timing, and competitor objections. Reframe value under fire.",
+    id: "budget-objection",
+    title: "Budget Objection",
+    subtitle: "Reframe value when price is the wall",
+    description: "A prospect loves your product but says the price is too high. Their current contract renews in 30 days. Break through the budget wall or lose the deal to inaction.",
+    goal: "Overcome a genuine budget objection by reframing ROI, isolating the real blocker, and proposing creative deal structures.",
+    evaluationCriteria: ["Acknowledge concern without discounting", "Isolate budget vs. value objection", "Quantify ROI with specific metrics", "Propose creative deal structure", "Maintain deal momentum with next steps"],
     difficulty: "Intermediate",
     icon: ShieldAlert,
     env: "enterprise",
@@ -58,40 +63,46 @@ const SCENARIOS: Scenario[] = [
     requiredRank: "Prospector",
   },
   {
-    id: "cold-call-gatekeeper",
-    title: "Cold Outreach",
-    subtitle: "Get past the gatekeeper",
-    description: "An assistant picks up. You have 30 seconds to earn a transfer to the decision maker.",
-    difficulty: "Beginner",
-    icon: Phone,
+    id: "existing-vendor",
+    title: "Existing Vendor Displacement",
+    subtitle: "Unseat the incumbent",
+    description: "The prospect already uses a competitor and sees no reason to switch. Find the cracks in their current solution and plant seeds of doubt — without trash-talking.",
+    goal: "Identify dissatisfaction with the current vendor and position your solution as a strategic upgrade without negative selling.",
+    evaluationCriteria: ["Uncover unmet needs with current vendor", "Avoid direct competitor bashing", "Highlight unique differentiation", "Build cost-of-inaction narrative", "Secure a proof-of-concept commitment"],
+    difficulty: "Intermediate",
+    icon: RotateCcw,
     env: "cold-call",
-    role: "gatekeeper",
-    duration: "~3 min",
-    comingSoon: true,
+    role: "b2b-prospect",
+    duration: "~5 min",
+    framework: { id: "spin", label: "SPIN" },
+    requiredRank: "Closer",
   },
   {
-    id: "lead-qualification",
-    title: "Lead Qualification",
-    subtitle: "Separate signal from noise",
-    description: "A warm inbound lead with unclear intent. Qualify budget, authority, need, and timeline before committing resources.",
-    difficulty: "Intermediate",
-    icon: Target,
+    id: "discovery-call",
+    title: "Discovery Call",
+    subtitle: "Uncover pain, qualify the deal",
+    description: "A guarded VP of Operations who won't volunteer information. They've been burned by vendors before. Ask the right questions to uncover real pain — not surface-level symptoms.",
+    goal: "Run a structured discovery conversation that uncovers budget, authority, need, and timeline while building genuine rapport.",
+    evaluationCriteria: ["Open-ended pain questions", "Active listening and follow-up probes", "BANT qualification coverage", "Empathy and rapport building", "Clear next-step commitment"],
+    difficulty: "Beginner",
+    icon: Users,
     env: "cold-call",
     role: "b2b-prospect",
     duration: "~5 min",
     framework: { id: "bant", label: "BANT" },
-    requiredRank: "Closer",
   },
   {
-    id: "executive-pitch",
-    title: "Closing Conversation",
-    subtitle: "Win over the C-suite",
-    description: "A time-constrained decision maker. Lead with outcomes, secure commitment, or lose the room.",
+    id: "enterprise-procurement",
+    title: "Enterprise Procurement Pushback",
+    subtitle: "Survive the buying committee gauntlet",
+    description: "A procurement officer demands 30% off, longer payment terms, and a 90-day pilot — or the deal dies. Negotiate without eroding your margins or losing the champion's trust.",
+    goal: "Navigate enterprise procurement negotiations while protecting deal value and maintaining alignment with your internal champion.",
+    evaluationCriteria: ["Hold firm on core pricing", "Trade concessions strategically", "Leverage champion relationship", "Address legal and compliance concerns", "Secure mutual commitment timeline"],
     difficulty: "Advanced",
     icon: Building2,
     env: "enterprise",
     role: "decision-maker",
-    duration: "~5 min",
+    duration: "~6 min",
     framework: { id: "meddic", label: "MEDDIC" },
     requiredRank: "Operator",
   },
@@ -99,7 +110,9 @@ const SCENARIOS: Scenario[] = [
     id: "interview-pressure",
     title: "Interview Pressure Round",
     subtitle: "Prove yourself under scrutiny",
-    description: "A hiring manager tests your experience, metrics, and thinking under real interview pressure.",
+    description: "A hiring manager tests your experience, metrics, and thinking under real interview pressure. Every vague answer costs credibility.",
+    goal: "Demonstrate sales competency with specific examples, metrics, and structured responses under interview conditions.",
+    evaluationCriteria: ["STAR-structured responses", "Specific metrics and outcomes", "Composure under follow-up pressure", "Self-awareness on weaknesses", "Authentic enthusiasm"],
     difficulty: "Beginner",
     icon: Briefcase,
     env: "interview",
@@ -111,7 +124,9 @@ const SCENARIOS: Scenario[] = [
     id: "technical-eval",
     title: "Technical Evaluation",
     subtitle: "Navigate the technical buyer",
-    description: "A skeptical technical evaluator probing your product's depth, integrations, and security.",
+    description: "A skeptical technical evaluator probing your product's depth, integrations, and security posture. Hand-waving gets you disqualified.",
+    goal: "Satisfy technical due diligence by demonstrating deep product knowledge and honest handling of limitations.",
+    evaluationCriteria: ["Technical accuracy and depth", "Honest gap acknowledgment", "Integration and API knowledge", "Security and compliance readiness", "Bridge technical to business value"],
     difficulty: "Advanced",
     icon: Cpu,
     env: "enterprise",
@@ -123,9 +138,11 @@ const SCENARIOS: Scenario[] = [
     id: "champion-enablement",
     title: "Champion Enablement",
     subtitle: "Arm your internal advocate",
-    description: "An internal champion needs the right ammunition to sell your deal internally.",
+    description: "Your champion is going into a board meeting tomorrow to pitch your deal. Equip them with the business case, objection responses, and ROI narrative they need to win internally.",
+    goal: "Prepare your internal champion with compelling ammunition to sell the deal to their leadership team.",
+    evaluationCriteria: ["Tailor messaging to executive audience", "Provide quantified business case", "Arm with objection rebuttals", "Strategic framing for internal politics", "Create urgency without pressure"],
     difficulty: "Advanced",
-    icon: RotateCcw,
+    icon: Target,
     env: "enterprise",
     role: "champion",
     duration: "~6 min",
@@ -264,9 +281,32 @@ const Scenarios = () => {
                   </div>
 
                   {/* Description */}
-                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {scenario.description}
                   </p>
+
+                  {/* Goal */}
+                  <div className="px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-primary mb-0.5">Goal</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{scenario.goal}</p>
+                  </div>
+
+                  {/* Evaluation Criteria */}
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Scored on</p>
+                    <div className="flex flex-wrap gap-1">
+                      {scenario.evaluationCriteria.slice(0, 3).map((c) => (
+                        <span key={c} className="text-[10px] px-2 py-0.5 rounded-full bg-muted/50 border border-border/50 text-muted-foreground">
+                          {c}
+                        </span>
+                      ))}
+                      {scenario.evaluationCriteria.length > 3 && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/30 text-muted-foreground/60">
+                          +{scenario.evaluationCriteria.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Stats Row: Best Score + Leaderboard Rank */}
                   <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-muted/30 border border-border/50">
