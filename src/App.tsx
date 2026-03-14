@@ -62,6 +62,7 @@ const App = () => (
             <Route path="/scorecard/:id" element={<ScorecardPage />} />
             <Route path="/tournaments" element={<Tournaments />} />
             <Route path="/challenges" element={<Challenges />} />
+            <Route path="/battles" element={<Battles />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

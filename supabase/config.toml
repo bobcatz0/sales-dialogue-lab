@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.roleplay-stt]
 verify_jwt = false
+
+[functions.battle-score]
+verify_jwt = false
