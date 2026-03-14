@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Leaderboard", href: "/leaderboard" },
   { label: "Progress", href: "/progress" },
   { label: "Manager", href: "/manager" },
+  { label: "Recruiter", href: "/recruiter" },
 ];
 
 const Navbar = () => {
