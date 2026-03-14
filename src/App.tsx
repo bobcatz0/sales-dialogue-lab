@@ -23,6 +23,7 @@ import JoinClan from "./pages/JoinClan";
 import ScorecardPage from "./pages/ScorecardPage";
 import Tournaments from "./pages/Tournaments";
 import Challenges from "./pages/Challenges";
+import Battles from "./pages/Battles";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { WeeklyChampionCelebration } from "./components/clans/WeeklyChampionCelebration";
 import { useRankThresholds } from "./hooks/useRankThresholds";
