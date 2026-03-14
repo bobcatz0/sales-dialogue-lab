@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Share2, Download, Copy, Check, Linkedin, ExternalLink, Trophy, Swords } from "lucide-react";
+import { Share2, Download, Copy, Check, Linkedin, ExternalLink, Trophy, Swords, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -8,6 +8,7 @@ interface ShareResultCardProps {
   scenarioTitle: string;
   score: number;
   rank: string;
+  percentile?: number | null;
   eloDelta?: number | null;
   elo?: number | null;
   isBattle?: boolean;
@@ -28,18 +29,36 @@ function getRankAccent(rank: string): string {
   }
 }
 
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let currentLine = "";
+  for (const word of words) {
+    const test = currentLine + (currentLine ? " " : "") + word;
+    if (ctx.measureText(test).width > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = test;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+  return lines.slice(0, 2);
+}
+
 function generateShareCanvas(props: ShareResultCardProps): HTMLCanvasElement {
-  const { scenarioTitle, score, rank, eloDelta, elo, isBattle, opponentScore, won } = props;
+  const { scenarioTitle, score, rank, percentile, eloDelta, elo, isBattle, opponentScore, won } = props;
   const canvas = document.createElement("canvas");
   const scale = 2;
   const width = 480;
-  const height = isBattle ? 320 : 280;
+  const height = isBattle ? 340 : 300;
   canvas.width = width * scale;
   canvas.height = height * scale;
   const ctx = canvas.getContext("2d")!;
   ctx.scale(scale, scale);
 
   const accent = getRankAccent(rank);
+  const topPercent = percentile != null ? Math.max(1, 100 - percentile) : null;
 
   // Background
   ctx.fillStyle = "#0d1117";
@@ -58,7 +77,7 @@ function generateShareCanvas(props: ShareResultCardProps): HTMLCanvasElement {
   ctx.font = "700 13px 'Inter', system-ui, sans-serif";
   ctx.fillText("SalesCalls.io", 28, 34);
 
-  // Battle badge or scenario type
+  // Battle badge
   if (isBattle) {
     ctx.fillStyle = "#1e293b";
     ctx.roundRect(width - 120, 18, 92, 24, 6);
@@ -71,7 +90,7 @@ function generateShareCanvas(props: ShareResultCardProps): HTMLCanvasElement {
   // Scenario title
   ctx.fillStyle = "#f9fafb";
   ctx.font = "600 18px 'Inter', system-ui, sans-serif";
-  const titleLines = wrapText(ctx, scenarioTitle, width - 56, 18);
+  const titleLines = wrapText(ctx, scenarioTitle, width - 56);
   let y = 64;
   titleLines.forEach(line => {
     ctx.fillText(line, 28, y);
@@ -88,6 +107,15 @@ function generateShareCanvas(props: ShareResultCardProps): HTMLCanvasElement {
   ctx.fillStyle = "#6b7280";
   ctx.font = "400 20px 'Inter', system-ui, sans-serif";
   ctx.fillText("/ 100", 28 + sw + 6, y + 48);
+
+  // Percentile (right-aligned next to score)
+  if (topPercent != null) {
+    ctx.fillStyle = accent;
+    ctx.font = "700 16px 'Inter', system-ui, sans-serif";
+    const percText = `Top ${topPercent}%`;
+    const percW = ctx.measureText(percText).width;
+    ctx.fillText(percText, width - 28 - percW, y + 48);
+  }
 
   // Rank badge
   const rankY = y + 64;
@@ -139,34 +167,21 @@ function generateShareCanvas(props: ShareResultCardProps): HTMLCanvasElement {
   return canvas;
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, _fontSize: number): string[] {
-  const words = text.split(" ");
-  const lines: string[] = [];
-  let currentLine = "";
-  for (const word of words) {
-    const test = currentLine + (currentLine ? " " : "") + word;
-    if (ctx.measureText(test).width > maxWidth && currentLine) {
-      lines.push(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = test;
-    }
-  }
-  if (currentLine) lines.push(currentLine);
-  return lines.slice(0, 2); // max 2 lines
-}
-
 export function ShareResultCard(props: ShareResultCardProps) {
-  const { scenarioTitle, score, rank, eloDelta, elo, isBattle, opponentScore, won, scorecardUrl } = props;
+  const { scenarioTitle, score, rank, percentile, eloDelta, elo, isBattle, opponentScore, won, scorecardUrl } = props;
   const [showCard, setShowCard] = useState(false);
   const [imageCopied, setImageCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const shareUrl = scorecardUrl || "https://sales-dialogue-lab.lovable.app/scenarios";
+  const topPercent = percentile != null ? Math.max(1, 100 - percentile) : null;
+
   const shareText = [
     isBattle
       ? `⚔ ${won ? "Won" : "Lost"} a 1v1 Sales Battle!`
       : `🎯 Scored ${score}/100 on "${scenarioTitle}"`,
     `📊 Rank: ${rank}`,
+    topPercent != null ? `🏆 Top ${topPercent}%` : null,
     eloDelta != null ? `⚡ ${eloDelta >= 0 ? "+" : ""}${eloDelta} ELO` : null,
     isBattle && opponentScore != null ? `vs opponent's ${opponentScore}` : null,
     ``,
@@ -200,6 +215,14 @@ export function ShareResultCard(props: ShareResultCardProps) {
       toast.error("Failed to copy image. Try downloading instead.");
     }
   }, [props]);
+
+  const handleCopyLink = useCallback(() => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setLinkCopied(true);
+      toast("Public link copied!", { duration: 2000 });
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  }, [shareUrl]);
 
   const handleShareLinkedIn = useCallback(() => {
     window.open(
@@ -257,10 +280,17 @@ export function ShareResultCard(props: ShareResultCardProps) {
                 {/* Scenario */}
                 <p className="text-sm font-bold text-foreground">{scenarioTitle}</p>
 
-                {/* Score */}
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold font-heading text-foreground">{score}</span>
-                  <span className="text-sm text-muted-foreground">/ 100</span>
+                {/* Score + Percentile */}
+                <div className="flex items-baseline justify-between">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold font-heading text-foreground">{score}</span>
+                    <span className="text-sm text-muted-foreground">/ 100</span>
+                  </div>
+                  {topPercent != null && (
+                    <span className="text-sm font-bold text-primary">
+                      Top {topPercent}%
+                    </span>
+                  )}
                 </div>
 
                 {/* Rank + ELO */}
@@ -309,14 +339,18 @@ export function ShareResultCard(props: ShareResultCardProps) {
               <Button variant="outline" size="sm" className="h-8 text-[11px] gap-1.5" onClick={handleShareX}>
                 <ExternalLink className="h-3 w-3" /> X / Twitter
               </Button>
+              <Button variant="outline" size="sm" className="h-8 text-[11px] gap-1.5" onClick={handleDownload}>
+                <Download className="h-3 w-3" /> Download
+              </Button>
               <Button variant="outline" size="sm" className="h-8 text-[11px] gap-1.5" onClick={handleCopyImage}>
                 {imageCopied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                 {imageCopied ? "Copied!" : "Copy Image"}
               </Button>
-              <Button variant="outline" size="sm" className="h-8 text-[11px] gap-1.5" onClick={handleDownload}>
-                <Download className="h-3 w-3" /> Download
-              </Button>
             </div>
+            <Button variant="outline" size="sm" className="w-full h-8 text-[11px] gap-1.5" onClick={handleCopyLink}>
+              {linkCopied ? <Check className="h-3 w-3" /> : <Link2 className="h-3 w-3" />}
+              {linkCopied ? "Link Copied!" : "Copy Public Result Link"}
+            </Button>
             <Button variant="ghost" size="sm" className="w-full h-7 text-[10px] text-muted-foreground" onClick={handleCopyText}>
               <Copy className="h-2.5 w-2.5 mr-1" /> Copy share text for Discord
             </Button>

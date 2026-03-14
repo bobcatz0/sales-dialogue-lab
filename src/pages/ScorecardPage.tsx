@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Trophy, ArrowLeft, TrendingUp, AlertTriangle } from "lucide-react";
+import { ShareResultCard } from "@/components/practice/ShareResultCard";
 import { supabase } from "@/integrations/supabase/client";
 import { getEloRank } from "@/lib/elo";
 import { Button } from "@/components/ui/button";
@@ -308,6 +309,17 @@ export default function ScorecardPage() {
               </p>
             </div>
           </div>
+
+          {/* Share */}
+          <ShareResultCard
+            scenarioTitle={scorecard.scenario_title}
+            score={scorecard.score}
+            rank={scorecard.rank}
+            percentile={scorecard.percentile}
+            eloDelta={scorecard.elo_delta}
+            elo={scorecard.elo}
+            scorecardUrl={`${window.location.origin}/scorecard/${scorecard.id}`}
+          />
 
           {/* CTA */}
           <div className="text-center space-y-3">
