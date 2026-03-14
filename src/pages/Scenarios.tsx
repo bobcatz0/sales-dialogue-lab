@@ -213,6 +213,8 @@ const Scenarios = () => {
           {SCENARIOS.map((scenario, i) => {
             const Icon = scenario.icon;
             const isComingSoon = scenario.comingSoon;
+            const isLocked = !!scenario.requiredRank && !isRankSufficient(userRank, scenario.requiredRank);
+            const isDisabled = isComingSoon || isLocked;
             const bestScore = getBestScore(sessions, scenario.env, scenario.role);
             const rank = getLeaderboardRank(sessions, scenario.env, scenario.role);
 
@@ -223,8 +225,8 @@ const Scenarios = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
                 className={`group relative rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 ${
-                  isComingSoon
-                    ? "opacity-50 pointer-events-none"
+                  isDisabled
+                    ? "opacity-60 pointer-events-none"
                     : "hover:border-primary/40 hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.15)]"
                 }`}
               >
