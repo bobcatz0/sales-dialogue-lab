@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import {
   Star, TrendingUp, TrendingDown, Target, RotateCcw, Play, Quote, Gauge,
   Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle,
-  ShieldCheck, Mic, BarChart3, Trophy, ArrowUp, Lightbulb, Flame, Snowflake
+  ShieldCheck, Mic, BarChart3, Trophy, ArrowUp, Lightbulb, Flame, Snowflake,
+  Users
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
