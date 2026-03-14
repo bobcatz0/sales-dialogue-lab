@@ -10,6 +10,10 @@ import { loadHistory } from "@/components/practice/sessionStorage";
 import type { SessionRecord } from "@/components/practice/types";
 import { getEloRank, getRankThresholds, type RankTier } from "@/lib/elo";
 import { useAuth } from "@/hooks/useAuth";
+import { SCENARIO_CHAINS } from "@/components/scenarios/chainData";
+import ScenarioChainCard from "@/components/scenarios/ScenarioChainCard";
+import { loadChainProgress, resetChainProgress } from "@/components/scenarios/chainStorage";
+import type { ChainProgress } from "@/components/scenarios/types";
 
 interface Scenario {
   id: string;
