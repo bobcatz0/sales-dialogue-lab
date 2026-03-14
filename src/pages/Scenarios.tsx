@@ -213,6 +213,7 @@ const Scenarios = () => {
   const { profile, user } = useAuth();
   const userElo = profile?.elo ?? 1000;
   const userRank = getEloRank(userElo);
+  const { topReps } = useTopReps();
 
   useEffect(() => {
     setSessions(loadHistory());
