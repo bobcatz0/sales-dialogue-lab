@@ -17,6 +17,7 @@ import { ShareResultCard } from "./ShareResultCard";
 import { HumanReviewedBadge } from "./EvaluatorBadges";
 import { AnimatedScore } from "./AnimatedScore";
 import { RetryLoopPanel } from "./RetryLoopPanel";
+import { ReplayImprovementPanel } from "./ReplayImprovementPanel";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
