@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { PhoneCall, Shield, Search, Handshake, ArrowRight, Zap, Swords } from "lucide-react";
+import { PhoneCall, Shield, Search, Handshake, ArrowRight, Zap, Swords, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getEloRank, type RankTier } from "@/lib/elo";
+import { useAuth } from "@/hooks/useAuth";
 
 const scenarios = [
   {
