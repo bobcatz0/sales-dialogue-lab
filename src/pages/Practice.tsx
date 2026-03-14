@@ -705,6 +705,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
       syncEloAfterSession(data.score).then(async (result) => {
         if (result) {
           setEloDelta(result.delta);
+          const prevStreak = streakInfo?.current ?? 0;
+          setStreakInfo({ current: result.currentStreak, longest: result.longestStreak, justIncreased: result.currentStreak > prevStreak });
 
           // Handle promotion match result
           if (isPromotionMatch && promoEligibility?.nextRank && user) {
