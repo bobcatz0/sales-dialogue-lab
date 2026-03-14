@@ -23,6 +23,7 @@ import {
   type PromotionSeries,
 } from "@/components/practice/promotionSeries";
 import FlashChallengeBanner from "@/components/scenarios/FlashChallengeBanner";
+import { useTopReps, TopRepBadge } from "@/components/scenarios/TopRepSystem";
 
 interface Scenario {
   id: string;
