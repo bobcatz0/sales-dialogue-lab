@@ -176,6 +176,9 @@ function getLeaderboardRank(sessions: SessionRecord[], env: string, role: string
 
 const Scenarios = () => {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
+  const { profile } = useAuth();
+  const userElo = profile?.elo ?? 1000;
+  const userRank = getEloRank(userElo);
 
   useEffect(() => {
     setSessions(loadHistory());
