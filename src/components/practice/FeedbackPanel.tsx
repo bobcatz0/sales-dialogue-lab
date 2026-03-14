@@ -442,6 +442,9 @@ export function FeedbackPanel({
             className={`h-full rounded-full ${getScoreBarColor(feedback.score)}`}
           />
         </motion.div>
+
+        {/* Percentile ranking */}
+        <PercentileRanking score={feedback.score} />
       </div>
 
       <div className="p-5 space-y-5">
