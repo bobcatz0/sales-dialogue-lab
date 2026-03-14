@@ -515,6 +515,21 @@ export default function Battles() {
                         </div>
                       </div>
 
+                      {/* Share Result Card */}
+                      <ShareResultCard
+                        scenarioTitle={(() => {
+                          const { prospect } = parsePrompt(activeBattle.scenario_prompt);
+                          return prospect.length > 40 ? prospect.slice(0, 40) + "…" : prospect;
+                        })()}
+                        score={myScore ?? 0}
+                        rank={getEloRank(profile?.elo ?? 1000)}
+                        eloDelta={myDelta}
+                        elo={profile?.elo ?? null}
+                        isBattle
+                        opponentScore={theirScore}
+                        won={won}
+                      />
+
                       <div className="flex gap-2">
                         <Button className="flex-1 gap-2" onClick={() => { setView("lobby"); setActiveBattle(null); setResponse(""); }}>
                           <Swords className="h-4 w-4" /> New Battle
