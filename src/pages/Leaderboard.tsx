@@ -450,6 +450,17 @@ const LeaderboardPage = () => {
             </p>
           </div>
 
+          {/* Season Selector */}
+          <SeasonSelector
+            onSeasonChange={setSelectedSeasonId}
+            currentSeasonId={selectedSeasonId}
+          />
+
+          {/* Past season archive view */}
+          {selectedSeasonId ? (
+            <SeasonResultsLeaderboard seasonId={selectedSeasonId} />
+          ) : (
+          <>
           {/* User card or sign-in prompt */}
           {user && profile ? (
             <motion.div
