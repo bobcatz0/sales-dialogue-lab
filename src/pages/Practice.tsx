@@ -219,6 +219,7 @@ const PracticePage = () => {
   const [lastPoints, setLastPoints] = useState<number | null>(null);
   const [eloDelta, setEloDelta] = useState<number | null>(null);
   const [rankUpData, setRankUpData] = useState<EloSyncResult | null>(null);
+  const [streakInfo, setStreakInfo] = useState<{ current: number; longest: number; justIncreased: boolean } | null>(null);
   const [promoEligibility, setPromoEligibility] = useState<PromotionEligibility | null>(null);
   const [isPromotionMatch, setIsPromotionMatch] = useState(false);
   const [promoResult, setPromoResult] = useState<PromotionResult | null>(null);
@@ -704,6 +705,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
       syncEloAfterSession(data.score).then(async (result) => {
         if (result) {
           setEloDelta(result.delta);
+          const prevStreak = streakInfo?.current ?? 0;
+          setStreakInfo({ current: result.currentStreak, longest: result.longestStreak, justIncreased: result.currentStreak > prevStreak });
 
           // Handle promotion match result
           if (isPromotionMatch && promoEligibility?.nextRank && user) {
@@ -2019,6 +2022,9 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         scenarioTitle={activeRole?.title}
                         scenarioEnv={selectedEnv}
                         scenarioRole={selectedRole ?? undefined}
+                        currentStreak={streakInfo?.current}
+                        longestStreak={streakInfo?.longest}
+                        streakJustIncreased={streakInfo?.justIncreased}
                       />
                       {/* Post-session prompts */}
                       {showHelpfulPrompt && (

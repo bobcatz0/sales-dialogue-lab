@@ -148,6 +148,17 @@ export async function syncEloAfterSession(sessionScore: number): Promise<EloSync
     });
   }
 
+  // Streak milestone events
+  if (lastDate !== todayStr && [3, 7, 14, 30].includes(currentStreak)) {
+    const streakLabels: Record<number, string> = { 3: "3-Day Consistency", 7: "Weekly Warrior", 14: "Two-Week Titan", 30: "30-Day Legend" };
+    publishActivityEvent({
+      eventType: "streak_milestone",
+      title: `reached ${streakLabels[currentStreak]} streak`,
+      description: `${currentStreak} consecutive days of practice`,
+      metadata: { streak: currentStreak },
+    });
+  }
+
   if (placementComplete) {
     publishActivityEvent({
       eventType: "personal_best",

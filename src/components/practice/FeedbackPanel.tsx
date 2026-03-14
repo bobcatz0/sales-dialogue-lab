@@ -19,6 +19,7 @@ import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
 import { SkillXpSummary } from "./SkillXpSummary";
+import { StreakReward } from "./StreakReward";
 import { ConversationBreakdown } from "./ConversationBreakdown";
 import { useAuth } from "@/hooks/useAuth";
 import { loadHistory } from "./sessionStorage";
@@ -259,6 +260,7 @@ export function FeedbackPanel({
   feedback, onStartNew, onTrySameRole, onStartDrill, alias, isValidSession,
   isFinalRound, voiceMetrics, voiceFeedbackLines, voiceScoreAdjustment,
   scenarioTitle, scenarioEnv, scenarioRole, eloDelta,
+  currentStreak, longestStreak, streakJustIncreased,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
@@ -274,6 +276,9 @@ export function FeedbackPanel({
   scenarioEnv?: string;
   scenarioRole?: string;
   eloDelta?: number | null;
+  currentStreak?: number;
+  longestStreak?: number;
+  streakJustIncreased?: boolean;
 }) {
   const interview = isInterviewRank(feedback.rank);
   const skills = feedback.skillBreakdown || [];
@@ -446,12 +451,22 @@ export function FeedbackPanel({
           </motion.div>
         )}
 
+        {/* ═══════════════ STREAK REWARD ═══════════════ */}
+        {(currentStreak ?? 0) > 0 && (
+          <StreakReward
+            currentStreak={currentStreak ?? 0}
+            longestStreak={longestStreak ?? 0}
+            justIncreased={streakJustIncreased}
+          />
+        )}
+
         {/* ═══════════════ SKILL XP SUMMARY ═══════════════ */}
         {user && skills.length > 0 && (
           <SkillXpSummary
             userId={user.id}
             skillBreakdown={skills}
             onXpAwarded={() => setSkillRefreshKey((k) => k + 1)}
+            currentStreak={currentStreak}
           />
         )}
 
