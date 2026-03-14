@@ -58,6 +58,7 @@ function SkillProgressBar({
 const Progress = () => {
   const [progress, setProgress] = useState<ProgressState | null>(null);
   const { user } = useAuth();
+  const [refreshKey] = useState(0);
 
   useEffect(() => {
     setProgress(loadProgress());
