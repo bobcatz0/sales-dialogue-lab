@@ -297,8 +297,13 @@ const Scenarios = () => {
                     {scenario.difficulty} • {scenario.duration}{scenario.framework ? ` • ${scenario.framework.label}` : ""}
                   </p>
 
-                  {/* CTA */}
-                  {isComingSoon ? (
+                {/* CTA */}
+                  {isLocked ? (
+                    <Button variant="outline" size="sm" className="w-full h-9 text-xs" disabled>
+                      <Lock className="h-3 w-3 mr-1.5" />
+                      Requires {scenario.requiredRank} Rank
+                    </Button>
+                  ) : isComingSoon ? (
                     <Button variant="outline" size="sm" className="w-full h-9 text-xs" disabled>
                       <Lock className="h-3 w-3 mr-1.5" />
                       Coming Soon — Voice Simulation
