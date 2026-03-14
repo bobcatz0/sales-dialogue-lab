@@ -277,7 +277,8 @@ export function FeedbackPanel({
   const skills = feedback.skillBreakdown || [];
   const frm = feedback.finalRoundMetrics;
   const [progressUpdated, setProgressUpdated] = useState(false);
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const [skillRefreshKey, setSkillRefreshKey] = useState(0);
 
   const strongest = skills.length > 0 ? skills.reduce((a, b) => (a.score >= b.score ? a : b)) : null;
   const weakest = skills.length > 0 ? skills.reduce((a, b) => (a.score <= b.score ? a : b)) : null;
