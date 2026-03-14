@@ -502,6 +502,8 @@ const LeaderboardPage = () => {
                     <MovementIndicator gain={entries[userRank - 1].weekly_elo_gain ?? 0} />
                   )}
                 </div>
+                {/* Past Season Badges */}
+                <PastSeasonBadges userId={user.id} />
               </div>
             </motion.div>
           ) : user && profile && profile.total_sessions < PLACEMENT_SESSIONS_REQUIRED ? (
