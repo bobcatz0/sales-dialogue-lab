@@ -71,6 +71,8 @@ const HeroSection = () => {
               Free to try · No account required
             </p>
           </motion.div>
+
+          <HeroMiniLeaderboard />
         </div>
       </div>
     </section>
