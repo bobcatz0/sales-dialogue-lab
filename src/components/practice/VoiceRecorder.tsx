@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
+const DEV = import.meta.env.DEV;
+
 const STT_FALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-stt`;
 const UNSUPPORTED_STT_MESSAGE = "Voice transcription not supported in this browser. Open in Chrome / Safari, or switch to Text Mode.";
 const HEALTH_CHECK_TIMEOUT_MS = 5000;
@@ -37,11 +39,6 @@ export function VoiceRecorder({
   const [rmsDb, setRmsDb] = useState<number>(-Infinity);
   const [peakDb, setPeakDb] = useState<number>(-Infinity);
   const [hasReceivedAudio, setHasReceivedAudio] = useState(false);
-  const [debugTranscript, setDebugTranscript] = useState("");
-  const [debugConfidence, setDebugConfidence] = useState<number | null>(null);
-  const [debugSpeechDuration, setDebugSpeechDuration] = useState(0);
-  const [showDiagnostics, setShowDiagnostics] = useState(false);
-  const [speechEvents, setSpeechEvents] = useState<{ type: string; detail: string; time: string }[]>([]);
   const [sttBanner, setSttBanner] = useState<string | null>(null);
   const [sttFallbackState, setSttFallbackState] = useState<"idle" | "switching" | "failed">("idle");
   const networkErrorTriggeredRef = useRef(false);
@@ -79,8 +76,7 @@ export function VoiceRecorder({
   const isMediaRecorderSupported = typeof window !== "undefined" && typeof MediaRecorder !== "undefined";
 
   const logEvent = useCallback((type: string, detail: string) => {
-    const time = new Date().toLocaleTimeString("en-US", { hour12: false, fractionalSecondDigits: 1 } as any);
-    setSpeechEvents((prev) => [{ type, detail, time }, ...prev].slice(0, 30));
+    if (DEV) console.log(`[VoiceRecorder] ${type}: ${detail}`);
   }, []);
 
   // Timer
@@ -89,7 +85,6 @@ export function VoiceRecorder({
       intervalRef.current = setInterval(() => {
         const seconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
         setElapsed(seconds);
-        setDebugSpeechDuration(seconds);
       }, 200);
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -396,8 +391,6 @@ export function VoiceRecorder({
         const backendTranscript = await transcribeWithBackendFallback(recordedAudioBlobRef.current!);
         if (backendTranscript && backendTranscript.length > 2) {
           transcript = backendTranscript;
-          setDebugTranscript(backendTranscript);
-          setDebugConfidence(null);
           setSttFallbackState("idle");
           setSttBanner(null);
         } else {
@@ -459,9 +452,6 @@ export function VoiceRecorder({
     recordedAudioBlobRef.current = null;
     setHasReceivedAudio(false);
     setPeakDb(-Infinity);
-    setDebugTranscript("");
-    setDebugConfidence(null);
-    setDebugSpeechDuration(0);
     setSttBanner(isSpeechRecognitionSupported ? null : UNSUPPORTED_STT_MESSAGE);
 
     if (!isSpeechRecognitionSupported) {
@@ -532,9 +522,7 @@ export function VoiceRecorder({
       }
 
       transcriptRef.current = (finalTranscript + interimTranscript).trim();
-      setDebugTranscript(transcriptRef.current);
       confidenceRef.current = latestConfidence;
-      setDebugConfidence(latestConfidence);
 
       logEvent(
         "onresult",
@@ -667,7 +655,6 @@ export function VoiceRecorder({
     clearHealthCheck();
 
     setIsRecording(false);
-    setDebugSpeechDuration(Math.round(duration * 10) / 10);
 
     // Auto-trigger backend fallback if audio was detected but no transcript
     const hasTranscript = transcriptRef.current.trim().length > 2;
@@ -784,37 +771,6 @@ export function VoiceRecorder({
                   {hasReceivedAudio ? "Audio ✓" : "No signal"}
                 </span>
               </div>
-            </div>
-
-            {/* Visible speech debug panel */}
-            <div className="w-full max-w-[300px] rounded-md border border-border bg-card/80 p-2 text-[10px]">
-              <p className="font-semibold text-foreground">Debug panel</p>
-              <div className="mt-1 space-y-0.5 text-muted-foreground">
-                <p>Detected transcript: {debugTranscript || "—"}</p>
-                <p>Confidence score: {debugConfidence !== null ? debugConfidence.toFixed(2) : "n/a"}</p>
-                <p>Speech duration: {debugSpeechDuration.toFixed(1)}s</p>
-              </div>
-              <button
-                onClick={() => setShowDiagnostics(p => !p)}
-                className="mt-1.5 text-[9px] text-primary underline"
-              >
-                {showDiagnostics ? "Hide" : "Show"} event log ({speechEvents.length})
-              </button>
-              {showDiagnostics && (
-                <div className="mt-1 max-h-[100px] overflow-y-auto space-y-px border-t border-border pt-1">
-                  {speechEvents.length === 0 && <p className="text-muted-foreground italic">No events yet</p>}
-                  {speechEvents.map((e, i) => (
-                    <p key={i} className="font-mono text-[9px] text-muted-foreground">
-                      <span className="text-foreground/60">{e.time}</span>{" "}
-                      <span className={
-                        e.type === "onerror" ? "text-destructive" :
-                        e.type === "onresult" ? "text-primary" : "text-muted-foreground"
-                      }>{e.type}</span>{" "}
-                      {e.detail}
-                    </p>
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* Timer */}

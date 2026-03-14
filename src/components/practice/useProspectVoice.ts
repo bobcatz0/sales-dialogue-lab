@@ -1,5 +1,4 @@
 import { useRef, useState, useCallback } from "react";
-import { toast } from "sonner";
 
 const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/roleplay-tts`;
 
@@ -9,10 +8,15 @@ export function useProspectVoice() {
   const [volume, setVolumeState] = useState(1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+  // Use refs for values read inside async callbacks to avoid stale closures
+  const isMutedRef = useRef(false);
+  const volumeRef = useRef(1);
 
   const cleanup = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
       audioRef.current = null;
     }
     if (objectUrlRef.current) {
@@ -37,7 +41,7 @@ export function useProspectVoice() {
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.rate = 1.0;
         utterance.pitch = 1.0;
-        utterance.volume = volume;
+        utterance.volume = volumeRef.current;
         utterance.onend = () => {
           setIsPlaying(false);
           resolve();
@@ -50,21 +54,74 @@ export function useProspectVoice() {
         window.speechSynthesis.speak(utterance);
       });
     },
-    [volume]
+    []
   );
 
   const speak = useCallback(
-    async (text: string) => {
-      // TTS temporarily disabled — focusing on STT input first
-      console.log("[TTS] DISABLED — skipping speech for:", text.slice(0, 60));
-      return;
+    async (text: string): Promise<void> => {
+      if (isMutedRef.current) return;
+
+      // Stop any currently playing audio before starting new one
+      cleanup();
+
+      try {
+        const response = await fetch(TTS_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`TTS request failed: ${response.status}`);
+        }
+
+        const audioBlob = await response.blob();
+        const url = URL.createObjectURL(audioBlob);
+        objectUrlRef.current = url;
+
+        const audio = new Audio(url);
+        audio.volume = volumeRef.current;
+        audioRef.current = audio;
+
+        await new Promise<void>((resolve) => {
+          audio.onended = () => {
+            // Revoke URL after playback
+            if (objectUrlRef.current === url) {
+              URL.revokeObjectURL(url);
+              objectUrlRef.current = null;
+            }
+            audioRef.current = null;
+            setIsPlaying(false);
+            resolve();
+          };
+          audio.onerror = (e) => {
+            console.error("[TTS] Audio playback error:", e);
+            audioRef.current = null;
+            setIsPlaying(false);
+            resolve();
+          };
+          setIsPlaying(true);
+          audio.play().catch((e) => {
+            console.error("[TTS] audio.play() rejected:", e);
+            setIsPlaying(false);
+            resolve();
+          });
+        });
+      } catch (e) {
+        console.warn("[TTS] ElevenLabs failed, falling back to browser TTS:", e);
+        await speakBrowserNative(text);
+      }
     },
-    []
+    [cleanup, speakBrowserNative]
   );
 
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
       const next = !prev;
+      isMutedRef.current = next;
       if (next) cleanup(); // stop current audio when muting
       return next;
     });
@@ -72,6 +129,7 @@ export function useProspectVoice() {
 
   const setVolume = useCallback((v: number) => {
     setVolumeState(v);
+    volumeRef.current = v;
     if (audioRef.current) audioRef.current.volume = v;
   }, []);
 
