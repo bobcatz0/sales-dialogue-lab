@@ -80,6 +80,7 @@ const SCENARIOS: Scenario[] = [
     role: "b2b-prospect",
     duration: "~5 min",
     framework: { id: "bant", label: "BANT" },
+    requiredRank: "Closer",
   },
   {
     id: "executive-pitch",
