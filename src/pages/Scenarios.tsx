@@ -22,6 +22,7 @@ import {
   type SeriesEligibility,
   type PromotionSeries,
 } from "@/components/practice/promotionSeries";
+import FlashChallengeBanner from "@/components/scenarios/FlashChallengeBanner";
 
 interface Scenario {
   id: string;
