@@ -15,17 +15,15 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
-      <InstantChallengePreview />
-      <LiveFeed />
-      <DailyDrillSection />
-      <HowItWorksSection />
-      <WeeklyChallengeSection />
       <section className="py-10 md:py-14">
         <div className="container mx-auto px-6 max-w-2xl">
           <HeroLeaderboardPreview />
         </div>
       </section>
+      <DailyDrillSection />
+      <InstantChallengePreview />
       <RankTiersSection />
+      <HowItWorksSection />
       <FinalCTASection />
       <Footer />
     </div>
