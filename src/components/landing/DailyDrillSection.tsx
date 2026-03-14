@@ -149,6 +149,20 @@ export default function DailyDrillSection() {
                         {challenge.successLabel}
                       </span>
                     </div>
+
+                    {/* Benchmark metrics */}
+                    <div className="flex items-center gap-4 pt-2 mt-1 border-t border-border/40">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-muted-foreground">Avg Score:</span>
+                        <span className="text-xs font-bold font-heading text-foreground tabular-nums">71</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-muted-foreground">Top Score:</span>
+                        <span className="text-xs font-bold font-heading text-primary tabular-nums">
+                          {leaderboard[0]?.score ?? 94}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* CTA */}
