@@ -44,6 +44,72 @@ export type Database = {
         }
         Relationships: []
       }
+      battles: {
+        Row: {
+          challenger_elo_delta: number | null
+          challenger_feedback: string | null
+          challenger_id: string | null
+          challenger_response: string | null
+          challenger_score: number | null
+          completed_at: string | null
+          created_at: string
+          creator_elo_delta: number | null
+          creator_feedback: string | null
+          creator_id: string
+          creator_response: string | null
+          creator_score: number | null
+          id: string
+          response_mode: string
+          scenario_env: string
+          scenario_prompt: string
+          scenario_role: string
+          status: string
+          winner_id: string | null
+        }
+        Insert: {
+          challenger_elo_delta?: number | null
+          challenger_feedback?: string | null
+          challenger_id?: string | null
+          challenger_response?: string | null
+          challenger_score?: number | null
+          completed_at?: string | null
+          created_at?: string
+          creator_elo_delta?: number | null
+          creator_feedback?: string | null
+          creator_id: string
+          creator_response?: string | null
+          creator_score?: number | null
+          id?: string
+          response_mode?: string
+          scenario_env: string
+          scenario_prompt: string
+          scenario_role: string
+          status?: string
+          winner_id?: string | null
+        }
+        Update: {
+          challenger_elo_delta?: number | null
+          challenger_feedback?: string | null
+          challenger_id?: string | null
+          challenger_response?: string | null
+          challenger_score?: number | null
+          completed_at?: string | null
+          created_at?: string
+          creator_elo_delta?: number | null
+          creator_feedback?: string | null
+          creator_id?: string
+          creator_response?: string | null
+          creator_score?: number | null
+          id?: string
+          response_mode?: string
+          scenario_env?: string
+          scenario_prompt?: string
+          scenario_role?: string
+          status?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       challenges: {
         Row: {
           challenger_id: string | null
