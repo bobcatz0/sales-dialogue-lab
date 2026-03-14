@@ -23,6 +23,13 @@ interface Scenario {
   duration: string;
   comingSoon?: boolean;
   framework?: { id: string; label: string };
+  requiredRank?: RankTier;
+}
+
+const RANK_ORDER: RankTier[] = ["Rookie", "Prospector", "Closer", "Operator", "Rainmaker", "Sales Architect"];
+
+function isRankSufficient(userRank: RankTier, requiredRank: RankTier): boolean {
+  return RANK_ORDER.indexOf(userRank) >= RANK_ORDER.indexOf(requiredRank);
 }
 
 const SCENARIOS: Scenario[] = [
