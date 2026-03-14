@@ -44,6 +44,83 @@ export type Database = {
         }
         Relationships: []
       }
+      assessment_submissions: {
+        Row: {
+          assessment_id: string
+          candidate_email: string
+          candidate_name: string
+          completed_at: string
+          created_at: string
+          id: string
+          percentile: number
+          score: number
+          skill_breakdown: Json
+          stage_scores: Json
+        }
+        Insert: {
+          assessment_id: string
+          candidate_email: string
+          candidate_name: string
+          completed_at?: string
+          created_at?: string
+          id?: string
+          percentile?: number
+          score: number
+          skill_breakdown?: Json
+          stage_scores?: Json
+        }
+        Update: {
+          assessment_id?: string
+          candidate_email?: string
+          candidate_name?: string
+          completed_at?: string
+          created_at?: string
+          id?: string
+          percentile?: number
+          score?: number
+          skill_breakdown?: Json
+          stage_scores?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_submissions_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessments: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          invite_code: string
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       battles: {
         Row: {
           challenger_elo_delta: number | null
