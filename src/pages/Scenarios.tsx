@@ -406,14 +406,23 @@ const Scenarios = () => {
                     </div>
                   </div>
 
-                  {/* Stats Row: Best Score + Leaderboard Rank */}
+                  {/* Top Rep + Best Score */}
+                  {(() => {
+                    const scenarioKey = `${scenario.env}:${scenario.role}`;
+                    const topRep = topReps.get(scenarioKey);
+                    return topRep ? (
+                      <TopRepBadge topRep={topRep} />
+                    ) : null;
+                  })()}
+
+                  {/* User Stats Row */}
                   <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-muted/30 border border-border/50">
                     {bestScore !== null ? (
                       <>
                         <div className="flex items-center gap-1.5 flex-1">
                           <Flame className="h-3.5 w-3.5 text-primary shrink-0" />
                           <div>
-                            <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">Best</p>
+                            <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">Your Best</p>
                             <p className="text-sm font-bold font-heading text-foreground">{bestScore}</p>
                           </div>
                         </div>
@@ -429,7 +438,7 @@ const Scenarios = () => {
                     ) : (
                       <div className="flex items-center gap-2 flex-1">
                         <Trophy className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
-                        <p className="text-[11px] text-muted-foreground/60">No attempts yet — be the first</p>
+                        <p className="text-[11px] text-muted-foreground/60">No attempts yet — beat the top rep</p>
                       </div>
                     )}
                   </div>
