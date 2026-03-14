@@ -9,6 +9,7 @@ const navLinks = [
   { label: "Practice", href: "/practice" },
   { label: "Leaderboard", href: "/leaderboard" },
   { label: "Progress", href: "/progress" },
+  { label: "Manager", href: "/manager" },
 ];
 
 const Navbar = () => {
