@@ -36,8 +36,8 @@ export default function AssessmentPage() {
   useEffect(() => {
     async function load() {
       if (!code) { setNotFound(true); setLoading(false); return; }
-      const { data } = await supabase
-        .from("assessments")
+      const { data } = await (supabase
+        .from("assessments") as any)
         .select("id, title, description, invite_code")
         .eq("invite_code", code)
         .eq("status", "active")
