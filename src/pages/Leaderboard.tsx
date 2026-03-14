@@ -739,6 +739,8 @@ const LeaderboardPage = () => {
               )}
             </>
           )}
+          </>
+          )}
         </motion.div>
 
         {/* Live Activity Feed sidebar */}
