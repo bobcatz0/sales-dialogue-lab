@@ -26,6 +26,7 @@ import Challenges from "./pages/Challenges";
 import Battles from "./pages/Battles";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import JoinTeamChallenge from "./pages/JoinTeamChallenge";
+import Certification from "./pages/Certification";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { WeeklyChampionCelebration } from "./components/clans/WeeklyChampionCelebration";
 import { useRankThresholds } from "./hooks/useRankThresholds";
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/battles" element={<Battles />} />
             <Route path="/manager" element={<ManagerDashboard />} />
             <Route path="/team/:code" element={<JoinTeamChallenge />} />
+            <Route path="/certification" element={<Certification />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

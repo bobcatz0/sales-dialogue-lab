@@ -7,6 +7,7 @@ import { UserAvatar } from "@/components/UserAvatar";
 
 const navLinks = [
   { label: "Practice", href: "/practice" },
+  { label: "Certification", href: "/certification" },
   { label: "Leaderboard", href: "/leaderboard" },
   { label: "Progress", href: "/progress" },
   { label: "Manager", href: "/manager" },
