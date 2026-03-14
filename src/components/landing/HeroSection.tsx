@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import HeroMiniLeaderboard from "./HeroMiniLeaderboard";
 
 const HeroSection = () => {
   return (
