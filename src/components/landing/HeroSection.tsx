@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import HeroMiniLeaderboard from "./HeroMiniLeaderboard";
 
 const HeroSection = () => {
   return (
@@ -61,8 +62,8 @@ const HeroSection = () => {
             className="flex flex-col items-center gap-3 pt-2"
           >
             <Button variant="hero" size="lg" className="gap-2 px-10 py-6 text-lg" asChild>
-              <Link to="/practice">
-                Start Scenario
+              <Link to="/challenges">
+                Try Today's Challenge
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
@@ -70,6 +71,8 @@ const HeroSection = () => {
               Free to try · No account required
             </p>
           </motion.div>
+
+          <HeroMiniLeaderboard />
         </div>
       </div>
     </section>
