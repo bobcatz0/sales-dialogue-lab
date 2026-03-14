@@ -602,6 +602,80 @@ export type Database = {
         }
         Relationships: []
       }
+      flash_challenge_scores: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          display_name: string
+          id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flash_challenge_scores_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "flash_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flash_challenges: {
+        Row: {
+          bonus_elo: number
+          created_at: string
+          description: string | null
+          ends_at: string
+          id: string
+          scenario_env: string
+          scenario_role: string
+          starts_at: string
+          status: string
+          title: string
+        }
+        Insert: {
+          bonus_elo?: number
+          created_at?: string
+          description?: string | null
+          ends_at: string
+          id?: string
+          scenario_env: string
+          scenario_role: string
+          starts_at?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          bonus_elo?: number
+          created_at?: string
+          description?: string | null
+          ends_at?: string
+          id?: string
+          scenario_env?: string
+          scenario_role?: string
+          starts_at?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       pro_challenge_attempts: {
         Row: {
           beat_pro: boolean
