@@ -81,12 +81,14 @@ Return a JSON object with this EXACT structure — nothing else:
   "improvements": ["<improvement>"${isInterview ? "" : ', "<improvement>"'}],
   "nextDrill": "<one sentence>",
   "skillBreakdown": [
-    {"name": "Clarity", "score": <0-100>},
-    {"name": "Structure", "score": <0-100>},
     {"name": "Objection Handling", "score": <0-100>},
-    {"name": "Conversational Control", "score": <0-100>},
-    {"name": "Conciseness", "score": <0-100>},
-    {"name": "Verbal Readiness", "score": <0-100>}
+    {"name": "Discovery Questions", "score": <0-100>},
+    {"name": "Clarity", "score": <0-100>},
+    {"name": "Closing", "score": <0-100>},
+    {"name": "Confidence", "score": <0-100>},
+    {"name": "Cold Call Opening", "score": <0-100>},
+    {"name": "Structure", "score": <0-100>},
+    {"name": "Conciseness", "score": <0-100>}
   ],
   "trainingRecommendation": "<one sentence: suggest next environment + persona + specific skill>"${resumeHighlights ? `,
   "resumeAlignment": {
