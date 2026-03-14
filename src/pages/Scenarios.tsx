@@ -16,6 +16,8 @@ interface Scenario {
   title: string;
   subtitle: string;
   description: string;
+  goal: string;
+  evaluationCriteria: string[];
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   icon: React.ElementType;
   env: string;
