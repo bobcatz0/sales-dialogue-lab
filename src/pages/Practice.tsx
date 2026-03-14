@@ -1658,7 +1658,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   comingSoon={true}
                 />
               ) : (
-              /* Messages */
+              <>
+              {/* Messages */}
               <div
                 ref={scrollRef}
                 className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-[250px] sm:min-h-[350px]"
