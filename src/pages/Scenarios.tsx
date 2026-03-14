@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import { loadHistory } from "@/components/practice/sessionStorage";
 import type { SessionRecord } from "@/components/practice/types";
+import { getEloRank, getRankThresholds, type RankTier } from "@/lib/elo";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Scenario {
   id: string;
