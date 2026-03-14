@@ -734,6 +734,19 @@ export function FeedbackPanel({
           </div>
         )}
 
+        {/* ═══════════════ REPLAY & IMPROVEMENT ═══════════════ */}
+        <ReplayImprovementPanel
+          answerComparisons={feedback.answerComparisons}
+          exposureMoments={feedback.exposureMoments}
+          timestampedMoments={feedback.timestampedMoments}
+          strengths={feedback.strengths}
+          improvements={feedback.improvements}
+          score={feedback.score}
+          scenarioRole={scenarioRole}
+          scenarioTitle={scenarioTitle}
+          onRetry={onTrySameRole}
+        />
+
         {/* ═══════════════ BOTTOM SECTION: Retry Loop ═══════════════ */}
         <RetryLoopPanel
           currentScore={feedback.score}
