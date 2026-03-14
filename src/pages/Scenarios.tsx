@@ -480,6 +480,13 @@ const Scenarios = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Series Result Modal */}
+      <SeriesResultModal
+        open={!!completedSeries}
+        series={completedSeries}
+        onClose={() => setCompletedSeries(null)}
+      />
     </div>
   );
 };
