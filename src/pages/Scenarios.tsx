@@ -23,6 +23,7 @@ import {
   type PromotionSeries,
 } from "@/components/practice/promotionSeries";
 import FlashChallengeBanner from "@/components/scenarios/FlashChallengeBanner";
+import { useTopReps, TopRepBadge } from "@/components/scenarios/TopRepSystem";
 
 interface Scenario {
   id: string;
@@ -212,6 +213,7 @@ const Scenarios = () => {
   const { profile, user } = useAuth();
   const userElo = profile?.elo ?? 1000;
   const userRank = getEloRank(userElo);
+  const { topReps } = useTopReps();
 
   useEffect(() => {
     setSessions(loadHistory());
@@ -404,14 +406,23 @@ const Scenarios = () => {
                     </div>
                   </div>
 
-                  {/* Stats Row: Best Score + Leaderboard Rank */}
+                  {/* Top Rep + Best Score */}
+                  {(() => {
+                    const scenarioKey = `${scenario.env}:${scenario.role}`;
+                    const topRep = topReps.get(scenarioKey);
+                    return topRep ? (
+                      <TopRepBadge topRep={topRep} />
+                    ) : null;
+                  })()}
+
+                  {/* User Stats Row */}
                   <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-muted/30 border border-border/50">
                     {bestScore !== null ? (
                       <>
                         <div className="flex items-center gap-1.5 flex-1">
                           <Flame className="h-3.5 w-3.5 text-primary shrink-0" />
                           <div>
-                            <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">Best</p>
+                            <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">Your Best</p>
                             <p className="text-sm font-bold font-heading text-foreground">{bestScore}</p>
                           </div>
                         </div>
@@ -427,7 +438,7 @@ const Scenarios = () => {
                     ) : (
                       <div className="flex items-center gap-2 flex-1">
                         <Trophy className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
-                        <p className="text-[11px] text-muted-foreground/60">No attempts yet — be the first</p>
+                        <p className="text-[11px] text-muted-foreground/60">No attempts yet — beat the top rep</p>
                       </div>
                     )}
                   </div>
@@ -455,8 +466,8 @@ const Scenarios = () => {
                       className="w-full h-9 text-xs gap-1.5 group-hover:gap-2.5 transition-all"
                       asChild
                     >
-                      <a href={`/practice?env=${scenario.env}&role=${scenario.role}`}>
-                        Start Challenge <ArrowRight className="h-3.5 w-3.5" />
+                      <a href={`/practice?env=${scenario.env}&role=${scenario.role}&topRep=${topReps.get(`${scenario.env}:${scenario.role}`)?.score ?? ""}`}>
+                        {topReps.has(`${scenario.env}:${scenario.role}`) ? "Beat the Top Rep" : "Start Challenge"} <ArrowRight className="h-3.5 w-3.5" />
                       </a>
                     </Button>
                   )}
