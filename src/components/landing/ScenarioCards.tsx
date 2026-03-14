@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button";
 import { getEloRank, type RankTier } from "@/lib/elo";
 import { useAuth } from "@/hooks/useAuth";
 
+const RANK_ORDER: RankTier[] = ["Rookie", "Prospector", "Closer", "Operator", "Rainmaker", "Sales Architect"];
+
+function isRankSufficient(userRank: RankTier, requiredRank: RankTier): boolean {
+  return RANK_ORDER.indexOf(userRank) >= RANK_ORDER.indexOf(requiredRank);
+}
+
 const scenarios = [
   {
     title: "SDR Interview",
@@ -19,6 +25,7 @@ const scenarios = [
     icon: Shield,
     env: "cold-call",
     difficulty: "Intermediate",
+    requiredRank: "Prospector" as RankTier,
   },
   {
     title: "Discovery Call",
@@ -26,6 +33,7 @@ const scenarios = [
     icon: Search,
     env: "interview",
     difficulty: "Intermediate",
+    requiredRank: "Closer" as RankTier,
   },
   {
     title: "Enterprise Negotiation",
@@ -33,6 +41,7 @@ const scenarios = [
     icon: Handshake,
     env: "enterprise",
     difficulty: "Advanced",
+    requiredRank: "Rainmaker" as RankTier,
   },
 ];
 
