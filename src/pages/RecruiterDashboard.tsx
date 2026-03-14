@@ -224,8 +224,8 @@ export default function RecruiterDashboard() {
   const fetchSubmissions = async (assessmentId: string) => {
     setSubsLoading(true);
     setSelectedId(assessmentId);
-    const { data } = await supabase
-      .from("assessment_submissions")
+    const { data } = await (supabase
+      .from("assessment_submissions") as any)
       .select("*")
       .eq("assessment_id", assessmentId)
       .order("completed_at", { ascending: false });
