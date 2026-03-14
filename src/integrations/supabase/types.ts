@@ -977,6 +977,77 @@ export type Database = {
         }
         Relationships: []
       }
+      season_results: {
+        Row: {
+          badge_awarded: string | null
+          created_at: string
+          final_elo: number
+          final_rank: string
+          id: string
+          leaderboard_position: number
+          season_id: string
+          total_sessions: number
+          user_id: string
+        }
+        Insert: {
+          badge_awarded?: string | null
+          created_at?: string
+          final_elo: number
+          final_rank: string
+          id?: string
+          leaderboard_position?: number
+          season_id: string
+          total_sessions?: number
+          user_id: string
+        }
+        Update: {
+          badge_awarded?: string | null
+          created_at?: string
+          final_elo?: number
+          final_rank?: string
+          id?: string
+          leaderboard_position?: number
+          season_id?: string
+          total_sessions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_results_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasons: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          name: string
+          starts_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          name: string
+          starts_at: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          name?: string
+          starts_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       team_challenge_members: {
         Row: {
           challenge_id: string
