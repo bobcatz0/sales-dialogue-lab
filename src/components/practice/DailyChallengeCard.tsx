@@ -39,6 +39,11 @@ interface LeaderEntry { name: string; score: number }
 
 export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
   const { challenge, completed } = getTodayChallenge();
+  const { profile } = useAuth();
+  const currentStreak = (profile as any)?.current_streak ?? 0;
+  const longestStreak = (profile as any)?.longest_streak ?? 0;
+  const xpMultiplier = getStreakXpMultiplier(currentStreak);
+  const isOnFire = currentStreak >= 3;
   const env = ENVIRONMENTS.find((e) => e.id === challenge.environmentId);
   const persona = roles.find((r) => r.id === challenge.personaId);
   const countdown = useCountdown();
