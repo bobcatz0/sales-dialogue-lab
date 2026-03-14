@@ -1,45 +1,53 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Zap, ChevronUp, AlertTriangle, TrendingUp } from "lucide-react";
+import { Zap, ChevronUp, AlertTriangle, TrendingUp, Flame } from "lucide-react";
 import { awardSkillXp, getSkillLevelInfo } from "@/lib/skillXp";
 import { toast } from "sonner";
 import { SkillLevelUpToast } from "./SkillLevelsDisplay";
+import { getStreakXpMultiplier } from "./StreakReward";
 
 interface SkillXpSummaryProps {
   userId: string;
   skillBreakdown: { name: string; score: number }[];
   onXpAwarded?: () => void;
+  currentStreak?: number;
 }
 
-export function SkillXpSummary({ userId, skillBreakdown, onXpAwarded }: SkillXpSummaryProps) {
+export function SkillXpSummary({ userId, skillBreakdown, onXpAwarded, currentStreak = 0 }: SkillXpSummaryProps) {
   const [xpResults, setXpResults] = useState<{ name: string; score: number; xpGained: number }[]>([]);
   const [weakestSkill, setWeakestSkill] = useState<{ name: string; score: number } | null>(null);
   const [awarded, setAwarded] = useState(false);
+
+  const multiplier = getStreakXpMultiplier(currentStreak);
+  const hasBonus = multiplier > 1;
 
   useEffect(() => {
     if (awarded || !userId || skillBreakdown.length === 0) return;
     setAwarded(true);
 
-    // Calculate XP awards (mirrors the logic in skillXp.ts)
-    const results = skillBreakdown.map((s) => ({
-      name: s.name,
-      score: s.score,
-      xpGained: s.score >= 90 ? 30 : s.score >= 80 ? 25 : s.score >= 70 ? 20 : s.score >= 60 ? 15 : s.score >= 50 ? 10 : 5,
-    }));
+    // Calculate XP awards with streak multiplier
+    const results = skillBreakdown.map((s) => {
+      const base = s.score >= 90 ? 30 : s.score >= 80 ? 25 : s.score >= 70 ? 20 : s.score >= 60 ? 15 : s.score >= 50 ? 10 : 5;
+      return {
+        name: s.name,
+        score: s.score,
+        xpGained: Math.round(base * multiplier),
+      };
+    });
     setXpResults(results);
 
     // Find weakest
     const weakest = skillBreakdown.reduce((a, b) => (a.score <= b.score ? a : b));
     setWeakestSkill(weakest);
 
-    // Award XP
-    awardSkillXp(userId, skillBreakdown).then(({ levelUps }) => {
+    // Award XP with streak multiplier
+    awardSkillXp(userId, skillBreakdown, multiplier).then(({ levelUps }) => {
       for (const lu of levelUps) {
         toast(<SkillLevelUpToast skillName={lu.skillName} newLevel={lu.newLevel} title={lu.title} />);
       }
       onXpAwarded?.();
     });
-  }, [userId, skillBreakdown, awarded, onXpAwarded]);
+  }, [userId, skillBreakdown, awarded, onXpAwarded, multiplier]);
 
   if (xpResults.length === 0) return null;
 
@@ -58,9 +66,17 @@ export function SkillXpSummary({ userId, skillBreakdown, onXpAwarded }: SkillXpS
           <Zap className="h-4 w-4 text-primary" />
           <h4 className="text-sm font-bold text-foreground">Skill XP Earned</h4>
         </div>
-        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-          +{totalXp} XP
-        </span>
+        <div className="flex items-center gap-1.5">
+          {hasBonus && (
+            <span className="text-[9px] font-bold text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+              <Flame className="h-2.5 w-2.5" />
+              {Math.round((multiplier - 1) * 100)}% bonus
+            </span>
+          )}
+          <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+            +{totalXp} XP
+          </span>
+        </div>
       </div>
 
       {/* Per-skill XP gains */}
