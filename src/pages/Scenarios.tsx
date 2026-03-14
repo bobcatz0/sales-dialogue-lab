@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Phone, Building2, ShieldAlert, Users, Cpu, RotateCcw, ArrowRight, Zap,
-  Briefcase, Mic, Trophy, Crown, Target, Swords, TrendingUp, Lock, Flame
+  Briefcase, Mic, Trophy, Crown, Target, Swords, TrendingUp, Lock, Flame, Link2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
@@ -10,6 +10,10 @@ import { loadHistory } from "@/components/practice/sessionStorage";
 import type { SessionRecord } from "@/components/practice/types";
 import { getEloRank, getRankThresholds, type RankTier } from "@/lib/elo";
 import { useAuth } from "@/hooks/useAuth";
+import { SCENARIO_CHAINS } from "@/components/scenarios/chainData";
+import ScenarioChainCard from "@/components/scenarios/ScenarioChainCard";
+import { loadChainProgress, resetChainProgress } from "@/components/scenarios/chainStorage";
+import type { ChainProgress } from "@/components/scenarios/types";
 
 interface Scenario {
   id: string;
@@ -193,13 +197,20 @@ function getLeaderboardRank(sessions: SessionRecord[], env: string, role: string
 
 const Scenarios = () => {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
+  const [chainProgressMap, setChainProgressMap] = useState<Record<string, ChainProgress>>({});
   const { profile } = useAuth();
   const userElo = profile?.elo ?? 1000;
   const userRank = getEloRank(userElo);
 
   useEffect(() => {
     setSessions(loadHistory());
+    setChainProgressMap(loadChainProgress());
   }, []);
+
+  const handleResetChain = (chainId: string) => {
+    resetChainProgress(chainId);
+    setChainProgressMap(loadChainProgress());
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -224,6 +235,38 @@ const Scenarios = () => {
             Select a scenario. Get scored. Climb the leaderboard. Each challenge tests different sales skills under real pressure.
           </p>
         </motion.div>
+
+        {/* Scenario Chains */}
+        <div className="max-w-5xl mx-auto mb-14">
+          <div className="flex items-center gap-2 mb-6">
+            <Link2 className="h-4 w-4 text-primary" />
+            <h2 className="font-heading text-xl font-bold text-foreground">Multi-Stage Chains</h2>
+            <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">NEW</span>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {SCENARIO_CHAINS.map((chain, i) => (
+              <motion.div
+                key={chain.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+              >
+                <ScenarioChainCard
+                  chain={chain}
+                  progress={chainProgressMap[chain.id] ?? null}
+                  userRank={userRank}
+                  onReset={handleResetChain}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Single Scenarios Header */}
+        <div className="flex items-center gap-2 mb-6 max-w-5xl mx-auto">
+          <Swords className="h-4 w-4 text-primary" />
+          <h2 className="font-heading text-xl font-bold text-foreground">Single Scenarios</h2>
+        </div>
 
         {/* Scenario Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
