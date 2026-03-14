@@ -24,6 +24,8 @@ import ScorecardPage from "./pages/ScorecardPage";
 import Tournaments from "./pages/Tournaments";
 import Challenges from "./pages/Challenges";
 import Battles from "./pages/Battles";
+import ManagerDashboard from "./pages/ManagerDashboard";
+import JoinTeamChallenge from "./pages/JoinTeamChallenge";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { WeeklyChampionCelebration } from "./components/clans/WeeklyChampionCelebration";
 import { useRankThresholds } from "./hooks/useRankThresholds";
