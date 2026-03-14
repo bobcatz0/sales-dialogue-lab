@@ -1169,12 +1169,12 @@ This evaluation style should subtly influence your questions and reactions. Do N
               </div>
             )}
 
-            {/* Voice Mode Toggle — interview modes only, before persona selection */}
+            {/* Voice / Text Mode Toggle — interview modes only, before persona selection */}
             {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
               <div className="mb-4 space-y-2">
-                <VoiceModeBanner
-                  enabled={voice.voiceMode}
-                  onToggle={voice.setVoiceMode}
+                <VoiceModeToggle
+                  mode={voice.voiceMode ? "voice" : "text"}
+                  onToggle={(m) => voice.setVoiceMode(m === "voice")}
                 />
                 {voice.voiceMode && (
                   <MicPreflight
