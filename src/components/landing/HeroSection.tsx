@@ -63,7 +63,7 @@ const HeroSection = () => {
           >
             <Button variant="hero" size="lg" className="gap-2 px-10 py-6 text-lg" asChild>
               <Link to="/challenges">
-                Try Today's Challenge
+                Start Today's Challenge
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
