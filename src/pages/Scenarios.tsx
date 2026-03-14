@@ -197,13 +197,20 @@ function getLeaderboardRank(sessions: SessionRecord[], env: string, role: string
 
 const Scenarios = () => {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
+  const [chainProgressMap, setChainProgressMap] = useState<Record<string, ChainProgress>>({});
   const { profile } = useAuth();
   const userElo = profile?.elo ?? 1000;
   const userRank = getEloRank(userElo);
 
   useEffect(() => {
     setSessions(loadHistory());
+    setChainProgressMap(loadChainProgress());
   }, []);
+
+  const handleResetChain = (chainId: string) => {
+    resetChainProgress(chainId);
+    setChainProgressMap(loadChainProgress());
+  };
 
   return (
     <div className="min-h-screen bg-background">
