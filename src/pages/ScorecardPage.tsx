@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Trophy, ArrowLeft, TrendingUp, AlertTriangle } from "lucide-react";
+import { ShareResultCard } from "@/components/practice/ShareResultCard";
 import { supabase } from "@/integrations/supabase/client";
 import { getEloRank } from "@/lib/elo";
 import { Button } from "@/components/ui/button";
