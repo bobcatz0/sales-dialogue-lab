@@ -11,6 +11,7 @@ import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRound
 import { ShareableSummary } from "./ShareableSummary";
 import { ScorecardShare } from "./ScorecardShare";
 import { ChallengeButton } from "./ChallengeButton";
+import { ShareResultCard } from "./ShareResultCard";
 import { HumanReviewedBadge } from "./EvaluatorBadges";
 import { AnimatedScore } from "./AnimatedScore";
 import { RetryLoopPanel } from "./RetryLoopPanel";
@@ -670,6 +671,15 @@ export function FeedbackPanel({
           <Download className="h-3 w-3 mr-1.5" />
           Download Full Report
         </Button>
+
+        {/* Share Result Card */}
+        <ShareResultCard
+          scenarioTitle={scenarioTitle || feedback.rank}
+          score={feedback.score}
+          rank={feedback.rank}
+          eloDelta={eloDelta}
+          elo={profile?.elo ?? null}
+        />
 
         {/* Scorecard */}
         <ScorecardShare feedback={feedback} scenarioTitle={scenarioTitle || feedback.rank} alias={alias ?? null} isValidSession={!!isValidSession} elo={profile?.elo ?? null} eloDelta={eloDelta} />

@@ -11,6 +11,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { ENVIRONMENTS, type EnvironmentId } from "@/components/practice/environments";
 import { roles } from "@/components/practice/roleData";
 import { syncEloAfterSession } from "@/lib/eloSync";
+import { ShareResultCard } from "@/components/practice/ShareResultCard";
+import { getEloRank } from "@/lib/elo";
 
 const BATTLE_PROMPTS: Record<string, { prospect: string; goal: string }[]> = {
   "cold-call": [
@@ -512,6 +514,21 @@ export default function Battles() {
                           {theirFeedback && <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">{theirFeedback}</p>}
                         </div>
                       </div>
+
+                      {/* Share Result Card */}
+                      <ShareResultCard
+                        scenarioTitle={(() => {
+                          const { prospect } = parsePrompt(activeBattle.scenario_prompt);
+                          return prospect.length > 40 ? prospect.slice(0, 40) + "…" : prospect;
+                        })()}
+                        score={myScore ?? 0}
+                        rank={getEloRank(profile?.elo ?? 1000)}
+                        eloDelta={myDelta}
+                        elo={profile?.elo ?? null}
+                        isBattle
+                        opponentScore={theirScore}
+                        won={won}
+                      />
 
                       <div className="flex gap-2">
                         <Button className="flex-1 gap-2" onClick={() => { setView("lobby"); setActiveBattle(null); setResponse(""); }}>
