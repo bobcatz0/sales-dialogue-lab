@@ -219,6 +219,7 @@ const PracticePage = () => {
   const [lastPoints, setLastPoints] = useState<number | null>(null);
   const [eloDelta, setEloDelta] = useState<number | null>(null);
   const [rankUpData, setRankUpData] = useState<EloSyncResult | null>(null);
+  const [streakInfo, setStreakInfo] = useState<{ current: number; longest: number; justIncreased: boolean } | null>(null);
   const [promoEligibility, setPromoEligibility] = useState<PromotionEligibility | null>(null);
   const [isPromotionMatch, setIsPromotionMatch] = useState(false);
   const [promoResult, setPromoResult] = useState<PromotionResult | null>(null);
