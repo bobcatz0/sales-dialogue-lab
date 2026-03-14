@@ -22,6 +22,7 @@ import Clans from "./pages/Clans";
 import JoinClan from "./pages/JoinClan";
 import ScorecardPage from "./pages/ScorecardPage";
 import Tournaments from "./pages/Tournaments";
+import Challenges from "./pages/Challenges";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { WeeklyChampionCelebration } from "./components/clans/WeeklyChampionCelebration";
 import { useRankThresholds } from "./hooks/useRankThresholds";
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/join/:code" element={<JoinClan />} />
             <Route path="/scorecard/:id" element={<ScorecardPage />} />
             <Route path="/tournaments" element={<Tournaments />} />
+            <Route path="/challenges" element={<Challenges />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
