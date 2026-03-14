@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import { loadHistory } from "@/components/practice/sessionStorage";
 import type { SessionRecord } from "@/components/practice/types";
+import { getEloRank, getRankThresholds, type RankTier } from "@/lib/elo";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Scenario {
   id: string;
@@ -21,6 +23,13 @@ interface Scenario {
   duration: string;
   comingSoon?: boolean;
   framework?: { id: string; label: string };
+  requiredRank?: RankTier;
+}
+
+const RANK_ORDER: RankTier[] = ["Rookie", "Prospector", "Closer", "Operator", "Rainmaker", "Sales Architect"];
+
+function isRankSufficient(userRank: RankTier, requiredRank: RankTier): boolean {
+  return RANK_ORDER.indexOf(userRank) >= RANK_ORDER.indexOf(requiredRank);
 }
 
 const SCENARIOS: Scenario[] = [
@@ -46,6 +55,7 @@ const SCENARIOS: Scenario[] = [
     env: "enterprise",
     role: "skeptical-buyer",
     duration: "~5 min",
+    requiredRank: "Prospector",
   },
   {
     id: "cold-call-gatekeeper",
@@ -70,6 +80,7 @@ const SCENARIOS: Scenario[] = [
     role: "b2b-prospect",
     duration: "~5 min",
     framework: { id: "bant", label: "BANT" },
+    requiredRank: "Closer",
   },
   {
     id: "executive-pitch",
@@ -82,6 +93,7 @@ const SCENARIOS: Scenario[] = [
     role: "decision-maker",
     duration: "~5 min",
     framework: { id: "meddic", label: "MEDDIC" },
+    requiredRank: "Operator",
   },
   {
     id: "interview-pressure",
@@ -105,6 +117,7 @@ const SCENARIOS: Scenario[] = [
     env: "enterprise",
     role: "technical-evaluator",
     duration: "~6 min",
+    requiredRank: "Rainmaker",
   },
   {
     id: "champion-enablement",
@@ -116,6 +129,7 @@ const SCENARIOS: Scenario[] = [
     env: "enterprise",
     role: "champion",
     duration: "~6 min",
+    requiredRank: "Sales Architect",
   },
 ];
 
@@ -162,6 +176,9 @@ function getLeaderboardRank(sessions: SessionRecord[], env: string, role: string
 
 const Scenarios = () => {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
+  const { profile } = useAuth();
+  const userElo = profile?.elo ?? 1000;
+  const userRank = getEloRank(userElo);
 
   useEffect(() => {
     setSessions(loadHistory());
@@ -196,6 +213,8 @@ const Scenarios = () => {
           {SCENARIOS.map((scenario, i) => {
             const Icon = scenario.icon;
             const isComingSoon = scenario.comingSoon;
+            const isLocked = !!scenario.requiredRank && !isRankSufficient(userRank, scenario.requiredRank);
+            const isDisabled = isComingSoon || isLocked;
             const bestScore = getBestScore(sessions, scenario.env, scenario.role);
             const rank = getLeaderboardRank(sessions, scenario.env, scenario.role);
 
@@ -206,8 +225,8 @@ const Scenarios = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
                 className={`group relative rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 ${
-                  isComingSoon
-                    ? "opacity-50 pointer-events-none"
+                  isDisabled
+                    ? "opacity-60 pointer-events-none"
                     : "hover:border-primary/40 hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.15)]"
                 }`}
               >
@@ -219,8 +238,12 @@ const Scenarios = () => {
                 <div className="p-5 flex flex-col gap-4">
                   {/* Icon + Difficulty + Framework */}
                   <div className="flex items-start justify-between">
-                    <div className="h-11 w-11 rounded-xl bg-muted/60 border border-border flex items-center justify-center shrink-0 group-hover:border-primary/30 transition-colors">
-                      <Icon className="h-5 w-5 text-primary" />
+                    <div className="h-11 w-11 rounded-xl bg-muted/60 border border-border flex items-center justify-center shrink-0 group-hover:border-primary/30 transition-colors relative">
+                      {isLocked ? (
+                        <Lock className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <Icon className="h-5 w-5 text-primary" />
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
                       <DifficultyBars difficulty={scenario.difficulty} />
@@ -278,8 +301,13 @@ const Scenarios = () => {
                     {scenario.difficulty} • {scenario.duration}{scenario.framework ? ` • ${scenario.framework.label}` : ""}
                   </p>
 
-                  {/* CTA */}
-                  {isComingSoon ? (
+                {/* CTA */}
+                  {isLocked ? (
+                    <Button variant="outline" size="sm" className="w-full h-9 text-xs" disabled>
+                      <Lock className="h-3 w-3 mr-1.5" />
+                      Requires {scenario.requiredRank} Rank
+                    </Button>
+                  ) : isComingSoon ? (
                     <Button variant="outline" size="sm" className="w-full h-9 text-xs" disabled>
                       <Lock className="h-3 w-3 mr-1.5" />
                       Coming Soon — Voice Simulation
