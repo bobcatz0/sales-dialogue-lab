@@ -209,8 +209,8 @@ export default function RecruiterDashboard() {
   const [subsLoading, setSubsLoading] = useState(false);
 
   const fetchAssessments = async () => {
-    const { data } = await supabase
-      .from("assessments")
+    const { data } = await (supabase
+      .from("assessments") as any)
       .select("*")
       .order("created_at", { ascending: false });
     if (data) setAssessments(data as Assessment[]);
