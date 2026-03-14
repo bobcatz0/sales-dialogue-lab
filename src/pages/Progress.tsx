@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { WeeklyChallengeBadges } from "@/components/clans/WeeklyChallengeBadges";
+import { SkillLevelsDisplay } from "@/components/practice/SkillLevelsDisplay";
 import {
   loadProgress,
   getSkillLevel,

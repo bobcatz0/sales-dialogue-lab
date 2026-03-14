@@ -444,6 +444,15 @@ export function FeedbackPanel({
           </motion.div>
         )}
 
+        {/* ═══════════════ SKILL XP SUMMARY ═══════════════ */}
+        {user && skills.length > 0 && (
+          <SkillXpSummary
+            userId={user.id}
+            skillBreakdown={skills}
+            onXpAwarded={() => setSkillRefreshKey((k) => k + 1)}
+          />
+        )}
+
         {/* Framework Rubric Scores */}
         <RubricScoresSection scores={feedback.rubricScores || []} frameworkId={feedback.frameworkId} />
 
