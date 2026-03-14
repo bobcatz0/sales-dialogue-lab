@@ -55,6 +55,10 @@ function getDifficultyColor(d: string) {
 }
 
 const ScenariosSection = () => {
+  const { profile } = useAuth();
+  const userElo = profile?.elo ?? 1000;
+  const userRank = getEloRank(userElo);
+
   return (
     <section className="py-20 bg-muted/20">
       <div className="container mx-auto px-6">
