@@ -73,6 +73,11 @@ export default function DailyDrillSection() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(MOCK_LEADERBOARD);
   const [avgScore, setAvgScore] = useState<number | null>(null);
   const [totalPlayers, setTotalPlayers] = useState(0);
+  const { profile } = useAuth();
+  const currentStreak = (profile as any)?.current_streak ?? 0;
+  const longestStreak = (profile as any)?.longest_streak ?? 0;
+  const xpMultiplier = getStreakXpMultiplier(currentStreak);
+  const isOnFire = currentStreak >= 3;
 
   // Fetch real top scores and avg for today
   useEffect(() => {
