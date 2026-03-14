@@ -17,6 +17,7 @@ import { ShareResultCard } from "./ShareResultCard";
 import { HumanReviewedBadge } from "./EvaluatorBadges";
 import { AnimatedScore } from "./AnimatedScore";
 import { RetryLoopPanel } from "./RetryLoopPanel";
+import { ReplayImprovementPanel } from "./ReplayImprovementPanel";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
@@ -732,6 +733,19 @@ export function FeedbackPanel({
             <p className="text-[11px] text-foreground leading-relaxed text-center">Would you feel confident answering these questions in a live interview?</p>
           </div>
         )}
+
+        {/* ═══════════════ REPLAY & IMPROVEMENT ═══════════════ */}
+        <ReplayImprovementPanel
+          answerComparisons={feedback.answerComparisons}
+          exposureMoments={feedback.exposureMoments}
+          timestampedMoments={feedback.timestampedMoments}
+          strengths={feedback.strengths}
+          improvements={feedback.improvements}
+          score={feedback.score}
+          scenarioRole={scenarioRole}
+          scenarioTitle={scenarioTitle}
+          onRetry={onTrySameRole}
+        />
 
         {/* ═══════════════ BOTTOM SECTION: Retry Loop ═══════════════ */}
         <RetryLoopPanel
