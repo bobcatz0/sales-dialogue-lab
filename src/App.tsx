@@ -65,6 +65,8 @@ const App = () => (
             <Route path="/tournaments" element={<Tournaments />} />
             <Route path="/challenges" element={<Challenges />} />
             <Route path="/battles" element={<Battles />} />
+            <Route path="/manager" element={<ManagerDashboard />} />
+            <Route path="/team/:code" element={<JoinTeamChallenge />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
