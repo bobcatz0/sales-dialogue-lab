@@ -81,12 +81,14 @@ Return a JSON object with this EXACT structure — nothing else:
   "improvements": ["<improvement>"${isInterview ? "" : ', "<improvement>"'}],
   "nextDrill": "<one sentence>",
   "skillBreakdown": [
-    {"name": "Clarity", "score": <0-100>},
-    {"name": "Structure", "score": <0-100>},
     {"name": "Objection Handling", "score": <0-100>},
-    {"name": "Conversational Control", "score": <0-100>},
-    {"name": "Conciseness", "score": <0-100>},
-    {"name": "Verbal Readiness", "score": <0-100>}
+    {"name": "Discovery Questions", "score": <0-100>},
+    {"name": "Clarity", "score": <0-100>},
+    {"name": "Closing", "score": <0-100>},
+    {"name": "Confidence", "score": <0-100>},
+    {"name": "Cold Call Opening", "score": <0-100>},
+    {"name": "Structure", "score": <0-100>},
+    {"name": "Conciseness", "score": <0-100>}
   ],
   "trainingRecommendation": "<one sentence: suggest next environment + persona + specific skill>"${resumeHighlights ? `,
   "resumeAlignment": {
@@ -166,12 +168,14 @@ This is the highest SDR interview tier. The evaluator has hired 100+ SDRs and kn
 
 SKILL BREAKDOWN SCORING:
 Evaluate each skill dimension independently based on the conversation. Apply strict standards — do not inflate scores:
-- Clarity: How clear and specific were the user's statements? Any vague claim without a metric should reduce this score. Over-polished answers that sound smooth but lack substance should ALSO reduce this score.
-- Structure: Did responses follow logical flow? Were frameworks or patterns used?
-- Objection Handling: ${isInterview ? "How well did the candidate handle tough follow-up questions and challenges?" : "How effectively were objections acknowledged and addressed?"}
-- Conversational Control: Did the user drive the conversation forward, or were they reactive?
-- Conciseness: Were responses appropriately scoped? Target is 30-45 seconds of spoken equivalent (~75-115 words). Any response significantly over 130 words should reduce this score. In Final Round, the threshold is stricter.
-- Verbal Readiness: Does the response sound like a spoken interview answer or a written document? Penalize essay-style writing (semicolons, formal connectors like "furthermore/moreover", complex subordinate clauses, paragraph-length structure). Also penalize excessive filler phrases ("basically", "kind of", "you know", "I guess", "sort of", "honestly", "at the end of the day"). A strong verbal readiness score means the answer reads like natural speech — direct, conversational, and confident.
+- Objection Handling: How effectively were objections acknowledged, reframed, and resolved? Did the user maintain composure under pushback?
+- Discovery Questions: Did the user ask open-ended, probing questions to uncover pain points, budget, authority, and timeline? Quality and depth over quantity.
+- Clarity: How clear and specific were the user's statements? Vague claims without metrics reduce this score. Over-polished answers lacking substance also reduce it.
+- Closing: Did the user drive toward a clear next step, propose a meeting, or ask for commitment? Score 0-20 if no closing attempt was made.
+- Confidence: Did the user sound assured and professional? Hedging language, filler phrases, and defensive tone reduce this. Declarative statements and power pauses increase it.
+- Cold Call Opening: How effectively did the user open the conversation? Was there a hook, value proposition, or pattern interrupt? Score based on the first 2-3 exchanges.
+- Structure: Did responses follow logical flow? Were frameworks or storytelling patterns used effectively?
+- Conciseness: Were responses appropriately scoped? Target is 30-45 seconds of spoken equivalent (~75-115 words). Responses over 130 words reduce this score.
 
 OVER-SMOOTHING PENALTY:
 If answers sounded polished but lacked real substance — specific numbers, concrete examples, or authentic details — reduce the Clarity score by 5-10 points even if Structure is strong. Smooth delivery without evidence is a red flag, not a strength.
@@ -179,8 +183,8 @@ If answers sounded polished but lacked real substance — specific numbers, conc
 FILLER PHRASE PENALTY:
 Count occurrences of these filler phrases across all user responses: "basically", "kind of", "you know", "I guess", "sort of", "like" (as filler, not comparison), "um", "honestly", "to be honest", "at the end of the day", "it is what it is".
 - 0-2 total: no penalty.
-- 3-5 total: reduce Clarity by 5 points and Verbal Readiness by 10 points.
-- 6+: reduce Clarity by 10 points and Verbal Readiness by 20 points. Add to improvements: "Excessive filler phrases signal uncertainty — practice delivering answers without hedging language."
+- 3-5 total: reduce Clarity by 5 points and Confidence by 10 points.
+- 6+: reduce Clarity by 10 points and Confidence by 20 points. Add to improvements: "Excessive filler phrases signal uncertainty — practice delivering answers without hedging language."
 
 TRAINING RECOMMENDATION:
 Based on the weakest skill area, suggest a specific next training session. Format: "<Environment> mode with <Persona> — focus on <specific skill>." Example: "Cold Call mode with Gatekeeper — focus on opening clarity under pressure."
