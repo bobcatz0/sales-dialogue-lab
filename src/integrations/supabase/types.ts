@@ -110,6 +110,39 @@ export type Database = {
         }
         Relationships: []
       }
+      certifications: {
+        Row: {
+          certification_level: string
+          created_at: string
+          display_name: string
+          final_score: number
+          id: string
+          stage_scores: Json
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          certification_level: string
+          created_at?: string
+          display_name?: string
+          final_score: number
+          id?: string
+          stage_scores?: Json
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          certification_level?: string
+          created_at?: string
+          display_name?: string
+          final_score?: number
+          id?: string
+          stage_scores?: Json
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       challenges: {
         Row: {
           challenger_id: string | null
