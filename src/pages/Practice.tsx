@@ -1635,7 +1635,30 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 <GhostBattleBanner ghost={ghostBattle.ghost} />
               )}
 
-              {/* Messages */}
+              {/* Voice Call Interface — replaces chat when voice mode active */}
+              {voice.voiceMode && selectedRole && sessionActive && !feedback ? (
+                <VoiceCallInterface
+                  isActive={sessionActive}
+                  isRecording={false}
+                  isAISpeaking={voice.isAISpeaking}
+                  isProcessing={isLoading}
+                  isMuted={voice.isMuted}
+                  volume={voice.volume}
+                  timerDisplay={timer.display}
+                  roleTitle={activeRole?.title ?? "Interviewer"}
+                  scenarioLabel={activeEnv?.title ?? "Session"}
+                  lastAIMessage={messages.filter(m => m.role === "prospect").pop()?.text}
+                  questionProgress={`${Math.min(userQuestionCount, totalExpectedQuestions)}/~${totalExpectedQuestions}`}
+                  onStartRecording={() => {}}
+                  onStopRecording={() => {}}
+                  onEndCall={handleEndSession}
+                  onToggleMute={voice.toggleMute}
+                  onVolumeChange={voice.setVolume}
+                  canScore={isReadyForScore}
+                  comingSoon={true}
+                />
+              ) : (
+              /* Messages */
               <div
                 ref={scrollRef}
                 className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-[250px] sm:min-h-[350px]"
