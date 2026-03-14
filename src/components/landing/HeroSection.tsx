@@ -41,9 +41,9 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.05 }}
             className="font-heading text-4xl font-bold leading-[1.08] tracking-tight md:text-5xl lg:text-[3.5rem] text-foreground"
           >
-            Test Your Sales Instincts.
+            Practice Real Sales
             <br />
-            <span className="text-gradient">Climb the Leaderboard.</span>
+            <span className="text-gradient">Conversations.</span>
           </motion.h1>
 
           <motion.p
@@ -52,7 +52,9 @@ const HeroSection = () => {
             transition={{ duration: 0.4, delay: 0.12 }}
             className="mx-auto max-w-md text-base md:text-lg text-muted-foreground leading-relaxed"
           >
-            Compete in real sales scenarios, get scored instantly, and improve your rank.
+            Cold calls, discovery, and objections.
+            <br className="hidden sm:block" />{" "}
+            Get instant AI feedback and climb the sales leaderboard.
           </motion.p>
 
           <motion.div
@@ -62,8 +64,8 @@ const HeroSection = () => {
             className="flex flex-col items-center gap-3 pt-2"
           >
             <Button variant="hero" size="lg" className="gap-2 px-10 py-6 text-lg" asChild>
-              <Link to="/challenges">
-                Start Today's Challenge
+              <Link to="/scenarios">
+                Start Free Scenario
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
