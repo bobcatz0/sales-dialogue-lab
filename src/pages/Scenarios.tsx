@@ -238,8 +238,12 @@ const Scenarios = () => {
                 <div className="p-5 flex flex-col gap-4">
                   {/* Icon + Difficulty + Framework */}
                   <div className="flex items-start justify-between">
-                    <div className="h-11 w-11 rounded-xl bg-muted/60 border border-border flex items-center justify-center shrink-0 group-hover:border-primary/30 transition-colors">
-                      <Icon className="h-5 w-5 text-primary" />
+                    <div className="h-11 w-11 rounded-xl bg-muted/60 border border-border flex items-center justify-center shrink-0 group-hover:border-primary/30 transition-colors relative">
+                      {isLocked ? (
+                        <Lock className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <Icon className="h-5 w-5 text-primary" />
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
                       <DifficultyBars difficulty={scenario.difficulty} />
