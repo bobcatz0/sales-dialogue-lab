@@ -19,6 +19,7 @@ import type { VoiceMetrics } from "./voiceInterviewDesign";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
 import { SkillXpSummary } from "./SkillXpSummary";
+import { StreakReward } from "./StreakReward";
 import { ConversationBreakdown } from "./ConversationBreakdown";
 import { useAuth } from "@/hooks/useAuth";
 import { loadHistory } from "./sessionStorage";
