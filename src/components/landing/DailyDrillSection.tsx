@@ -6,6 +6,8 @@ import { getTodayChallenge } from "@/components/practice/dailyChallenge";
 import { ENVIRONMENTS } from "@/components/practice/environments";
 import { roles } from "@/components/practice/roleData";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { getStreakXpMultiplier } from "@/components/practice/StreakReward";
 
 interface LeaderboardEntry {
   rank: number;
@@ -71,6 +73,11 @@ export default function DailyDrillSection() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(MOCK_LEADERBOARD);
   const [avgScore, setAvgScore] = useState<number | null>(null);
   const [totalPlayers, setTotalPlayers] = useState(0);
+  const { profile } = useAuth();
+  const currentStreak = (profile as any)?.current_streak ?? 0;
+  const longestStreak = (profile as any)?.longest_streak ?? 0;
+  const xpMultiplier = getStreakXpMultiplier(currentStreak);
+  const isOnFire = currentStreak >= 3;
 
   // Fetch real top scores and avg for today
   useEffect(() => {
@@ -216,6 +223,35 @@ export default function DailyDrillSection() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Streak indicator */}
+                  {currentStreak > 0 && (
+                    <div className={`flex items-center justify-between px-4 py-2.5 rounded-lg border ${
+                      isOnFire ? "border-primary/20 bg-primary/5" : "border-border bg-muted/30"
+                    }`}>
+                      <div className="flex items-center gap-2.5">
+                        <Flame className={`h-4 w-4 ${isOnFire ? "text-primary" : "text-muted-foreground"}`} />
+                        <div>
+                          <span className={`text-sm font-bold tabular-nums ${isOnFire ? "text-primary" : "text-foreground"}`}>
+                            {currentStreak} day streak
+                          </span>
+                          {currentStreak >= longestStreak && currentStreak > 1 && (
+                            <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full ml-2">BEST</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {xpMultiplier > 1 && (
+                          <span className="text-[10px] font-semibold text-primary">
+                            +{Math.round((xpMultiplier - 1) * 100)}% XP
+                          </span>
+                        )}
+                        {!completed && (
+                          <p className="text-[9px] text-muted-foreground">Complete today to extend</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* CTA */}
                   {completed ? (

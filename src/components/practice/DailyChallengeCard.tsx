@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Check, ArrowRight, Clock, Trophy, Crown, TrendingUp } from "lucide-react";
+import { Calendar, Check, ArrowRight, Clock, Trophy, Crown, TrendingUp, Flame } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getTodayChallenge } from "./dailyChallenge";
 import { ENVIRONMENTS } from "./environments";
 import { roles } from "./roleData";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { getStreakXpMultiplier } from "./StreakReward";
 import type { EnvironmentId } from "./environments";
 
 interface DailyChallengeCardProps {
@@ -37,6 +39,11 @@ interface LeaderEntry { name: string; score: number }
 
 export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
   const { challenge, completed } = getTodayChallenge();
+  const { profile } = useAuth();
+  const currentStreak = (profile as any)?.current_streak ?? 0;
+  const longestStreak = (profile as any)?.longest_streak ?? 0;
+  const xpMultiplier = getStreakXpMultiplier(currentStreak);
+  const isOnFire = currentStreak >= 3;
   const env = ENVIRONMENTS.find((e) => e.id === challenge.environmentId);
   const persona = roles.find((r) => r.id === challenge.personaId);
   const countdown = useCountdown();
@@ -107,7 +114,28 @@ export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
           <span>Top 3 earn bonus ELO: 🥇+30 🥈+20 🥉+10</span>
         </div>
 
-        {/* Mini leaderboard */}
+        {/* Streak display */}
+        {currentStreak > 0 && (
+          <div className={`flex items-center justify-between px-3 py-2 rounded-lg border ${
+            isOnFire ? "border-primary/20 bg-primary/5" : "border-border bg-muted/30"
+          }`}>
+            <div className="flex items-center gap-2">
+              <Flame className={`h-3.5 w-3.5 ${isOnFire ? "text-primary" : "text-muted-foreground"}`} />
+              <span className={`text-xs font-bold tabular-nums ${isOnFire ? "text-primary" : "text-foreground"}`}>
+                {currentStreak} day streak
+              </span>
+              {currentStreak >= longestStreak && currentStreak > 1 && (
+                <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">BEST</span>
+              )}
+            </div>
+            {xpMultiplier > 1 && (
+              <span className="text-[10px] font-semibold text-primary">
+                {Math.round((xpMultiplier - 1) * 100)}% XP bonus
+              </span>
+            )}
+          </div>
+        )}
+
         {topScores.length > 0 && (
           <div className="space-y-1 pt-1 border-t border-border/40">
             <div className="flex items-center gap-1 text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">
