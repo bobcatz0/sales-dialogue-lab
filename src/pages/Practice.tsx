@@ -1878,6 +1878,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   </>
                 )}
               </div>
+              )}
             </motion.main>
 
             {/* Feedback Section */}
