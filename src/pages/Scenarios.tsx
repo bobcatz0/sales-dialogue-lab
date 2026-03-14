@@ -236,6 +236,38 @@ const Scenarios = () => {
           </p>
         </motion.div>
 
+        {/* Scenario Chains */}
+        <div className="max-w-5xl mx-auto mb-14">
+          <div className="flex items-center gap-2 mb-6">
+            <Link2 className="h-4 w-4 text-primary" />
+            <h2 className="font-heading text-xl font-bold text-foreground">Multi-Stage Chains</h2>
+            <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">NEW</span>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {SCENARIO_CHAINS.map((chain, i) => (
+              <motion.div
+                key={chain.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+              >
+                <ScenarioChainCard
+                  chain={chain}
+                  progress={chainProgressMap[chain.id] ?? null}
+                  userRank={userRank}
+                  onReset={handleResetChain}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Single Scenarios Header */}
+        <div className="flex items-center gap-2 mb-6 max-w-5xl mx-auto">
+          <Swords className="h-4 w-4 text-primary" />
+          <h2 className="font-heading text-xl font-bold text-foreground">Single Scenarios</h2>
+        </div>
+
         {/* Scenario Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
           {SCENARIOS.map((scenario, i) => {
