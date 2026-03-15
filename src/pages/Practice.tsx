@@ -1758,7 +1758,6 @@ This evaluation style should subtly influence your questions and reactions. Do N
                     trackDrillCompletion(activeDrill.category);
                     setActiveDrill(null);
                   }}
-                  onCancel={() => setActiveDrill(null)}
                 />
               </div>
             )}
