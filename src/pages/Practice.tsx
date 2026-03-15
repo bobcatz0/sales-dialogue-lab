@@ -1639,6 +1639,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         voiceMetrics={voice.voiceMode ? voice.getSessionVoiceMetrics() ?? undefined : undefined}
                         voiceFeedbackLines={voice.voiceMode ? voice.getVoiceFeedbackLines() : undefined}
                         voiceScoreAdjustment={voice.voiceMode ? voice.getVoiceScoreAdjustment() : undefined}
+                        voiceMessages={voice.voiceMode ? messages : undefined}
+                        roleTitle={activeRole?.title}
                         onStartNew={() => {
                           setFeedback(null);
                           setSelectedRole(null);

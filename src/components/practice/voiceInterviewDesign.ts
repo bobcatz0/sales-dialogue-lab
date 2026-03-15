@@ -319,3 +319,142 @@ export function buildVoiceReview(metrics: VoiceMetrics): VoiceReview {
 
   return { voiceScore, categories, strongestCategory: strongest, weakestCategory: weakest, coachingTip };
 }
+
+// ---------------------------------------------------------------------------
+// Rich voice feedback result — used by VoiceFeedbackPanel
+// ---------------------------------------------------------------------------
+
+/** One scored category with a brief human-readable explanation. */
+export interface VoiceCategoryScore {
+  name: string;
+  score: number; // 0-100
+  explanation: string;
+}
+
+/**
+ * Full voice feedback result object.
+ * Produced by buildVoiceFeedbackResult and consumed by VoiceFeedbackPanel.
+ */
+export interface VoiceFeedbackResult {
+  finalScore: number;
+  rank: string;
+  percentile: number;
+  summaryLine: string;
+  categoryBreakdown: VoiceCategoryScore[];
+  strongestCategory: string;
+  strongestExplanation: string;
+  weakestCategory: string;
+  weakestExplanation: string;
+  coachingTip: string;
+  transcript: string;
+  personalBest: number | null;
+  previousBest: number | null;
+  improvementDelta: number | null;
+}
+
+const VOICE_RANK_TABLE: { min: number; rank: string; percentile: number }[] = [
+  { min: 90, rank: "Elite", percentile: 95 },
+  { min: 75, rank: "Pro", percentile: 82 },
+  { min: 60, rank: "Developing", percentile: 62 },
+  { min: 45, rank: "Inconsistent", percentile: 40 },
+  { min: 0,  rank: "Needs Work",  percentile: 20 },
+];
+
+function getVoiceRank(score: number): { rank: string; percentile: number } {
+  return VOICE_RANK_TABLE.find((r) => score >= r.min) ?? VOICE_RANK_TABLE[VOICE_RANK_TABLE.length - 1];
+}
+
+function buildCategoryExplanation(name: string, score: number, metrics: VoiceMetrics): string {
+  const { fillerFrequency, verbalPace } = metrics;
+  switch (name) {
+    case "Clarity":
+      if (fillerFrequency <= 1) return `${fillerFrequency} fillers/min — clean, confident delivery.`;
+      if (fillerFrequency <= 3) return `${fillerFrequency} fillers/min — small reduction will sharpen this.`;
+      return `${fillerFrequency} fillers/min — high filler rate is the main drag here.`;
+    case "Confidence":
+      if (score >= 80) return "Steady delivery with no major hesitation signals.";
+      if (score >= 60) return "Some hedging or filler detected — aim for more deliberate pacing.";
+      return "High filler or erratic pauses projected uncertainty.";
+    case "Pace":
+      if (verbalPace >= 140 && verbalPace <= 170) return `${verbalPace} wpm — ideal SDR range (140–170).`;
+      if (verbalPace > 170 && verbalPace <= 200) return `${verbalPace} wpm — slightly fast. Slow down for impact.`;
+      if (verbalPace > 200) return `${verbalPace} wpm — too fast. The listener can't keep up.`;
+      if (verbalPace > 0) return `${verbalPace} wpm — below target. Pick up energy and tempo.`;
+      return "Pace data unavailable for this session.";
+    case "Conciseness":
+      if (score >= 85) return "Tight delivery — you led with your point and stayed there.";
+      if (fillerFrequency > 5) return "Filler words are padding your response length significantly.";
+      if (score >= 60) return "Acceptable length — try leading with the main point first.";
+      return "Responses ran long or indirect. Use: point → proof → done.";
+    case "Response Quality":
+      if (score >= 85) return "Structured answers — clear point, proof, and landing.";
+      if (score >= 65) return "Decent structure. Work on a cleaner, definitive close.";
+      return "Answers lacked direction. Use: point → proof → impact → stop.";
+    case "Verbal Readiness":
+      if (score >= 80) return "Strong composite across all six delivery dimensions.";
+      if (score >= 60) return "Solid baseline — focus exclusively on your weakest area above.";
+      return "Multiple delivery dimensions need consistent work.";
+    default:
+      return "";
+  }
+}
+
+function buildSummaryLine(strongest: VoiceSkillScore, weakest: VoiceSkillScore): string {
+  const s = strongest.name;
+  const w = weakest.name;
+  if (weakest.score < 45) {
+    return `${s} was your standout area. ${w} (${weakest.score}) is the critical gap — address that first.`;
+  }
+  if (weakest.score < 65) {
+    return `${s} carried this session. Tightening ${w.toLowerCase()} will move you to the next tier.`;
+  }
+  return `Consistent across categories. ${s} led the way — keep refining ${w.toLowerCase()} for top-tier delivery.`;
+}
+
+/**
+ * Build a rich VoiceFeedbackResult from session metrics and history.
+ *
+ * @param metrics         - Aggregated voice metrics for the session.
+ * @param transcript      - The user's spoken turns joined as a single string.
+ * @param previousBest    - The best voice score achieved for this role before this session,
+ *                          or null if this is their first session on this role.
+ */
+export function buildVoiceFeedbackResult(
+  metrics: VoiceMetrics,
+  transcript: string,
+  previousBest: number | null = null,
+): VoiceFeedbackResult {
+  const review = buildVoiceReview(metrics);
+  const { rank, percentile } = getVoiceRank(review.voiceScore);
+
+  const categoryBreakdown: VoiceCategoryScore[] = review.categories.map((cat) => ({
+    name: cat.name,
+    score: cat.score,
+    explanation: buildCategoryExplanation(cat.name, cat.score, metrics),
+  }));
+
+  const summaryLine = buildSummaryLine(review.strongestCategory, review.weakestCategory);
+
+  const strongestCat = categoryBreakdown.find((c) => c.name === review.strongestCategory.name)!;
+  const weakestCat   = categoryBreakdown.find((c) => c.name === review.weakestCategory.name)!;
+
+  const improvementDelta = previousBest !== null ? review.voiceScore - previousBest : null;
+  const personalBest = previousBest !== null ? Math.max(previousBest, review.voiceScore) : review.voiceScore;
+
+  return {
+    finalScore: review.voiceScore,
+    rank,
+    percentile,
+    summaryLine,
+    categoryBreakdown,
+    strongestCategory: review.strongestCategory.name,
+    strongestExplanation: strongestCat?.explanation ?? "",
+    weakestCategory: review.weakestCategory.name,
+    weakestExplanation: weakestCat?.explanation ?? "",
+    coachingTip: review.coachingTip,
+    transcript,
+    personalBest,
+    previousBest,
+    improvementDelta,
+  };
+}

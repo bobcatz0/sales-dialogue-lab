@@ -49,6 +49,56 @@ export function incrementVoiceSessionCount(): void {
   save(data);
 }
 
+// ---------------------------------------------------------------------------
+// Voice score persistence — per-role voice score history
+// ---------------------------------------------------------------------------
+
+const VOICE_SCORES_KEY = "salescalls_voice_scores";
+
+type VoiceScoreRecord = Record<string, number[]>; // roleId → scores (oldest first)
+
+function loadVoiceScores(): VoiceScoreRecord {
+  try {
+    const raw = localStorage.getItem(VOICE_SCORES_KEY);
+    if (raw) return JSON.parse(raw) as VoiceScoreRecord;
+  } catch { /* ignore */ }
+  return {};
+}
+
+function saveVoiceScores(scores: VoiceScoreRecord): void {
+  try {
+    localStorage.setItem(VOICE_SCORES_KEY, JSON.stringify(scores));
+  } catch { /* ignore */ }
+}
+
+/**
+ * Returns the highest voice score the user achieved for this role
+ * BEFORE the current session (i.e., excluding the score about to be recorded).
+ * Returns null if there is no prior history.
+ */
+export function getVoicePreviousBest(roleId: string): number | null {
+  const scores = loadVoiceScores();
+  const list = scores[roleId];
+  if (!list || list.length === 0) return null;
+  return Math.max(...list);
+}
+
+/**
+ * Persist a completed voice session score for a role.
+ * Keeps the last 20 scores per role to bound storage size.
+ */
+export function recordVoiceScore(roleId: string, score: number): void {
+  const scores = loadVoiceScores();
+  if (!scores[roleId]) scores[roleId] = [];
+  scores[roleId].push(score);
+  if (scores[roleId].length > 20) scores[roleId] = scores[roleId].slice(-20);
+  saveVoiceScores(scores);
+}
+
+// ---------------------------------------------------------------------------
+// Starter scenario list
+// ---------------------------------------------------------------------------
+
 /**
  * The 3 introductory voice scenarios shown to first-time voice users.
  * Other voice roles are hidden until after session 1.

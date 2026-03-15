@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Mic, TrendingDown, Minus, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,10 @@ import { toast } from "sonner";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
-import { buildVoiceReview } from "./voiceInterviewDesign";
+import { buildVoiceReview, buildVoiceFeedbackResult } from "./voiceInterviewDesign";
+import type { ChatMessage } from "./types";
+import { VoiceFeedbackPanel } from "./VoiceFeedbackPanel";
+import { getVoicePreviousBest, recordVoiceScore } from "./voiceOnboarding";
 import { loadHistory } from "./sessionStorage";
 import type { PromoSeriesState } from "./promotionSeries";
 
@@ -321,6 +324,8 @@ export function FeedbackPanel({
   voiceFeedbackLines,
   voiceScoreAdjustment,
   roleId,
+  roleTitle,
+  voiceMessages,
   promoSeries,
 }: {
   feedback: Feedback;
@@ -334,6 +339,8 @@ export function FeedbackPanel({
   voiceFeedbackLines?: string[];
   voiceScoreAdjustment?: number;
   roleId?: string;
+  roleTitle?: string;
+  voiceMessages?: ChatMessage[];
   promoSeries?: PromoSeriesState;
 }) {
   const interview = isInterviewRank(feedback.rank);
@@ -354,6 +361,50 @@ export function FeedbackPanel({
   }, [roleId]);
 
   const personalBestDelta = personalBest !== null ? feedback.score - personalBest : null;
+
+  // ── Voice mode: delegate entirely to VoiceFeedbackPanel ──────────────────
+  // Compute previous best once on mount (before recording this session).
+  const voicePreviousBestRef = useRef<number | null | undefined>(undefined);
+  if (voiceMetrics && roleId && voicePreviousBestRef.current === undefined) {
+    voicePreviousBestRef.current = getVoicePreviousBest(roleId);
+  }
+
+  const voiceResult = useMemo(() => {
+    if (!voiceMetrics) return null;
+    const transcript = voiceMessages
+      ? voiceMessages.filter((m) => m.role === "user").map((m) => m.text).join("\n")
+      : "";
+    return buildVoiceFeedbackResult(
+      voiceMetrics,
+      transcript,
+      voicePreviousBestRef.current ?? null,
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceMetrics, voiceMessages]);
+
+  // Record the voice score once — after result is computed.
+  const voiceScoreRecordedRef = useRef(false);
+  useEffect(() => {
+    if (voiceResult && roleId && !voiceScoreRecordedRef.current) {
+      voiceScoreRecordedRef.current = true;
+      recordVoiceScore(roleId, voiceResult.finalScore);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceResult]);
+
+  if (voiceResult) {
+    return (
+      <VoiceFeedbackPanel
+        result={voiceResult}
+        roleTitle={roleTitle ?? ""}
+        onRetry={onTrySameRole}
+        onNewScenario={onStartNew}
+        voiceScoreAdjustment={voiceScoreAdjustment}
+        voiceMessages={voiceMessages}
+      />
+    );
+  }
+  // ── End voice early-return ────────────────────────────────────────────────
 
   const handleDownload = useCallback(() => {
     downloadPDF(feedback, alias ?? null);
