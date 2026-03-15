@@ -209,7 +209,7 @@ function PersonalBestComparison({ currentScore, scenarioRole }: { currentScore: 
   );
 }
 
-// --- Percentile Ranking ---
+// --- Percentile Ranking (prominent) ---
 function PercentileRanking({ score }: { score: number }) {
   const [percentile, setPercentile] = useState<number | null>(null);
   const [totalPlayers, setTotalPlayers] = useState(0);
@@ -235,19 +235,21 @@ function PercentileRanking({ score }: { score: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 3.4 }}
-      className="flex items-center justify-center gap-2 mt-2"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 3.2, type: "spring", stiffness: 300, damping: 20 }}
+      className="mt-3 rounded-xl border border-primary/20 bg-primary/5 px-5 py-3 inline-flex flex-col items-center gap-1"
     >
-      <Users className="h-3.5 w-3.5 text-muted-foreground" />
-      <span className={`text-sm font-bold ${
-        topPct <= 5 ? "text-primary" : topPct <= 15 ? "text-accent-foreground" : "text-foreground"
-      }`}>
-        Top {topPct}%
-      </span>
+      <div className="flex items-center gap-2">
+        <Trophy className="h-4 w-4 text-primary" />
+        <span className={`text-2xl font-bold font-heading ${
+          topPct <= 5 ? "text-primary" : topPct <= 15 ? "text-accent-foreground" : "text-foreground"
+        }`}>
+          Top {topPct}%
+        </span>
+      </div>
       <span className="text-[10px] text-muted-foreground">
-        of {totalPlayers.toLocaleString()} players
+        of {totalPlayers.toLocaleString()} players on the leaderboard
       </span>
     </motion.div>
   );
