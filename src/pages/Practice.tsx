@@ -175,6 +175,7 @@ const PracticePage = () => {
   const [searchParams] = useSearchParams();
   const paramEnv = searchParams.get("env") as EnvironmentId | null;
   const paramRole = searchParams.get("role");
+  const paramVoice = searchParams.get("voice") === "1";
   const [selectedEnv, setSelectedEnv] = useState<EnvironmentId | null>(paramEnv || "interview");
   const [selectedRole, setSelectedRole] = useState<string | null>(paramRole || null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -223,8 +224,19 @@ const PracticePage = () => {
   const consistencyData = loadConsistency();
   const currentRank = getRank(consistencyData.score);
   const filteredRoles = activeEnv
-    ? roles.filter((r) => activeEnv.personaIds.includes(r.id))
+    ? roles.filter((r) => {
+        if (!activeEnv.personaIds.includes(r.id)) return false;
+        // Hide voice-only roles unless voice mode is on or session already started with that role
+        if ((r as { voiceOnly?: boolean }).voiceOnly && !voice.voiceMode && selectedRole !== r.id) return false;
+        return true;
+      })
     : [];
+
+  // Auto-enable voice mode from URL param (?voice=1)
+  useEffect(() => {
+    if (paramVoice) voice.setVoiceMode(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load history on mount
   useEffect(() => {

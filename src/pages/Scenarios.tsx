@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Phone, Building2, ShieldAlert, Users, Cpu, RotateCcw, ArrowRight, Zap, Lock } from "lucide-react";
+import { Phone, Building2, ShieldAlert, Users, Cpu, RotateCcw, ArrowRight, Zap, Lock, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import { loadConsistency } from "@/components/practice/consistencyScoring";
@@ -17,7 +17,10 @@ interface Scenario {
   title: string;
   subtitle: string;
   description: string;
+  goal: string;
   whatYouPractice: string[];
+  tags?: string[];
+  voiceScoringEnabled?: boolean;
   difficultyLevel: 1 | 2 | 3 | 4 | 5;
   requiredRank: RankName;
   unlockCondition: string;
@@ -39,6 +42,7 @@ const SCENARIOS: Scenario[] = [
     title: "Cold Call",
     subtitle: "Get past the gatekeeper",
     description: "An assistant picks up. You have 30 seconds to earn a transfer to the decision maker.",
+    goal: "Earn a transfer to the decision maker within 30 seconds.",
     whatYouPractice: ["Opening clarity", "Permission-based language", "Handling brush-offs"],
     difficultyLevel: 1,
     requiredRank: "Rookie",
@@ -55,6 +59,7 @@ const SCENARIOS: Scenario[] = [
     title: "Discovery Call",
     subtitle: "Uncover pain, qualify the deal",
     description: "A guarded B2B prospect who won't volunteer information. You need to ask the right questions.",
+    goal: "Surface a specific pain point and qualify budget or timeline.",
     whatYouPractice: ["Open-ended questioning", "Active listening", "Qualifying budget and timeline"],
     difficultyLevel: 2,
     requiredRank: "Rookie",
@@ -71,6 +76,7 @@ const SCENARIOS: Scenario[] = [
     title: "Objection Gauntlet",
     subtitle: "Turn no into yes",
     description: "A skeptical buyer hits you with price, timing, and competitor objections back to back.",
+    goal: "Handle 4+ objections and secure a commitment to move forward.",
     whatYouPractice: ["Acknowledging without conceding", "Reframing value", "Staying calm under pressure"],
     difficultyLevel: 3,
     requiredRank: "Starter",
@@ -87,6 +93,7 @@ const SCENARIOS: Scenario[] = [
     title: "Executive Pitch",
     subtitle: "Win over the C-suite",
     description: "A time-constrained decision maker. Lead with outcomes, not features, or lose the room.",
+    goal: "Land a clear business case and secure next steps before they disengage.",
     whatYouPractice: ["Business case framing", "Concise ROI delivery", "Handling executive-level pushback"],
     difficultyLevel: 3,
     requiredRank: "Starter",
@@ -103,6 +110,7 @@ const SCENARIOS: Scenario[] = [
     title: "Technical Evaluation",
     subtitle: "Navigate the technical buyer",
     description: "A skeptical technical evaluator probing your product's depth, integrations, and security.",
+    goal: "Demonstrate technical credibility and advance the evaluation to the next stage.",
     whatYouPractice: ["Technical credibility", "Specificity over buzzwords", "Handling deep product questions"],
     difficultyLevel: 4,
     requiredRank: "Closer",
@@ -119,6 +127,7 @@ const SCENARIOS: Scenario[] = [
     title: "Champion Enablement",
     subtitle: "Arm your internal advocate",
     description: "An internal champion who wants to help but needs the right ammunition to sell your deal internally.",
+    goal: "Give your champion quotable language and a clear business case they can repeat internally.",
     whatYouPractice: ["Internal selling language", "Building a business case together", "Handling internal objections"],
     difficultyLevel: 5,
     requiredRank: "Operator",
@@ -129,6 +138,105 @@ const SCENARIOS: Scenario[] = [
     env: "enterprise",
     role: "champion",
     duration: "~6 min",
+  },
+
+  // ─── Voice Scenarios ─────────────────────────────────────────────────────
+  // Short (1–3 min) turn-based sessions scored with the voice delivery rubric.
+
+  {
+    id: "voice-cold-opener",
+    title: "Cold Call Opener",
+    subtitle: "Earn 60 seconds or lose the line",
+    description: "A busy VP picks up cold. You have one shot at a crisp opener — clarity and confidence determine if you stay on the phone.",
+    goal: "Deliver a clear, specific opener and earn a commitment to keep talking.",
+    whatYouPractice: ["Opening clarity", "Confident delivery", "Verbal pace control"],
+    tags: ["Clarity", "Confidence", "Pace"],
+    voiceScoringEnabled: true,
+    difficultyLevel: 1,
+    requiredRank: "Rookie",
+    unlockCondition: "Available from day one",
+    icon: Mic,
+    color: "text-emerald-400",
+    lockedColor: "text-muted-foreground/40",
+    env: "cold-call",
+    role: "voice-cold-opener",
+    duration: "~1 min",
+  },
+  {
+    id: "voice-send-email",
+    title: "Send Me an Email",
+    subtitle: "Handle the classic deflection",
+    description: "The prospect deflects immediately: \"Just send me an email.\" You have one exchange to give a specific reason why a call beats an inbox.",
+    goal: "Keep the prospect on the line and book a concrete next step.",
+    whatYouPractice: ["Objection handling", "Concise reframing", "Confident delivery under pressure"],
+    tags: ["Confidence", "Conciseness", "Response Quality"],
+    voiceScoringEnabled: true,
+    difficultyLevel: 2,
+    requiredRank: "Rookie",
+    unlockCondition: "Available from day one",
+    icon: Mic,
+    color: "text-emerald-400",
+    lockedColor: "text-muted-foreground/40",
+    env: "cold-call",
+    role: "voice-send-email",
+    duration: "~1–2 min",
+  },
+  {
+    id: "voice-vendor-objection",
+    title: "Existing Vendor Objection",
+    subtitle: "Break through the lock-in",
+    description: "The prospect is happy with their current vendor and locked in through next year. Acknowledge the switching cost — then reframe it.",
+    goal: "Acknowledge the lock-in and earn a low-risk comparison step without dismissing their investment.",
+    whatYouPractice: ["Competitive reframing", "Acknowledging objections", "Clarity under resistance"],
+    tags: ["Clarity", "Response Quality", "Verbal Readiness"],
+    voiceScoringEnabled: true,
+    difficultyLevel: 2,
+    requiredRank: "Rookie",
+    unlockCondition: "Available from day one",
+    icon: Mic,
+    color: "text-emerald-400",
+    lockedColor: "text-muted-foreground/40",
+    env: "cold-call",
+    role: "voice-vendor-objection",
+    duration: "~2 min",
+  },
+  {
+    id: "voice-discovery-followup",
+    title: "Discovery Follow-Up",
+    subtitle: "Re-engage the cold prospect",
+    description: "You had a good discovery call three weeks ago. The prospect went quiet. Re-earn their attention and advance the deal.",
+    goal: "Re-establish context, resurface a live pain point, and lock in a specific next step.",
+    whatYouPractice: ["Re-engagement questions", "Active listening", "Concise value anchoring"],
+    tags: ["Response Quality", "Confidence", "Clarity"],
+    voiceScoringEnabled: true,
+    difficultyLevel: 2,
+    requiredRank: "Rookie",
+    unlockCondition: "Available from day one",
+    icon: Mic,
+    color: "text-emerald-400",
+    lockedColor: "text-muted-foreground/40",
+    env: "cold-call",
+    role: "voice-discovery-followup",
+    duration: "~2 min",
+  },
+  {
+    id: "voice-interview-pressure",
+    title: "Interview Pressure Question",
+    subtitle: "Deliver under fire",
+    description: "One intense behavioral question. Rapid follow-up pressure. The interviewer wants specifics, metrics, and clear ownership — in under three sentences.",
+    goal: "Answer with a metric-backed, ownership-focused response in under 3 sentences per turn.",
+    whatYouPractice: ["Structured verbal answers", "Conciseness under pressure", "Confident delivery"],
+    tags: ["Confidence", "Conciseness", "Pace", "Verbal Readiness"],
+    voiceScoringEnabled: true,
+    difficultyLevel: 3,
+    requiredRank: "Starter",
+    unlockCondition: "Reach Starter rank (100 ELO)",
+    icon: Mic,
+    color: "text-emerald-400",
+    lockedColor: "text-muted-foreground/40",
+    env: "interview",
+    role: "voice-interview-pressure",
+    duration: "~2–3 min",
   },
 ];
 
@@ -251,9 +359,15 @@ const Scenarios = () => {
                 className={`card-elevated p-5 flex flex-col gap-4 transition-all duration-200 relative overflow-hidden ${
                   isLocked
                     ? "opacity-60 border-border/50"
+                    : scenario.voiceScoringEnabled
+                    ? "hover:border-emerald-500/40 border-emerald-500/10 bg-emerald-500/[0.02] group"
                     : "hover:border-primary/30 group"
                 }`}
               >
+                {/* Voice stripe */}
+                {scenario.voiceScoringEnabled && !isLocked && (
+                  <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+                )}
                 {/* Lock stripe */}
                 {isLocked && (
                   <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-muted-foreground/20 to-transparent" />
@@ -261,8 +375,16 @@ const Scenarios = () => {
 
                 {/* Top row */}
                 <div className="flex items-start justify-between gap-2">
-                  <div className={`h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0 ${isLocked ? scenario.lockedColor : scenario.color}`}>
-                    {isLocked ? <Lock className="h-4 w-4" /> : <Icon className="h-5 w-5" />}
+                  <div className="flex items-center gap-2">
+                    <div className={`h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0 ${isLocked ? scenario.lockedColor : scenario.color}`}>
+                      {isLocked ? <Lock className="h-4 w-4" /> : <Icon className="h-5 w-5" />}
+                    </div>
+                    {scenario.voiceScoringEnabled && !isLocked && (
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                        <Mic className="h-2.5 w-2.5" />
+                        Voice
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <DifficultyPips level={scenario.difficultyLevel} />
@@ -282,28 +404,49 @@ const Scenarios = () => {
                   <h3 className={`font-heading text-base font-bold leading-tight ${isLocked ? "text-foreground/50" : "text-foreground"}`}>
                     {scenario.title}
                   </h3>
-                  <p className={`text-xs mt-0.5 font-medium ${isLocked ? "text-muted-foreground/40" : "text-primary"}`}>
+                  <p className={`text-xs mt-0.5 font-medium ${isLocked ? "text-muted-foreground/40" : scenario.voiceScoringEnabled ? "text-emerald-500/80" : "text-primary"}`}>
                     {scenario.subtitle}
                   </p>
                 </div>
 
                 {/* Description */}
-                <p className={`text-sm leading-relaxed flex-1 ${isLocked ? "text-muted-foreground/40" : "text-muted-foreground"}`}>
+                <p className={`text-sm leading-relaxed ${isLocked ? "text-muted-foreground/40" : "text-muted-foreground"}`}>
                   {scenario.description}
                 </p>
 
-                {/* What you practice */}
-                <div className="space-y-1">
-                  {scenario.whatYouPractice.map((skill) => (
-                    <div key={skill} className={`flex items-center gap-2 text-xs ${isLocked ? "text-muted-foreground/30" : "text-muted-foreground"}`}>
-                      <div className={`h-1 w-1 rounded-full shrink-0 ${isLocked ? "bg-muted-foreground/20" : "bg-primary/60"}`} />
-                      {skill}
-                    </div>
-                  ))}
-                </div>
+                {/* Goal — voice scenarios */}
+                {scenario.voiceScoringEnabled && !isLocked && (
+                  <div className="rounded-md px-2.5 py-2 bg-emerald-500/5 border border-emerald-500/15">
+                    <p className="text-[10px] font-semibold text-emerald-500/70 uppercase tracking-wider mb-0.5">Goal</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug">{scenario.goal}</p>
+                  </div>
+                )}
+
+                {/* Tags — voice scoring categories */}
+                {scenario.tags && scenario.tags.length > 0 && !isLocked && (
+                  <div className="flex flex-wrap gap-1">
+                    {scenario.tags.map((tag) => (
+                      <span key={tag} className="text-[9px] font-semibold text-emerald-500/70 bg-emerald-500/8 border border-emerald-500/15 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* What you practice — text scenarios only (voice uses tags instead) */}
+                {!scenario.voiceScoringEnabled && (
+                  <div className="space-y-1">
+                    {scenario.whatYouPractice.map((skill) => (
+                      <div key={skill} className={`flex items-center gap-2 text-xs ${isLocked ? "text-muted-foreground/30" : "text-muted-foreground"}`}>
+                        <div className={`h-1 w-1 rounded-full shrink-0 ${isLocked ? "bg-muted-foreground/20" : "bg-primary/60"}`} />
+                        {skill}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Footer */}
-                <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                <div className="flex items-center justify-between pt-1 border-t border-border/50 mt-auto">
                   <span className="text-[11px] text-muted-foreground/60">{scenario.duration}</span>
                   {isLocked ? (
                     <div className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-md border ${reqStyles.badge}`}>
@@ -312,13 +455,17 @@ const Scenarios = () => {
                     </div>
                   ) : (
                     <Button
-                      variant="hero"
+                      variant={scenario.voiceScoringEnabled ? "default" : "hero"}
                       size="sm"
-                      className="h-8 text-xs gap-1.5 group-hover:gap-2 transition-all"
+                      className={`h-8 text-xs gap-1.5 group-hover:gap-2 transition-all ${scenario.voiceScoringEnabled ? "bg-emerald-600 hover:bg-emerald-500 text-white border-0" : ""}`}
                       asChild
                     >
-                      <a href={`/practice?env=${scenario.env}&role=${scenario.role}`}>
-                        Start <ArrowRight className="h-3 w-3" />
+                      <a href={`/practice?env=${scenario.env}&role=${scenario.role}${scenario.voiceScoringEnabled ? "&voice=1" : ""}`}>
+                        {scenario.voiceScoringEnabled ? (
+                          <><Mic className="h-3 w-3" /> Start Voice</>
+                        ) : (
+                          <>Start <ArrowRight className="h-3 w-3" /></>
+                        )}
                       </a>
                     </Button>
                   )}

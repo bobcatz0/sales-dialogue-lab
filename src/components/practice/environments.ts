@@ -30,7 +30,7 @@ export const ENVIRONMENTS: Environment[] = [
     subtitle: "Sales interview training",
     description: "Practice structured responses, professional storytelling, and confident delivery under interview conditions.",
     icon: Briefcase,
-    personaIds: ["hiring-manager"],
+    personaIds: ["hiring-manager", "voice-interview-pressure"],
     promptAddendum: `ENVIRONMENT CONTEXT — Interview Prep:
 This is a sales job interview. Evaluate the candidate on these weighted criteria:
 - Clarity of communication (30%): Are answers clear and easy to follow?
@@ -49,7 +49,7 @@ Ask follow-up questions when answers are vague. Do NOT use time-pressure tactics
     subtitle: "Prospecting & outreach training",
     description: "Develop opening clarity, permission-based language, and next-step positioning under immediate resistance.",
     icon: PhoneOutgoing,
-    personaIds: ["gatekeeper", "b2b-prospect"],
+    personaIds: ["gatekeeper", "b2b-prospect", "voice-cold-opener", "voice-send-email", "voice-vendor-objection", "voice-discovery-followup"],
     promptAddendum: `ENVIRONMENT CONTEXT — Cold Call:
 This is an unsolicited outreach call. The prospect did NOT ask for this call. Be immediately guarded and resistant. Evaluate the caller on: opening clarity (first 10 seconds), permission-based language ("Do you have 30 seconds?"), and ability to secure a specific next step quickly. If the caller cannot earn attention in the first 2-3 exchanges, increase resistance sharply.`,
     timePressureThresholdS: 180,
