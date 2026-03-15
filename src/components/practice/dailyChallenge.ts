@@ -201,3 +201,12 @@ export function markChallengeCompleted(): void {
 }
 
 export const CHALLENGE_BONUS_POINTS = 25;
+
+/**
+ * Returns the stable score-store key for today's challenge.
+ * Format: "{YYYY-MM-DD}:{personaId}"
+ */
+export function getTodayChallengeId(): string {
+  const { challenge } = getTodayChallenge();
+  return `${challenge.date}:${challenge.personaId}`;
+}

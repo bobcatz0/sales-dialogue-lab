@@ -1,19 +1,28 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Flame, ArrowRight } from "lucide-react";
+import { Trophy, Flame, ArrowRight, Calendar, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { loadConsistency, type ConsistencyData } from "@/components/practice/consistencyScoring";
 import { loadHistory } from "@/components/practice/sessionStorage";
+import { getTodayChallenge, getTodayChallengeId } from "@/components/practice/dailyChallenge";
+import { getChallengeRecord, type ChallengeScoreRecord } from "@/lib/challengeScores";
 import { roles } from "@/components/practice/roleData";
 import type { SessionRecord } from "@/components/practice/types";
 
 export function LeaderboardWidget() {
   const [consistency, setConsistency] = useState<ConsistencyData | null>(null);
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
+  const [challengeRecord, setChallengeRecord] = useState<ChallengeScoreRecord | null>(null);
+  const [challengeTitle, setChallengeTitle] = useState<string>("");
+  const [challengeSkillFocus, setChallengeSkillFocus] = useState<string>("");
 
   useEffect(() => {
     setConsistency(loadConsistency());
     setSessions(loadHistory());
+    const { challenge } = getTodayChallenge();
+    setChallengeTitle(challenge.skillFocus);
+    setChallengeSkillFocus(challenge.successLabel);
+    setChallengeRecord(getChallengeRecord(getTodayChallengeId()));
   }, []);
 
   // Filter sessions from this week
@@ -66,6 +75,62 @@ export function LeaderboardWidget() {
               <span className="text-muted-foreground">Score:</span>{" "}
               <span className="font-bold text-primary">{consistency.score}</span>
             </div>
+          </div>
+
+          {/* Today's Challenge stats */}
+          <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
+                <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
+                  Today's Challenge
+                </span>
+              </div>
+              {challengeRecord && challengeRecord.attempts.length > 0 && (
+                <span className="text-[10px] text-muted-foreground">
+                  {challengeRecord.attempts.length}{" "}
+                  {challengeRecord.attempts.length === 1 ? "attempt" : "attempts"}
+                </span>
+              )}
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold text-foreground">{challengeTitle}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{challengeSkillFocus}</p>
+            </div>
+
+            {challengeRecord && challengeRecord.attempts.length > 0 ? (
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Avg</p>
+                  <p className="text-base font-bold font-heading text-foreground">
+                    {challengeRecord.avgScore}
+                  </p>
+                </div>
+                <div className="text-muted-foreground/30 text-xs">·</div>
+                <div className="text-center">
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Best</p>
+                  <p className="text-base font-bold font-heading text-primary">
+                    {challengeRecord.bestScore}
+                  </p>
+                </div>
+                <div className="ml-auto">
+                  <a
+                    href="/practice"
+                    className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors"
+                  >
+                    <RotateCcw className="h-3 w-3" /> Replay
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <a
+                href="/practice"
+                className="flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                Start today's challenge <ArrowRight className="h-3 w-3" />
+              </a>
+            )}
           </div>
 
           {/* Top 5 this week */}

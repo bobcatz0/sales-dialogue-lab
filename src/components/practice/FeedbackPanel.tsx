@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
-import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Mic, TrendingDown, Minus, Award } from "lucide-react";
+import { Star, TrendingUp, Target, RotateCcw, Play, Quote, Gauge, Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Mic, TrendingDown, Minus, Award, Trophy, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import type { ChallengeResult } from "@/lib/challengeScores";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
@@ -310,6 +311,112 @@ function downloadPDF(feedback: Feedback, alias: string | null) {
   }
 }
 
+// --- Challenge Comparison Block ---
+
+function DeltaChip({ value }: { value: number }) {
+  if (value === 0) return <span className="text-[10px] text-muted-foreground font-semibold">same</span>;
+  const positive = value > 0;
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold ${positive ? "text-primary" : "text-destructive/80"}`}>
+      {positive ? <ArrowUp className="h-2.5 w-2.5" /> : <ArrowDown className="h-2.5 w-2.5" />}
+      {Math.abs(value)}
+    </span>
+  );
+}
+
+function ChallengeComparisonBlock({
+  result,
+  onReplay,
+}: {
+  result: ChallengeResult;
+  onReplay: () => void;
+}) {
+  const attemptLabel =
+    result.attemptNumber === 1 ? "First attempt" :
+    result.attemptNumber === 2 ? "2nd attempt" :
+    result.attemptNumber === 3 ? "3rd attempt" :
+    `${result.attemptNumber}th attempt`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+      className="mx-5 mb-0 rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3"
+    >
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <Trophy className="h-3.5 w-3.5 text-primary" />
+          <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
+            Daily Challenge
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {result.isPersonalBest && (
+            <span className="text-[9px] font-bold text-primary bg-primary/15 border border-primary/25 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+              Personal Best
+            </span>
+          )}
+          <span className="text-[10px] text-muted-foreground">{attemptLabel}</span>
+        </div>
+      </div>
+
+      {/* Comparison grid */}
+      <div className="grid grid-cols-3 gap-3 text-center">
+        {/* This session */}
+        <div>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-1">This Run</p>
+          <p className="text-xl font-bold font-heading text-foreground">{result.currentScore}</p>
+        </div>
+
+        {/* vs Previous */}
+        <div>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-1">vs Prev</p>
+          {result.previousScore !== null ? (
+            <div className="flex flex-col items-center">
+              <p className="text-sm font-semibold text-foreground">{result.previousScore}</p>
+              <DeltaChip value={result.delta ?? 0} />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">—</p>
+          )}
+        </div>
+
+        {/* vs Best */}
+        <div>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-1">vs Best</p>
+          {result.bestScore !== null ? (
+            <div className="flex flex-col items-center">
+              <p className="text-sm font-semibold text-foreground">{result.bestScore}</p>
+              <DeltaChip value={result.bestDelta ?? 0} />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">—</p>
+          )}
+        </div>
+      </div>
+
+      {/* Percentile + replay */}
+      <div className="flex items-center justify-between pt-1 border-t border-primary/10">
+        {result.percentile !== null ? (
+          <p className="text-[10px] text-muted-foreground">
+            Better than <span className="font-semibold text-foreground">{result.percentile}%</span> of your attempts
+          </p>
+        ) : (
+          <p className="text-[10px] text-muted-foreground">Complete more attempts to see percentile</p>
+        )}
+        <button
+          onClick={onReplay}
+          className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors"
+        >
+          <RotateCcw className="h-3 w-3" /> Replay
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 // --- Main Component ---
 
 export function FeedbackPanel({
@@ -329,6 +436,7 @@ export function FeedbackPanel({
   promoSeries,
   advancedFeedback = true,
   onUpgrade,
+  challengeResult,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
@@ -347,6 +455,8 @@ export function FeedbackPanel({
   /** When false, skill breakdown is replaced with a Pro upgrade teaser. */
   advancedFeedback?: boolean;
   onUpgrade?: () => void;
+  /** Present when the session was a daily challenge attempt. */
+  challengeResult?: ChallengeResult;
 }) {
   const interview = isInterviewRank(feedback.rank);
   const skills = feedback.skillBreakdown || [];
@@ -466,6 +576,11 @@ export function FeedbackPanel({
           />
         </div>
       </div>
+
+      {/* Challenge comparison block */}
+      {challengeResult && (
+        <ChallengeComparisonBlock result={challengeResult} onReplay={onTrySameRole} />
+      )}
 
       <div className="p-5 space-y-5">
         {/* Critical Weakness — top of report when recovery failed */}

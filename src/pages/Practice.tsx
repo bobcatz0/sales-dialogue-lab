@@ -42,7 +42,8 @@ import { ProfilePanel } from "@/components/practice/ProfilePanel";
 import { buildPressurePrompt, detectCallEnd, detectHardCloseWin, cleanResponseText } from "@/components/practice/pressureEngine";
 import { useCallTimer } from "@/components/practice/CallTimer";
 import { ENVIRONMENTS, getEnvironment, type EnvironmentId } from "@/components/practice/environments";
-import { getTodayChallenge, checkChallengeCondition, markChallengeCompleted, CHALLENGE_BONUS_POINTS } from "@/components/practice/dailyChallenge";
+import { getTodayChallenge, checkChallengeCondition, markChallengeCompleted, getTodayChallengeId, CHALLENGE_BONUS_POINTS } from "@/components/practice/dailyChallenge";
+import { recordChallengeAttempt, computeChallengeResult, type ChallengeResult } from "@/lib/challengeScores";
 import { DailyChallengeCard } from "@/components/practice/DailyChallengeCard";
 import {
   SDR_ROUNDS,
@@ -231,6 +232,7 @@ const PracticePage = () => {
   const [isFirstVoiceSession, setIsFirstVoiceSession] = useState(() => getVoiceSessionCount() === 0);
   const [showPlanUpgrade, setShowPlanUpgrade] = useState(false);
   const [planUpgradeReason, setPlanUpgradeReason] = useState<string | undefined>();
+  const [challengeResult, setChallengeResult] = useState<ChallengeResult | null>(null);
   const timer = useCallTimer(sessionActive);
   const voice = useVoiceSession();
   const mic = useMicPermission();
@@ -342,6 +344,7 @@ const PracticePage = () => {
     setIsFeedbackLoading(false);
     setLastPoints(null);
     setHardCloseWin(false);
+    setChallengeResult(null);
     setShowHelpfulPrompt(false);
     setShowRunAgainPrompt(false);
     callEndTriggeredRef.current = false;
@@ -745,29 +748,40 @@ This evaluation style should subtly influence your questions and reactions. Do N
         setBadgeQueue(newBadges);
       }
 
-      // Daily Challenge completion check
-      if (isValidSession && !challengeCompleted && activeRole) {
+      // Daily Challenge scoring + completion check
+      if (isValidSession && activeRole) {
         const todayChallenge = getTodayChallenge();
-        if (
+        const isChallengePair =
           todayChallenge.challenge.environmentId === selectedEnv &&
-          todayChallenge.challenge.personaId === activeRole.id &&
-          checkChallengeCondition(todayChallenge.challenge.conditionKey, {
-            score: data.score,
-            peakDifficulty: data.peakDifficulty ?? 1,
-            userMessageCount: userMsgCount,
-            durationSeconds,
-            hardCloseWin,
-          })
-        ) {
-          markChallengeCompleted();
-          setChallengeCompleted(true);
-          toast("Daily training objective completed. +${CHALLENGE_BONUS_POINTS} pts", { duration: 3000 });
-          track("challenge_completed", {
-            score: data.score,
-            personaId: activeRole.id,
-            environmentId: selectedEnv ?? "",
-            skillFocus: todayChallenge.challenge.skillFocus,
-          });
+          todayChallenge.challenge.personaId === activeRole.id;
+
+        if (isChallengePair) {
+          const conditionMet =
+            !challengeCompleted &&
+            checkChallengeCondition(todayChallenge.challenge.conditionKey, {
+              score: data.score,
+              peakDifficulty: data.peakDifficulty ?? 1,
+              userMessageCount: userMsgCount,
+              durationSeconds,
+              hardCloseWin,
+            });
+
+          // Record every valid attempt, win or not
+          const challengeKey = getTodayChallengeId();
+          recordChallengeAttempt(challengeKey, data.score, conditionMet);
+          setChallengeResult(computeChallengeResult(challengeKey, data.score));
+
+          if (conditionMet) {
+            markChallengeCompleted();
+            setChallengeCompleted(true);
+            toast(`Daily challenge complete. +${CHALLENGE_BONUS_POINTS} pts`, { duration: 3000 });
+            track("challenge_completed", {
+              score: data.score,
+              personaId: activeRole.id,
+              environmentId: selectedEnv ?? "",
+              skillFocus: todayChallenge.challenge.skillFocus,
+            });
+          }
         }
       }
 
@@ -1686,6 +1700,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           setPlanUpgradeReason("Advanced feedback with skill breakdown is available on Pro.");
                           setShowPlanUpgrade(true);
                         }}
+                        challengeResult={challengeResult ?? undefined}
                         roleId={selectedRole ?? undefined}
                         promoSeries={promoSeries.status !== "idle" ? promoSeries : undefined}
                         voiceMetrics={voice.voiceMode ? voice.getSessionVoiceMetrics() ?? undefined : undefined}

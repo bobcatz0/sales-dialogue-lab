@@ -1,7 +1,9 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Check, ArrowRight } from "lucide-react";
+import { Calendar, Check, ArrowRight, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getTodayChallenge } from "./dailyChallenge";
+import { getTodayChallenge, getTodayChallengeId } from "./dailyChallenge";
+import { getChallengeRecord } from "@/lib/challengeScores";
 import { ENVIRONMENTS } from "./environments";
 import { roles } from "./roleData";
 import type { EnvironmentId } from "./environments";
@@ -15,7 +17,11 @@ export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
   const env = ENVIRONMENTS.find((e) => e.id === challenge.environmentId);
   const persona = roles.find((r) => r.id === challenge.personaId);
 
+  const record = useMemo(() => getChallengeRecord(getTodayChallengeId()), []);
+
   if (!env || !persona) return null;
+
+  const hasAttempts = record && record.attempts.length > 0;
 
   return (
     <motion.div
@@ -26,7 +32,7 @@ export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-xs font-semibold text-foreground">Daily Objective</span>
+          <span className="text-xs font-semibold text-foreground">Daily Challenge</span>
         </div>
         {completed ? (
           <Badge variant="default" className="text-[10px] gap-1 bg-primary/15 text-primary border-0">
@@ -52,10 +58,32 @@ export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
         </p>
       </div>
 
+      {/* Attempt stats — only shown after at least one attempt */}
+      {hasAttempts && (
+        <div className="flex items-center gap-3 pt-0.5">
+          <span className="text-[10px] text-muted-foreground">
+            Avg <span className="font-semibold text-foreground">{record.avgScore}</span>
+          </span>
+          <span className="text-muted-foreground/30 text-[10px]">·</span>
+          <span className="text-[10px] text-muted-foreground">
+            Best <span className="font-semibold text-foreground">{record.bestScore}</span>
+          </span>
+          <span className="text-muted-foreground/30 text-[10px]">·</span>
+          <span className="text-[10px] text-muted-foreground">
+            <span className="font-semibold text-foreground">{record.attempts.length}</span>{" "}
+            {record.attempts.length === 1 ? "attempt" : "attempts"}
+          </span>
+        </div>
+      )}
+
       {completed ? (
-        <p className="text-[10px] text-muted-foreground/70 text-center pt-1">
-          Next objective available tomorrow
-        </p>
+        <button
+          onClick={() => onStart?.(challenge.environmentId, challenge.personaId)}
+          className="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors pt-1"
+        >
+          <RotateCcw className="h-3 w-3" />
+          Replay Challenge
+        </button>
       ) : (
         <button
           onClick={() => onStart?.(challenge.environmentId, challenge.personaId)}
