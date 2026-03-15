@@ -1738,7 +1738,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 )}
               </div>
 
-              {/* Input Area */}
+              {/* Input Area — Text Mode only */}
               <div className="border-t border-border p-3 sm:p-4">
                 {(voice.voiceMode || (isColdCall && !coldCallTextMode)) && selectedRole ? (
                   /* Voice Mode: recording UI */
