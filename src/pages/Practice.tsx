@@ -1639,7 +1639,36 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 <GhostBattleBanner ghost={ghostBattle.ghost} />
               )}
 
-              {/* Chat messages + input (used for both text and voice modes) */}
+              {/* Voice Interview Screen OR Chat Interface */}
+              {(voice.voiceMode || (isColdCall && !coldCallTextMode)) && selectedRole && sessionActive && !feedback ? (
+                <VoiceInterviewScreen
+                  scenarioTitle={activeEnv?.title ?? "Session"}
+                  roleTitle={activeRole?.title ?? "Interviewer"}
+                  questionProgress={`${Math.min(userQuestionCount, totalExpectedQuestions)}/~${totalExpectedQuestions}`}
+                  timerDisplay={timer.display}
+                  sessionActive={sessionActive}
+                  isAISpeaking={voice.isAISpeaking}
+                  isLoading={isLoading}
+                  lastAIMessage={messages.filter(m => m.role === "prospect").pop()?.text}
+                  isReadyForScore={isReadyForScore}
+                  isMuted={voice.isMuted}
+                  volume={voice.volume}
+                  onTranscript={(text, duration, pauseData) => {
+                    voice.recordVoiceMetrics(text, duration, pauseData);
+                    sendUserMessage(text);
+                  }}
+                  onEndSession={handleEndSession}
+                  onRetryQuestion={handleReset}
+                  onSwitchToText={() => {
+                    if (isColdCall) {
+                      setColdCallTextMode(true);
+                    }
+                    voice.setVoiceMode(false);
+                  }}
+                  onToggleMute={voice.toggleMute}
+                  onVolumeChange={voice.setVolume}
+                />
+              ) : (
               <>
               {/* Messages */}
               <div
