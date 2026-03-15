@@ -100,6 +100,7 @@ import {
 import { VoiceOnboardingModal } from "@/components/practice/VoiceOnboardingModal";
 import { usePlan } from "@/context/PlanContext";
 import { UpgradeModal, AttemptLimitBanner } from "@/components/plan/UpgradePrompt";
+import { track, trackInviteIfPresent } from "@/lib/analytics";
 
 // --- Streaming ---
 
@@ -215,6 +216,7 @@ const PracticePage = () => {
   const sessionStartRef = useRef<number>(Date.now());
   const elapsedRef = useRef(0);
   const callEndTriggeredRef = useRef(false);
+  const isChallengeSessionRef = useRef(false);
   const [showOnboarding, setShowOnboarding] = useState(() => !hasSeenOnboarding());
   const [showHelpfulPrompt, setShowHelpfulPrompt] = useState(false);
   const [showRunAgainPrompt, setShowRunAgainPrompt] = useState(false);
@@ -271,8 +273,9 @@ const PracticePage = () => {
     voice.setVoiceMode(enabled);
   }, [voice, canUse]);
 
-  // Load history on mount
+  // Load history on mount + one-time invite detection
   useEffect(() => {
+    trackInviteIfPresent();
     setHistory(loadHistory());
     // Check if Interview Ready expired since last visit
     const expiry = checkExpiryRevocation();
@@ -289,7 +292,8 @@ const PracticePage = () => {
 
   const isColdCall = selectedEnv === "cold-call";
 
-  const handleStart = async (id: string, sdrRound?: SDRRound) => {
+  const handleStart = async (id: string, sdrRound?: SDRRound, isChallenge = false) => {
+    isChallengeSessionRef.current = isChallenge;
     // Plan gating: check daily attempt limit
     if (isAtDailyLimit) {
       setPlanUpgradeReason("You've used all 3 free sessions today. Upgrade for unlimited access.");
@@ -367,8 +371,13 @@ const PracticePage = () => {
   };
 
   const handleStartChallenge = (envId: EnvironmentId, personaId: string) => {
+    track("challenge_started", {
+      personaId,
+      environmentId: envId,
+      date: new Date().toISOString().slice(0, 10),
+    });
     setSelectedEnv(envId);
-    handleStart(personaId);
+    handleStart(personaId, undefined, true);
   };
 
   const sendingRef = useRef(false);
@@ -753,6 +762,12 @@ This evaluation style should subtly influence your questions and reactions. Do N
           markChallengeCompleted();
           setChallengeCompleted(true);
           toast("Daily training objective completed. +${CHALLENGE_BONUS_POINTS} pts", { duration: 3000 });
+          track("challenge_completed", {
+            score: data.score,
+            personaId: activeRole.id,
+            environmentId: selectedEnv ?? "",
+            skillFocus: todayChallenge.challenge.skillFocus,
+          });
         }
       }
 
@@ -1692,10 +1707,17 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         }}
                         onTrySameRole={() => {
                           markFirstSessionRetried();
+                          const wasChallenge = isChallengeSessionRef.current;
+                          if (wasChallenge) {
+                            track("challenge_retried", {
+                              personaId: selectedRole ?? "",
+                              environmentId: selectedEnv ?? "",
+                            });
+                          }
                           setFeedback(null);
                           setLastPoints(null);
                           setLastSessionValid(false);
-                          if (selectedRole) handleStart(selectedRole);
+                          if (selectedRole) handleStart(selectedRole, undefined, wasChallenge);
                         }}
                         onStartDrill={
                           (selectedEnv === "interview" || selectedEnv === "final-round") && feedback.score < 60

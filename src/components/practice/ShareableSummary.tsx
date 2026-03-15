@@ -3,6 +3,7 @@ import { Copy, Download, Check, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { Feedback } from "./types";
+import { track } from "@/lib/analytics";
 
 interface ShareableSummaryProps {
   feedback: Feedback;
@@ -47,6 +48,7 @@ export function ShareableSummary({ feedback, alias, isValidSession }: ShareableS
       setCopied(true);
       toast("Summary copied to clipboard.", { duration: 2000 });
       setTimeout(() => setCopied(false), 2000);
+      track("shared_result_clicked", { score: feedback.score, rank: feedback.rank });
     }).catch(() => {
       toast.error("Failed to copy. Please try again.");
     });
