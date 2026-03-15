@@ -173,7 +173,7 @@ export default function ChallengeHero() {
               </p>
 
               <Button variant="hero" className="w-full h-12 text-base gap-2" asChild>
-                <Link to={`/practice?env=${challenge.environmentId}&role=${challenge.personaId}&daily=1`}>
+                <Link to="/challenge">
                   Take the Challenge
                   <ArrowRight className="h-4 w-4" />
                 </Link>
