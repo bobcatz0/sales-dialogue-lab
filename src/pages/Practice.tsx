@@ -98,6 +98,8 @@ import {
   VOICE_STARTER_ROLE_IDS,
 } from "@/components/practice/voiceOnboarding";
 import { VoiceOnboardingModal } from "@/components/practice/VoiceOnboardingModal";
+import { usePlan } from "@/context/PlanContext";
+import { UpgradeModal, AttemptLimitBanner } from "@/components/plan/UpgradePrompt";
 
 // --- Streaming ---
 
@@ -225,9 +227,12 @@ const PracticePage = () => {
   const [personality, setPersonality] = useState<Personality>("neutral");
   const [showVoiceOnboarding, setShowVoiceOnboarding] = useState(false);
   const [isFirstVoiceSession, setIsFirstVoiceSession] = useState(() => getVoiceSessionCount() === 0);
+  const [showPlanUpgrade, setShowPlanUpgrade] = useState(false);
+  const [planUpgradeReason, setPlanUpgradeReason] = useState<string | undefined>();
   const timer = useCallTimer(sessionActive);
   const voice = useVoiceSession();
   const mic = useMicPermission();
+  const { canUse, isAtDailyLimit, remainingAttempts, consumeAttempt } = usePlan();
 
   const activeEnv = selectedEnv ? getEnvironment(selectedEnv) : undefined;
   const activeRole = roles.find((r) => r.id === selectedRole);
@@ -253,13 +258,18 @@ const PracticePage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Toggle voice mode. Shows onboarding modal on first activation. */
+  /** Toggle voice mode. Shows onboarding modal on first activation. Requires Pro plan. */
   const handleVoiceModeToggle = useCallback((enabled: boolean) => {
+    if (enabled && !canUse("voiceMode")) {
+      setPlanUpgradeReason("Voice mode is available on Pro and above.");
+      setShowPlanUpgrade(true);
+      return;
+    }
     if (enabled && !hasSeenVoiceOnboarding()) {
       setShowVoiceOnboarding(true);
     }
     voice.setVoiceMode(enabled);
-  }, [voice]);
+  }, [voice, canUse]);
 
   // Load history on mount
   useEffect(() => {
@@ -280,6 +290,14 @@ const PracticePage = () => {
   const isColdCall = selectedEnv === "cold-call";
 
   const handleStart = async (id: string, sdrRound?: SDRRound) => {
+    // Plan gating: check daily attempt limit
+    if (isAtDailyLimit) {
+      setPlanUpgradeReason("You've used all 3 free sessions today. Upgrade for unlimited access.");
+      setShowPlanUpgrade(true);
+      return;
+    }
+    consumeAttempt();
+
     // Voice modes require mic — request permission on user gesture
     const isSDRColdCall = sdrRound?.id === "cold-call-sim";
     const needsMic = coldCallTextMode ? false : (isColdCall || isSDRColdCall || voice.voiceMode);
@@ -857,6 +875,12 @@ This evaluation style should subtly influence your questions and reactions. Do N
           setShowVoiceOnboarding(false);
         }}
       />
+      <UpgradeModal
+        open={showPlanUpgrade}
+        onClose={() => setShowPlanUpgrade(false)}
+        highlightTier="pro"
+        reason={planUpgradeReason}
+      />
       <Navbar />
       <div className="container mx-auto px-4 md:px-6 pt-24 pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 lg:gap-6 min-h-[calc(100vh-8rem)]">
@@ -1261,6 +1285,14 @@ This evaluation style should subtly influence your questions and reactions. Do N
               </div>
             )}
 
+            {/* Attempt limit banner — shown when free user has hit their daily cap */}
+            {isAtDailyLimit && (
+              <AttemptLimitBanner onUpgrade={() => {
+                setPlanUpgradeReason("Upgrade to Pro for unlimited daily sessions.");
+                setShowPlanUpgrade(true);
+              }} />
+            )}
+
             {/* Daily Challenge — hidden in interview mode for flow clarity */}
             {selectedEnv !== "interview" && (
               <DailyChallengeCard onStart={handleStartChallenge} />
@@ -1634,6 +1666,11 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         feedback={feedback}
                         alias={alias}
                         isValidSession={lastSessionValid}
+                        advancedFeedback={canUse("advancedFeedback")}
+                        onUpgrade={() => {
+                          setPlanUpgradeReason("Advanced feedback with skill breakdown is available on Pro.");
+                          setShowPlanUpgrade(true);
+                        }}
                         roleId={selectedRole ?? undefined}
                         promoSeries={promoSeries.status !== "idle" ? promoSeries : undefined}
                         voiceMetrics={voice.voiceMode ? voice.getSessionVoiceMetrics() ?? undefined : undefined}

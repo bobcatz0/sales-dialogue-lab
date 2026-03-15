@@ -13,11 +13,13 @@ import NotFound from "./pages/NotFound";
 import DrillLibrary from "./pages/DrillLibrary";
 import Scenarios from "./pages/Scenarios";
 import { FeedbackWidget } from "./components/FeedbackWidget";
+import { PlanProvider } from "./context/PlanContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <PlanProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -37,6 +39,7 @@ const App = () => (
         <FeedbackWidget />
       </BrowserRouter>
     </TooltipProvider>
+    </PlanProvider>
   </QueryClientProvider>
 );
 

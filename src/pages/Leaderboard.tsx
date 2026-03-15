@@ -13,6 +13,8 @@ import { roles } from "@/components/practice/roleData";
 import { getRank } from "@/components/practice/progression";
 import { loadAlias, loadEarnedBadges } from "@/components/practice/achievements";
 import type { SessionRecord, VoiceSessionRecord, VoiceRankingData } from "@/components/practice/types";
+import { usePlan } from "@/context/PlanContext";
+import { PlanBadge, UpgradeModal } from "@/components/plan/UpgradePrompt";
 
 type LeaderboardMode = "text" | "voice" | "overall";
 
@@ -24,6 +26,8 @@ const LeaderboardPage = () => {
   const [voiceRanking, setVoiceRanking] = useState<VoiceRankingData | null>(null);
   const [alias, setAlias] = useState<string | null>(null);
   const [badgeCount, setBadgeCount] = useState(0);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const { plan } = usePlan();
 
   useEffect(() => {
     setConsistency(loadConsistency());
@@ -101,6 +105,15 @@ const LeaderboardPage = () => {
                 <Badge variant="outline" className="text-[10px] font-semibold border-primary/40 text-primary">
                   {rank}
                 </Badge>
+                <PlanBadge tier={plan} />
+                {plan === "free" && (
+                  <button
+                    className="text-[10px] text-primary hover:underline"
+                    onClick={() => setShowUpgrade(true)}
+                  >
+                    Upgrade
+                  </button>
+                )}
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Flame className="h-3 w-3" /> {consistency.currentStreak} day streak
                 </span>
@@ -139,6 +152,12 @@ const LeaderboardPage = () => {
           )}
         </motion.div>
       </div>
+      <UpgradeModal
+        open={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        highlightTier="pro"
+        reason="Upgrade to unlock voice mode, advanced feedback, and all scenarios."
+      />
     </div>
   );
 };

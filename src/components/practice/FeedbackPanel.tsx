@@ -327,6 +327,8 @@ export function FeedbackPanel({
   roleTitle,
   voiceMessages,
   promoSeries,
+  advancedFeedback = true,
+  onUpgrade,
 }: {
   feedback: Feedback;
   onStartNew: () => void;
@@ -342,6 +344,9 @@ export function FeedbackPanel({
   roleTitle?: string;
   voiceMessages?: ChatMessage[];
   promoSeries?: PromoSeriesState;
+  /** When false, skill breakdown is replaced with a Pro upgrade teaser. */
+  advancedFeedback?: boolean;
+  onUpgrade?: () => void;
 }) {
   const interview = isInterviewRank(feedback.rank);
   const skills = feedback.skillBreakdown || [];
@@ -499,21 +504,36 @@ export function FeedbackPanel({
 
         {/* B. Skill Breakdown */}
         {skills.length > 0 && (
-          <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              Skill Breakdown
-            </p>
-            <div className="space-y-2.5">
-              {skills.map((skill, i) => (
-                <SkillBar
-                  key={skill.name}
-                  skill={skill}
-                  delay={0.2 + i * 0.08}
-                  isLowest={lowestSkill?.name === skill.name}
-                />
-              ))}
+          advancedFeedback ? (
+            <div>
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                Skill Breakdown
+              </p>
+              <div className="space-y-2.5">
+                {skills.map((skill, i) => (
+                  <SkillBar
+                    key={skill.name}
+                    skill={skill}
+                    delay={0.2 + i * 0.08}
+                    isLowest={lowestSkill?.name === skill.name}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div
+              className="rounded-xl border border-dashed border-primary/20 bg-primary/5 px-4 py-4 flex items-center justify-between gap-3 cursor-pointer hover:border-primary/40 transition-colors"
+              onClick={onUpgrade}
+            >
+              <div>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Skill Breakdown</p>
+                <p className="text-xs text-muted-foreground">Detailed skill scores available on <span className="text-primary font-semibold">Pro</span>.</p>
+              </div>
+              <button className="shrink-0 h-7 px-3 text-xs rounded-md border border-primary/30 text-primary hover:bg-primary/10 transition-colors font-semibold">
+                Unlock
+              </button>
+            </div>
+          )
         )}
 
         {/* Personal Best Comparison */}

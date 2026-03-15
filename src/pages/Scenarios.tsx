@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import { loadConsistency } from "@/components/practice/consistencyScoring";
 import { getRank } from "@/components/practice/progression";
+import { usePlan } from "@/context/PlanContext";
+import { FREE_SCENARIO_ROLE_IDS } from "@/lib/planGating";
+import { UpgradeModal, PlanBadge } from "@/components/plan/UpgradePrompt";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -296,6 +299,11 @@ const Scenarios = () => {
     const score = loadConsistency().score;
     return getRank(score) as RankName;
   });
+  const { plan, canUse } = usePlan();
+  const [showUpgrade, setShowUpgrade] = useState(false);
+
+  const hasPremiumScenarios = canUse("premiumScenarios");
+  const hasVoiceMode = canUse("voiceMode");
 
   const currentRankIdx = rankIndex(currentRank);
 
@@ -307,6 +315,12 @@ const Scenarios = () => {
 
   const unlockedCount = sorted.filter((s) => rankIndex(s.requiredRank) <= currentRankIdx).length;
   const lockedCount = SCENARIOS.length - unlockedCount;
+
+  /** True if the scenario requires a paid plan that the user doesn't have */
+  function isPlanLocked(scenario: Scenario): boolean {
+    if (scenario.voiceScoringEnabled) return !hasVoiceMode;
+    return !hasPremiumScenarios && !FREE_SCENARIO_ROLE_IDS.has(scenario.role);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -331,11 +345,21 @@ const Scenarios = () => {
             Each scenario puts you in a real sales situation with a different buyer personality. Practice, get scored, repeat.
           </p>
 
-          {/* Current rank badge */}
-          <div className="mt-5 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          {/* Current rank badge + plan badge */}
+          <div className="mt-5 flex items-center justify-center gap-2 text-sm text-muted-foreground flex-wrap">
             <span>Your rank:</span>
             <RankBadge rank={currentRank} />
-            {lockedCount > 0 && (
+            <span className="text-muted-foreground/40">·</span>
+            <PlanBadge tier={plan} />
+            {!hasPremiumScenarios && (
+              <button
+                className="text-xs text-primary hover:underline"
+                onClick={() => setShowUpgrade(true)}
+              >
+                Upgrade for all scenarios →
+              </button>
+            )}
+            {lockedCount > 0 && hasPremiumScenarios && (
               <span className="text-xs text-muted-foreground/60">
                 · Keep playing to unlock {lockedCount} more
               </span>
@@ -347,7 +371,9 @@ const Scenarios = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
           {sorted.map((scenario, i) => {
             const Icon = scenario.icon;
-            const isLocked = rankIndex(scenario.requiredRank) > currentRankIdx;
+            const isRankLocked = rankIndex(scenario.requiredRank) > currentRankIdx;
+            const isPlanLockedScenario = !isRankLocked && isPlanLocked(scenario);
+            const isLocked = isRankLocked; // rank lock = opacity treatment
             const reqStyles = RANK_STYLES[scenario.requiredRank];
 
             return (
@@ -359,6 +385,8 @@ const Scenarios = () => {
                 className={`card-elevated p-5 flex flex-col gap-4 transition-all duration-200 relative overflow-hidden ${
                   isLocked
                     ? "opacity-60 border-border/50"
+                    : isPlanLockedScenario
+                    ? "border-primary/20 bg-primary/[0.02] hover:border-primary/30 group"
                     : scenario.voiceScoringEnabled
                     ? "hover:border-emerald-500/40 border-emerald-500/10 bg-emerald-500/[0.02] group"
                     : "hover:border-primary/30 group"
@@ -376,14 +404,17 @@ const Scenarios = () => {
                 {/* Top row */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <div className={`h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0 ${isLocked ? scenario.lockedColor : scenario.color}`}>
-                      {isLocked ? <Lock className="h-4 w-4" /> : <Icon className="h-5 w-5" />}
+                    <div className={`h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0 ${isLocked ? scenario.lockedColor : isPlanLockedScenario ? "text-primary/50" : scenario.color}`}>
+                      {isLocked ? <Lock className="h-4 w-4" /> : isPlanLockedScenario ? <Lock className="h-4 w-4" /> : <Icon className="h-5 w-5" />}
                     </div>
-                    {scenario.voiceScoringEnabled && !isLocked && (
+                    {scenario.voiceScoringEnabled && !isLocked && !isPlanLockedScenario && (
                       <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
                         <Mic className="h-2.5 w-2.5" />
                         Voice
                       </span>
+                    )}
+                    {isPlanLockedScenario && (
+                      <PlanBadge tier="pro" />
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-1">
@@ -453,6 +484,15 @@ const Scenarios = () => {
                       <Lock className="h-2.5 w-2.5" />
                       {scenario.unlockCondition}
                     </div>
+                  ) : isPlanLockedScenario ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                      onClick={() => setShowUpgrade(true)}
+                    >
+                      <Lock className="h-3 w-3" /> Upgrade to Pro
+                    </Button>
                   ) : (
                     <Button
                       variant={scenario.voiceScoringEnabled ? "default" : "hero"}
@@ -490,6 +530,13 @@ const Scenarios = () => {
           </p>
         </motion.div>
       </div>
+
+      <UpgradeModal
+        open={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        highlightTier="pro"
+        reason="Unlock all scenarios including voice mode with a Pro plan."
+      />
     </div>
   );
 };
