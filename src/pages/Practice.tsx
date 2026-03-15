@@ -2146,6 +2146,18 @@ This evaluation style should subtly influence your questions and reactions. Do N
         )}
       </AnimatePresence>
 
+      {/* Voice Onboarding Modal */}
+      <VoiceOnboardingModal
+        open={showVoiceOnboarding}
+        onStart={() => {
+          setShowVoiceOnboarding(false);
+          voice.setVoiceMode(true);
+        }}
+        onDismiss={() => {
+          setShowVoiceOnboarding(false);
+        }}
+      />
+
       {/* Admin: Validation Mode Toggle (triple-tap on title area) */}
       <div
         className="fixed bottom-2 left-2 z-50"
