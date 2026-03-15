@@ -38,6 +38,7 @@ import { VoiceRecorder } from "@/components/practice/VoiceRecorder";
 import { VoiceModeBanner } from "@/components/practice/VoiceModeBanner";
 import { VoiceModeToggle } from "@/components/practice/VoiceModeToggle";
 import { VoiceCallInterface } from "@/components/practice/VoiceCallInterface";
+import { VoiceInterviewScreen } from "@/components/practice/VoiceInterviewScreen";
 import { useVoiceSession } from "@/components/practice/useVoiceSession";
 import { MicPreflight, useMicPermission } from "@/components/practice/MicPreflight";
 import { processSession, loadConsistency } from "@/components/practice/consistencyScoring";
