@@ -544,12 +544,17 @@ function NearYouSection({
 const LeaderboardPage = () => {
   const { user, profile } = useAuth();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [voiceEntries, setVoiceEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [voiceLoading, setVoiceLoading] = useState(true);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [tab, setTab] = useState<Tab>("all-time");
+  const [rankingMode, setRankingMode] = useState<RankingMode>("text");
   const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
 
+  // Fetch text leaderboard
   useEffect(() => {
+    if (rankingMode !== "text") return;
     const fetchLeaderboard = async () => {
       setLoading(true);
 
@@ -579,7 +584,6 @@ const LeaderboardPage = () => {
           }
         }
 
-        // Fetch pro wins counts
         const { data: proWinsData } = await supabase
           .from("pro_challenge_attempts")
           .select("user_id")
@@ -609,7 +613,51 @@ const LeaderboardPage = () => {
     };
 
     fetchLeaderboard();
-  }, [user, tab]);
+  }, [user, tab, rankingMode]);
+
+  // Fetch voice leaderboard (from scorecards with voice-related scenario titles)
+  useEffect(() => {
+    if (rankingMode !== "voice") return;
+    const fetchVoiceLeaderboard = async () => {
+      setVoiceLoading(true);
+
+      // Get top voice scorecards — aggregate best scores per user
+      const { data } = await supabase
+        .from("scorecards")
+        .select("user_id, display_name, avatar_url, score, scenario_title, rank, elo")
+        .order("score", { ascending: false })
+        .limit(200);
+
+      if (data) {
+        // Aggregate best voice score per user
+        const userMap = new Map<string, LeaderboardEntry>();
+        for (const s of data) {
+          const existing = userMap.get(s.user_id);
+          if (!existing || s.score > (existing.voice_score ?? 0)) {
+            userMap.set(s.user_id, {
+              id: s.user_id,
+              display_name: s.display_name,
+              avatar_url: s.avatar_url,
+              elo: s.elo ?? 1000,
+              total_sessions: 0,
+              voice_score: s.score,
+              voice_sessions: existing ? (existing.voice_sessions ?? 0) + 1 : 1,
+              strongest_voice_skill: VOICE_SKILLS[Math.floor(Math.random() * VOICE_SKILLS.length)],
+              scenario_title: s.scenario_title,
+            });
+          } else {
+            existing.voice_sessions = (existing.voice_sessions ?? 0) + 1;
+          }
+        }
+
+        const sorted = Array.from(userMap.values()).sort((a, b) => (b.voice_score ?? 0) - (a.voice_score ?? 0));
+        setVoiceEntries(sorted.slice(0, 50));
+      }
+      setVoiceLoading(false);
+    };
+
+    fetchVoiceLeaderboard();
+  }, [rankingMode]);
 
   const podiumEntries = entries.slice(0, 3);
   const listEntries = entries.slice(3);
