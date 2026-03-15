@@ -24,6 +24,7 @@ import {
 } from "@/components/practice/promotionSeries";
 import FlashChallengeBanner from "@/components/scenarios/FlashChallengeBanner";
 import { useTopReps, TopRepBadge } from "@/components/scenarios/TopRepSystem";
+import { PERSONALITIES, type InterviewerPersonality } from "@/components/practice/interviewerPersonality";
 
 interface Scenario {
   id: string;
@@ -210,6 +211,7 @@ const Scenarios = () => {
   const [chainProgressMap, setChainProgressMap] = useState<Record<string, ChainProgress>>({});
   const [seriesEligibility, setSeriesEligibility] = useState<SeriesEligibility | null>(null);
   const [completedSeries, setCompletedSeries] = useState<PromotionSeries | null>(null);
+  const [selectedPersonality, setSelectedPersonality] = useState<InterviewerPersonality>("neutral");
   const { profile, user } = useAuth();
   const userElo = profile?.elo ?? 1000;
   const userRank = getEloRank(userElo);
@@ -311,9 +313,43 @@ const Scenarios = () => {
                   progress={chainProgressMap[chain.id] ?? null}
                   userRank={userRank}
                   onReset={handleResetChain}
+                  personality={selectedPersonality}
                 />
               </motion.div>
             ))}
+          </div>
+        </div>
+
+        {/* Personality Selector */}
+        <div className="max-w-5xl mx-auto mb-8">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            Interviewer Personality
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {PERSONALITIES.map((p) => {
+              const isSelected = selectedPersonality === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => setSelectedPersonality(p.id)}
+                  className={`rounded-xl border p-3 text-left transition-all duration-200 cursor-pointer ${
+                    isSelected
+                      ? "border-primary/60 bg-primary/5 shadow-[0_0_16px_hsl(var(--primary)/0.08)]"
+                      : "border-border bg-card hover:border-border/80"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-base">{p.icon}</span>
+                    <span className={`text-xs font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
+                      {p.label}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    {p.description}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -466,7 +502,7 @@ const Scenarios = () => {
                       className="w-full h-9 text-xs gap-1.5 group-hover:gap-2.5 transition-all"
                       asChild
                     >
-                      <a href={`/practice?env=${scenario.env}&role=${scenario.role}&topRep=${topReps.get(`${scenario.env}:${scenario.role}`)?.score ?? ""}`}>
+                      <a href={`/practice?env=${scenario.env}&role=${scenario.role}&personality=${selectedPersonality}&topRep=${topReps.get(`${scenario.env}:${scenario.role}`)?.score ?? ""}`}>
                         {topReps.has(`${scenario.env}:${scenario.role}`) ? "Beat the Top Rep" : "Start Challenge"} <ArrowRight className="h-3.5 w-3.5" />
                       </a>
                     </Button>

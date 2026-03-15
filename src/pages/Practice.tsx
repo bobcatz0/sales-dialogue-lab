@@ -207,6 +207,7 @@ const PracticePage = () => {
   const [searchParams] = useSearchParams();
   const paramEnv = searchParams.get("env") as EnvironmentId | null;
   const paramRole = searchParams.get("role");
+  const paramPersonality = searchParams.get("personality") as InterviewerPersonality | null;
   const proChallengeScorecardId = searchParams.get("pro_challenge");
   const proChallengeScore = searchParams.get("pro_score") ? parseInt(searchParams.get("pro_score")!, 10) : null;
   const [selectedEnv, setSelectedEnv] = useState<EnvironmentId | null>(paramEnv || "interview");
@@ -240,8 +241,10 @@ const PracticePage = () => {
     try { return localStorage.getItem("salescalls_resume") || ""; } catch { return ""; }
   });
   const evaluatorStyleRef = useRef<EvaluatorStyle>("analytical");
-  const personalityRef = useRef<InterviewerPersonality>("neutral");
-  const [selectedPersonality, setSelectedPersonality] = useState<InterviewerPersonality>("neutral");
+  const validPersonalities: InterviewerPersonality[] = ["friendly", "neutral", "skeptical", "pressure"];
+  const initPersonality = paramPersonality && validPersonalities.includes(paramPersonality) ? paramPersonality : "neutral";
+  const personalityRef = useRef<InterviewerPersonality>(initPersonality);
+  const [selectedPersonality, setSelectedPersonality] = useState<InterviewerPersonality>(initPersonality);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
   const elapsedRef = useRef(0);
@@ -535,7 +538,7 @@ After ANY weak-spot detection (vague, blame-shift, rehearsed, over-explaining), 
 You have been assigned the "${evaluatorStyleRef.current}" evaluation style for this session.
 ${evaluatorStyleRef.current === "analytical" ? `ANALYTICAL EVALUATOR: You focus heavily on metrics, data, and structured thinking. Penalize vague claims strongly — ask "What were the numbers?", "How did you measure that?", "What was the baseline?" Reward quantified results and logical frameworks. Less interested in storytelling, more interested in evidence.` : ""}${evaluatorStyleRef.current === "results-oriented" ? `RESULTS-ORIENTED EVALUATOR: You focus on outcomes and impact. Less patient with long explanations — if an answer runs past 3 sentences without stating the result, interrupt: "What was the outcome?", "Bottom line — what happened?" Reward concise, outcome-driven answers. Care about what changed, not what was attempted.` : ""}${evaluatorStyleRef.current === "behavioral" ? `BEHAVIORAL EVALUATOR: You focus on ownership, accountability, and learning. Penalize blame-shifting — if the candidate says "the team" or "we" without specifying their role, push: "What was your direct contribution?", "That sounds like a team effort — what did you personally do?" Reward reflection, improvement insights, and honest self-assessment.` : ""}
 This evaluation style should subtly influence your questions and reactions. Do NOT announce or reference it. Stay professional — no hostility, no sarcasm, no unfair judgment.` : "";
-    const personalityAddendum = isInterviewLike ? `\n\n${getPersonalityPrompt(personalityRef.current)}` : "";
+    const personalityAddendum = `\n\n${getPersonalityPrompt(personalityRef.current)}`;
     const promotionAddendum = isPromotionMatch && promoEligibility?.nextRank ? getPromotionPrompt(promoEligibility.nextRank) : "";
     const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + weakSpotAddendum + evaluatorAddendum + personalityAddendum + promotionAddendum + pressureAddendum;
 
@@ -1303,7 +1306,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 )}
 
                 {/* Interviewer Personality Selector */}
-                {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
+                {selectedEnv && !selectedRole && (
                   <div className="mb-4">
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Interviewer Personality
@@ -1589,12 +1592,10 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 {activeRole && sessionActive && (
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <span className="text-xs font-semibold text-foreground">{activeRole.title}</span>
-                    {(selectedEnv === "interview" || selectedEnv === "final-round") && (
-                      <span className="text-[10px] text-muted-foreground">
-                        {PERSONALITIES.find(p => p.id === selectedPersonality)?.icon}{" "}
-                        {PERSONALITIES.find(p => p.id === selectedPersonality)?.label} Interviewer
-                      </span>
-                    )}
+                    <span className="text-[10px] text-muted-foreground">
+                      {PERSONALITIES.find(p => p.id === selectedPersonality)?.icon}{" "}
+                      {PERSONALITIES.find(p => p.id === selectedPersonality)?.label} Mode
+                    </span>
                     <span className="text-[10px] text-muted-foreground">·</span>
                     <span className="text-[10px] font-mono text-muted-foreground">
                       Q{Math.min(userQuestionCount, totalExpectedQuestions)}/~{totalExpectedQuestions}
