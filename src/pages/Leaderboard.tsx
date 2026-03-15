@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, LogIn, Flame, ShieldCheck, Shield, TrendingUp, TrendingDown, Minus, Target, Swords, ChevronUp } from "lucide-react";
+import { Trophy, Crown, Medal, LogIn, Flame, ShieldCheck, Shield, TrendingUp, TrendingDown, Minus, Target, Swords, ChevronUp, Mic, MessageSquare, BarChart3 } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Link } from "react-router-dom";
 import { EditableProfile } from "@/components/EditableProfile";
@@ -28,6 +28,11 @@ interface LeaderboardEntry {
   clan_name?: string;
   current_streak?: number;
   pro_wins?: number;
+  // Voice-specific fields
+  voice_score?: number;
+  voice_sessions?: number;
+  strongest_voice_skill?: string;
+  scenario_title?: string;
 }
 
 interface ClanMemberInfo {
@@ -80,6 +85,186 @@ function MovementIndicator({ gain }: { gain: number }) {
 }
 
 type Tab = "all-time" | "weekly";
+type RankingMode = "text" | "voice" | "overall";
+
+const VOICE_SKILLS = ["Clarity", "Confidence", "Pace", "Conciseness", "Response Quality", "Verbal Readiness"];
+
+// ── Voice Leaderboard Table ──
+function VoiceLeaderboardTable({
+  entries,
+  userId,
+  loading,
+}: {
+  entries: LeaderboardEntry[];
+  userId?: string;
+  loading: boolean;
+}) {
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-sm text-muted-foreground">Loading voice rankings…</p>
+      </div>
+    );
+  }
+
+  if (entries.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center py-16 space-y-4"
+      >
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/10 mb-2">
+          <Mic className="h-8 w-8 text-primary" />
+        </div>
+        <h3 className="text-lg font-bold text-foreground">Voice Rankings Coming Soon</h3>
+        <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+          Complete voice sessions to appear on this leaderboard.{" "}
+          <Link to="/scenarios" className="text-primary hover:underline">Try a voice drill</Link>
+        </p>
+      </motion.div>
+    );
+  }
+
+  const podiumEntries = entries.slice(0, 3);
+  const listEntries = entries.slice(3);
+
+  return (
+    <div className="space-y-6">
+      {/* Podium */}
+      {podiumEntries.length >= 3 && (
+        <div className="flex items-end justify-center gap-4 pt-4 pb-2">
+          {([1, 0, 2] as const).map((podiumIdx) => {
+            const entry = podiumEntries[podiumIdx];
+            const position = (podiumIdx + 1) as 1 | 2 | 3;
+            const isFirst = position === 1;
+            const isCurrentUser = userId === entry.id;
+            const medalColors = {
+              1: "from-yellow-400/20 to-yellow-600/10 border-yellow-500/30",
+              2: "from-gray-300/15 to-gray-500/10 border-gray-400/30",
+              3: "from-amber-500/15 to-amber-700/10 border-amber-600/30",
+            };
+            const medalIcons = {
+              1: <Crown className="h-5 w-5 text-yellow-500" />,
+              2: <Medal className="h-4 w-4 text-gray-400" />,
+              3: <Medal className="h-4 w-4 text-amber-600" />,
+            };
+
+            return (
+              <motion.div
+                key={entry.id}
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.1 + podiumIdx * 0.08, type: "spring", stiffness: 300, damping: 20 }}
+                className={`flex flex-col items-center text-center ${isFirst ? "order-2" : position === 2 ? "order-1" : "order-3"}`}
+              >
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.25 + podiumIdx * 0.08, type: "spring", stiffness: 400 }} className="mb-2">
+                  {medalIcons[position]}
+                </motion.div>
+                <div className={`relative rounded-2xl border bg-gradient-to-b p-4 ${medalColors[position]} ${isFirst ? "w-36 pb-5" : "w-28 pb-4"} ${isCurrentUser ? "ring-2 ring-primary/40 ring-offset-2 ring-offset-background" : ""}`}>
+                  <div className="flex justify-center mb-2">
+                    <UserAvatar avatarUrl={entry.avatar_url} displayName={entry.display_name} elo={entry.elo} size={isFirst ? "lg" : "md"} showRankBadge={false} showName={false} />
+                  </div>
+                  <p className={`font-semibold text-foreground truncate ${isFirst ? "text-sm" : "text-xs"}`}>{entry.display_name}</p>
+                  <p className={`font-bold tabular-nums ${isFirst ? "text-xl" : "text-lg"} font-heading text-foreground mt-1`}>{entry.voice_score ?? 0}</p>
+                  <div className="flex items-center justify-center gap-1 mt-0.5">
+                    <Mic className="h-2.5 w-2.5 text-primary" />
+                    <span className="text-[10px] text-primary font-semibold">Voice Score</span>
+                  </div>
+                  {entry.strongest_voice_skill && (
+                    <span className="text-[9px] text-muted-foreground mt-0.5 block">Best: {entry.strongest_voice_skill}</span>
+                  )}
+                  {isCurrentUser && <span className="text-[9px] text-muted-foreground mt-0.5 block">(you)</span>}
+                </div>
+                <span className={`mt-2 font-bold font-heading ${isFirst ? "text-lg text-foreground" : "text-sm text-muted-foreground"}`}>#{position}</span>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Voice list */}
+      {listEntries.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card-elevated overflow-hidden">
+          <div className="grid grid-cols-[2.5rem_1fr_5rem_5.5rem_3.5rem] items-center px-4 py-2.5 border-b border-border text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <span>#</span>
+            <span>Player</span>
+            <span className="text-right">Voice Score</span>
+            <span className="text-right hidden sm:block">Best Skill</span>
+            <span className="text-right">Sessions</span>
+          </div>
+          <div className="divide-y divide-border">
+            {listEntries.map((entry, i) => {
+              const isCurrentUser = userId === entry.id;
+              return (
+                <motion.div
+                  key={entry.id}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.35 + i * 0.02 }}
+                  className={`grid grid-cols-[2.5rem_1fr_5rem_5.5rem_3.5rem] items-center px-4 py-2.5 transition-colors ${isCurrentUser ? "bg-primary/5 border-l-2 border-l-primary" : "hover:bg-muted/30"}`}
+                >
+                  <span className="text-xs font-bold text-muted-foreground tabular-nums">{i + 4}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <UserAvatar avatarUrl={entry.avatar_url} displayName={entry.display_name} elo={entry.elo} size="xs" showRankBadge={false} showName={false} />
+                    <span className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>{entry.display_name}</span>
+                    {isCurrentUser && <span className="text-[9px] text-muted-foreground shrink-0">(you)</span>}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-sm font-bold font-heading text-foreground tabular-nums">{entry.voice_score ?? 0}</span>
+                  </div>
+                  <div className="text-right hidden sm:block">
+                    {entry.strongest_voice_skill ? (
+                      <span className="text-[10px] font-semibold text-primary">{entry.strongest_voice_skill}</span>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground/30">—</span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs text-muted-foreground tabular-nums">{entry.voice_sessions ?? 0}</span>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+// ── Overall placeholder ──
+function OverallLeaderboardPlaceholder() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="text-center py-16 space-y-4"
+    >
+      <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/10 mb-2">
+        <BarChart3 className="h-8 w-8 text-primary" />
+      </div>
+      <h3 className="text-lg font-bold text-foreground">Overall Rankings</h3>
+      <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+        Combined text + voice rankings will be available after Phase 1. Keep practicing in both modes to get ahead.
+      </p>
+      <div className="flex items-center justify-center gap-3 pt-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/practice" className="gap-2">
+            <MessageSquare className="h-3.5 w-3.5" />
+            Text Practice
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/scenarios" className="gap-2">
+            <Mic className="h-3.5 w-3.5" />
+            Voice Drills
+          </Link>
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
 
 // Podium card for top 3
 function PodiumCard({
