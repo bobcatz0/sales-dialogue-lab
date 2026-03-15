@@ -1982,7 +1982,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         voiceMetrics={voice.getSessionVoiceMetrics()!}
                         baseScore={feedback.score}
                         voiceScoreAdjustment={voice.getVoiceScoreAdjustment()}
-                        transcript={messages.filter((m) => m.role === "user").map((m) => m.content).join("\n\n")}
+                        transcript={messages.filter((m) => m.role === "user").map((m) => m.text).join("\n\n")}
                         scenarioRole={selectedRole ?? undefined}
                         onRetry={() => {
                           markFirstSessionRetried();
