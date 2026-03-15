@@ -36,6 +36,14 @@ export interface DailyChallenge {
   successLabel: string;
   /** Serialisable key for the success condition */
   conditionKey: string;
+  /** Estimated session length shown to the user */
+  estimatedTime: string;
+  /** Whether this challenge suits complete beginners */
+  beginnerFriendly: boolean;
+  /** Representative community average score (shown before user has attempts) */
+  avgBenchmark: number;
+  /** Representative community top score (shown before user has attempts) */
+  topBenchmark: number;
 }
 
 interface StoredChallenge {
@@ -51,6 +59,10 @@ interface ChallengeTemplate {
   skillFocus: SkillFocus;
   successLabel: string;
   conditionKey: string;
+  estimatedTime: string;
+  beginnerFriendly: boolean;
+  avgBenchmark: number;
+  topBenchmark: number;
 }
 
 const TEMPLATES: ChallengeTemplate[] = [
@@ -59,15 +71,23 @@ const TEMPLATES: ChallengeTemplate[] = [
     environmentId: "cold-call",
     personaId: "gatekeeper",
     skillFocus: "Call Opening",
-    successLabel: "Earn permission in under 3 turns",
+    successLabel: "Earn permission and score 60+",
     conditionKey: "score_60",
+    estimatedTime: "4–6 min",
+    beginnerFriendly: true,
+    avgBenchmark: 58,
+    topBenchmark: 79,
   },
   {
     environmentId: "cold-call",
     personaId: "gatekeeper",
     skillFocus: "Clarity Under Pressure",
-    successLabel: "Score 65+",
+    successLabel: "Stay clear and confident, score 65+",
     conditionKey: "score_65",
+    estimatedTime: "5–7 min",
+    beginnerFriendly: true,
+    avgBenchmark: 62,
+    topBenchmark: 83,
   },
   {
     environmentId: "cold-call",
@@ -75,43 +95,67 @@ const TEMPLATES: ChallengeTemplate[] = [
     skillFocus: "Securing Next Step",
     successLabel: "Ask for a next step and score 60+",
     conditionKey: "score_60",
+    estimatedTime: "5–8 min",
+    beginnerFriendly: true,
+    avgBenchmark: 60,
+    topBenchmark: 81,
   },
   {
     environmentId: "cold-call",
     personaId: "b2b-prospect",
     skillFocus: "Permission-Based Language",
-    successLabel: "Score 70+",
+    successLabel: "Score 70+ with clean permission framing",
     conditionKey: "score_70",
+    estimatedTime: "5–8 min",
+    beginnerFriendly: false,
+    avgBenchmark: 65,
+    topBenchmark: 88,
   },
   // Interview
   {
     environmentId: "interview",
     personaId: "hiring-manager",
     skillFocus: "Storytelling",
-    successLabel: "Score 70+",
+    successLabel: "Tell a compelling story and score 70+",
     conditionKey: "score_70",
+    estimatedTime: "8–12 min",
+    beginnerFriendly: true,
+    avgBenchmark: 67,
+    topBenchmark: 89,
   },
   {
     environmentId: "interview",
     personaId: "hiring-manager",
     skillFocus: "Clarity Under Pressure",
-    successLabel: "Reach difficulty Level 2",
+    successLabel: "Defend your answers under direct follow-up pressure",
     conditionKey: "difficulty_2",
+    estimatedTime: "10–14 min",
+    beginnerFriendly: false,
+    avgBenchmark: 65,
+    topBenchmark: 86,
   },
   // Enterprise
   {
     environmentId: "enterprise",
     personaId: "technical-evaluator",
     skillFocus: "Objection Handling",
-    successLabel: "Score 65+ against evaluator",
+    successLabel: "Score 65+ against a skeptical evaluator",
     conditionKey: "score_65",
+    estimatedTime: "10–15 min",
+    beginnerFriendly: false,
+    avgBenchmark: 63,
+    topBenchmark: 85,
   },
   {
     environmentId: "enterprise",
     personaId: "technical-evaluator",
     skillFocus: "Executive Framing",
-    successLabel: "Reach difficulty Level 3",
+    successLabel: "Drive the evaluation forward with precise framing",
     conditionKey: "difficulty_3",
+    estimatedTime: "12–18 min",
+    beginnerFriendly: false,
+    avgBenchmark: 61,
+    topBenchmark: 90,
   },
   {
     environmentId: "enterprise",
@@ -119,13 +163,21 @@ const TEMPLATES: ChallengeTemplate[] = [
     skillFocus: "Securing Next Step",
     successLabel: "Land a hard close win",
     conditionKey: "hard_close",
+    estimatedTime: "8–12 min",
+    beginnerFriendly: false,
+    avgBenchmark: 59,
+    topBenchmark: 87,
   },
   {
     environmentId: "enterprise",
     personaId: "champion",
     skillFocus: "Objection Handling",
-    successLabel: "Score 70+",
+    successLabel: "Handle objections cleanly and score 70+",
     conditionKey: "score_70",
+    estimatedTime: "8–12 min",
+    beginnerFriendly: false,
+    avgBenchmark: 64,
+    topBenchmark: 88,
   },
 ];
 

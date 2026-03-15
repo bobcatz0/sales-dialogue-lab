@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Flame, ArrowRight, Calendar, RotateCcw } from "lucide-react";
+import { Trophy, Flame, ArrowRight, Calendar, RotateCcw, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { loadConsistency, type ConsistencyData } from "@/components/practice/consistencyScoring";
 import { loadHistory } from "@/components/practice/sessionStorage";
@@ -15,6 +15,10 @@ export function LeaderboardWidget() {
   const [challengeRecord, setChallengeRecord] = useState<ChallengeScoreRecord | null>(null);
   const [challengeTitle, setChallengeTitle] = useState<string>("");
   const [challengeSkillFocus, setChallengeSkillFocus] = useState<string>("");
+  const [challengeTime, setChallengeTime] = useState<string>("");
+  const [challengeBeginner, setChallengeGbeginner] = useState<boolean>(false);
+  const [challengeAvgBenchmark, setChallengeAvgBenchmark] = useState<number>(0);
+  const [challengeTopBenchmark, setChallengeTopBenchmark] = useState<number>(0);
 
   useEffect(() => {
     setConsistency(loadConsistency());
@@ -22,6 +26,10 @@ export function LeaderboardWidget() {
     const { challenge } = getTodayChallenge();
     setChallengeTitle(challenge.skillFocus);
     setChallengeSkillFocus(challenge.successLabel);
+    setChallengeTime(challenge.estimatedTime);
+    setChallengeGbeginner(challenge.beginnerFriendly);
+    setChallengeAvgBenchmark(challenge.avgBenchmark);
+    setChallengeTopBenchmark(challenge.topBenchmark);
     setChallengeRecord(getChallengeRecord(getTodayChallengeId()));
   }, []);
 
@@ -99,6 +107,22 @@ export function LeaderboardWidget() {
               <p className="text-[11px] text-muted-foreground mt-0.5">{challengeSkillFocus}</p>
             </div>
 
+            {/* Metadata row */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {challengeTime && (
+                <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <Clock className="h-3 w-3" />
+                  {challengeTime}
+                </span>
+              )}
+              {challengeBeginner && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                  <Sparkles className="h-2.5 w-2.5" />
+                  Beginner Friendly
+                </span>
+              )}
+            </div>
+
             {challengeRecord && challengeRecord.attempts.length > 0 ? (
               <div className="flex items-center gap-4">
                 <div className="text-center">
@@ -124,12 +148,23 @@ export function LeaderboardWidget() {
                 </div>
               </div>
             ) : (
-              <a
-                href="/practice"
-                className="flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                Start today's challenge <ArrowRight className="h-3 w-3" />
-              </a>
+              <>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] text-muted-foreground">
+                    Avg <span className="font-semibold text-foreground">{challengeAvgBenchmark}</span>
+                  </span>
+                  <span className="text-muted-foreground/30 text-[10px]">·</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Top <span className="font-semibold text-foreground">{challengeTopBenchmark}</span>
+                  </span>
+                </div>
+                <a
+                  href="/practice"
+                  className="flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                  Start today's challenge <ArrowRight className="h-3 w-3" />
+                </a>
+              </>
             )}
           </div>
 

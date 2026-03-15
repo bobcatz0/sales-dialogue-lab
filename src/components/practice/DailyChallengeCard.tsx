@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Check, ArrowRight, RotateCcw } from "lucide-react";
+import { Calendar, Check, ArrowRight, RotateCcw, Clock, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getTodayChallenge, getTodayChallengeId } from "./dailyChallenge";
 import { getChallengeRecord } from "@/lib/challengeScores";
@@ -58,8 +58,22 @@ export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
         </p>
       </div>
 
-      {/* Attempt stats — only shown after at least one attempt */}
-      {hasAttempts && (
+      {/* Challenge metadata */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+          <Clock className="h-3 w-3" />
+          {challenge.estimatedTime}
+        </span>
+        {challenge.beginnerFriendly && (
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+            <Sparkles className="h-2.5 w-2.5" />
+            Beginner Friendly
+          </span>
+        )}
+      </div>
+
+      {/* Score stats — personal attempts if available, else benchmark */}
+      {hasAttempts ? (
         <div className="flex items-center gap-3 pt-0.5">
           <span className="text-[10px] text-muted-foreground">
             Avg <span className="font-semibold text-foreground">{record.avgScore}</span>
@@ -72,6 +86,16 @@ export function DailyChallengeCard({ onStart }: DailyChallengeCardProps) {
           <span className="text-[10px] text-muted-foreground">
             <span className="font-semibold text-foreground">{record.attempts.length}</span>{" "}
             {record.attempts.length === 1 ? "attempt" : "attempts"}
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3 pt-0.5">
+          <span className="text-[10px] text-muted-foreground">
+            Avg <span className="font-semibold text-foreground">{challenge.avgBenchmark}</span>
+          </span>
+          <span className="text-muted-foreground/30 text-[10px]">·</span>
+          <span className="text-[10px] text-muted-foreground">
+            Top <span className="font-semibold text-foreground">{challenge.topBenchmark}</span>
           </span>
         </div>
       )}
