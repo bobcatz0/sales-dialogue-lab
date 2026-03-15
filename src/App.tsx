@@ -30,6 +30,7 @@ import Certification from "./pages/Certification";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import Assessment from "./pages/Assessment";
 import Campaigns from "./pages/Campaigns";
+import Pricing from "./pages/Pricing";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { WeeklyChampionCelebration } from "./components/clans/WeeklyChampionCelebration";
 import { useRankThresholds } from "./hooks/useRankThresholds";
