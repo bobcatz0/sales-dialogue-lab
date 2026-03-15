@@ -4,7 +4,7 @@ import {
   Star, TrendingUp, TrendingDown, Target, RotateCcw, Play, Quote, Gauge,
   Download, Compass, FileText, CheckCircle2, XCircle, AlertTriangle,
   ShieldCheck, Mic, BarChart3, Trophy, ArrowUp, Lightbulb, Flame, Snowflake,
-  Users
+  Users, Swords
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
