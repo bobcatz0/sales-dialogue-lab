@@ -1185,15 +1185,89 @@ This evaluation style should subtly influence your questions and reactions. Do N
               <div className="mb-4 space-y-2">
                 <VoiceModeToggle
                   mode={voice.voiceMode ? "voice" : "text"}
-                  onToggle={(m) => voice.setVoiceMode(m === "voice")}
+                  onToggle={(m) => {
+                    if (m === "voice" && !hasSeenVoiceOnboarding()) {
+                      setShowVoiceOnboarding(true);
+                      return;
+                    }
+                    voice.setVoiceMode(m === "voice");
+                    setShowVoiceMicDenied(false);
+                  }}
                 />
-                {voice.voiceMode && (
+                {voice.voiceMode && !showVoiceMicDenied && (
                   <MicPreflight
                     status={mic.status}
                     onRequestMic={mic.requestMic}
                     deviceDetected={mic.deviceDetected}
                     permissionState={mic.permissionState}
                   />
+                )}
+                {/* Mic denied fallback for voice mode */}
+                {voice.voiceMode && (mic.status === "blocked" || mic.status === "no-device") && (
+                  <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3 space-y-2">
+                    <p className="text-xs text-foreground font-medium">
+                      Microphone access is off.
+                    </p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">
+                      Enable it in your browser settings or switch to Text Mode.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs gap-1.5"
+                        onClick={mic.requestMic}
+                      >
+                        <Mic className="h-3 w-3" />
+                        Retry
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          voice.setVoiceMode(false);
+                          setShowVoiceMicDenied(false);
+                        }}
+                      >
+                        Switch to Text Mode
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {/* Starter scenarios for first-time voice users */}
+                {voice.voiceMode && mic.status === "allowed" && !hasSeenVoiceOnboarding() === false && (
+                  (() => {
+                    const voiceSessionCount = parseInt(localStorage.getItem("salescalls_voice_sessions") || "0", 10);
+                    if (voiceSessionCount > 0) return null;
+                    const starterIds = ["voice-cold-call-opener", "voice-send-email", "voice-interview-pressure"];
+                    const starters = VOICE_SCENARIOS.filter(s => starterIds.includes(s.id));
+                    return (
+                      <div className="space-y-1.5">
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          Recommended Starters
+                        </p>
+                        {starters.map(s => (
+                          <a
+                            key={s.id}
+                            href={`/practice?env=${s.env}&role=${s.role}&voiceMode=true&voicePrompt=${encodeURIComponent(s.prompt)}&personality=${selectedPersonality}`}
+                            className="block rounded-lg border border-border hover:border-primary/30 bg-muted/20 p-2.5 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <s.icon className="h-3.5 w-3.5 text-primary shrink-0" />
+                              <span className="text-xs font-semibold text-foreground">{s.title}</span>
+                              <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-[16px] ml-auto">
+                                {s.difficulty}
+                              </Badge>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed pl-5.5">
+                              {s.goal}
+                            </p>
+                          </a>
+                        ))}
+                      </div>
+                    );
+                  })()
                 )}
               </div>
             )}
