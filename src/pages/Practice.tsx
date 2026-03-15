@@ -89,6 +89,7 @@ import {
 } from "@/components/practice/signalCapture";
 import { processPromoSession, loadPromoSeries, type PromoSeriesState } from "@/components/practice/promotionSeries";
 import { pushActivityEvent } from "@/components/practice/activityFeed";
+import { buildPersonalityPrompt, PERSONALITIES, type Personality } from "@/components/practice/interviewerPersonality";
 
 // --- Streaming ---
 
@@ -212,6 +213,7 @@ const PracticePage = () => {
   const [showTextModeFallback, setShowTextModeFallback] = useState(false);
   const [coldCallTextMode, setColdCallTextMode] = useState(false);
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
+  const [personality, setPersonality] = useState<Personality>("neutral");
    const timer = useCallTimer(sessionActive);
   const voice = useVoiceSession();
   const mic = useMicPermission();
@@ -447,7 +449,8 @@ After ANY weak-spot detection (vague, blame-shift, rehearsed, over-explaining), 
 You have been assigned the "${evaluatorStyleRef.current}" evaluation style for this session.
 ${evaluatorStyleRef.current === "analytical" ? `ANALYTICAL EVALUATOR: You focus heavily on metrics, data, and structured thinking. Penalize vague claims strongly — ask "What were the numbers?", "How did you measure that?", "What was the baseline?" Reward quantified results and logical frameworks. Less interested in storytelling, more interested in evidence.` : ""}${evaluatorStyleRef.current === "results-oriented" ? `RESULTS-ORIENTED EVALUATOR: You focus on outcomes and impact. Less patient with long explanations — if an answer runs past 3 sentences without stating the result, interrupt: "What was the outcome?", "Bottom line — what happened?" Reward concise, outcome-driven answers. Care about what changed, not what was attempted.` : ""}${evaluatorStyleRef.current === "behavioral" ? `BEHAVIORAL EVALUATOR: You focus on ownership, accountability, and learning. Penalize blame-shifting — if the candidate says "the team" or "we" without specifying their role, push: "What was your direct contribution?", "That sounds like a team effort — what did you personally do?" Reward reflection, improvement insights, and honest self-assessment.` : ""}
 This evaluation style should subtly influence your questions and reactions. Do NOT announce or reference it. Stay professional — no hostility, no sarcasm, no unfair judgment.` : "";
-    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + weakSpotAddendum + evaluatorAddendum + pressureAddendum;
+    const personalityAddendum = buildPersonalityPrompt(personality);
+    const fullSystemPrompt = activeRole.systemPrompt + envAddendum + sdrAddendum + resumeAddendum + weakSpotAddendum + evaluatorAddendum + pressureAddendum + personalityAddendum;
 
     let prospectText = "";
 
@@ -499,7 +502,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
       toast.error("Session interruption detected. Please retry.", { duration: 3000 });
       setIsLoading(false);
     }
-  }, [activeRole, isLoading, messages, timer.elapsed, activeEnv, selectedEnv, resumeHighlights, activeSDRRound, voice]);
+  }, [activeRole, isLoading, messages, timer.elapsed, activeEnv, selectedEnv, resumeHighlights, activeSDRRound, voice, personality]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -924,6 +927,36 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 <p className="text-[9px] text-muted-foreground mt-1">
                   Questions will be personalized to your background. Leave blank for standard questions.
                 </p>
+              </div>
+            )}
+
+            {/* Interviewer Personality — all environments, before persona selection */}
+            {selectedEnv !== null && !selectedRole && (
+              <div className="mb-4">
+                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
+                  Interviewer Personality
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {PERSONALITIES.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setPersonality(p.id)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+                        personality === p.id
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted/40 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+                      }`}
+                      title={p.description}
+                    >
+                      {p.shortLabel}
+                    </button>
+                  ))}
+                </div>
+                {personality !== "neutral" && (
+                  <p className="text-[9px] text-muted-foreground mt-1.5 leading-relaxed">
+                    {PERSONALITIES.find((p) => p.id === personality)?.description}
+                  </p>
+                )}
               </div>
             )}
 
