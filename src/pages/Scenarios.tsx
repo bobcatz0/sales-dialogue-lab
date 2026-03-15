@@ -294,6 +294,83 @@ const Scenarios = () => {
           <FlashChallengeBanner />
         </div>
 
+        {/* Voice Scenarios */}
+        <div className="max-w-5xl mx-auto mb-14">
+          <div className="flex items-center gap-2 mb-6">
+            <Volume2 className="h-4 w-4 text-primary" />
+            <h2 className="font-heading text-xl font-bold text-foreground">Voice Scenarios</h2>
+            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-semibold">VOICE</span>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5 max-w-xl">
+            Short, replayable scenarios where tone and delivery matter. Scored on vocal performance.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {VOICE_SCENARIOS.map((vs, i) => {
+              const Icon = vs.icon;
+              const diffCfg = DIFFICULTY_CONFIG[vs.difficulty];
+              return (
+                <motion.div
+                  key={vs.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: i * 0.06 }}
+                  className="group relative rounded-xl border border-border bg-card overflow-hidden hover:border-emerald-500/40 hover:shadow-[0_0_30px_-10px_hsl(160_60%_45%/0.15)] transition-all duration-300"
+                >
+                  <div className="h-0.5 bg-gradient-to-r from-emerald-500/60 via-emerald-400 to-emerald-500/60" />
+                  <div className="p-5 flex flex-col gap-3">
+                    <div className="flex items-start justify-between">
+                      <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                        <Icon className="h-4.5 w-4.5 text-emerald-400" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Mic className="h-3 w-3 text-emerald-400" />
+                        <DifficultyBars difficulty={vs.difficulty} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="font-heading text-base font-bold text-foreground leading-tight group-hover:text-emerald-400 transition-colors">
+                        {vs.title}
+                      </h3>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{vs.subtitle}</p>
+                    </div>
+
+                    <div className="px-3 py-2 rounded-lg bg-muted/40 border border-border/50">
+                      <p className="text-xs text-foreground italic leading-relaxed">"{vs.prompt.split(': "')[1]?.replace('"', '') || vs.prompt}"</p>
+                    </div>
+
+                    <div className="px-3 py-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                      <p className="text-[10px] uppercase tracking-wider font-semibold text-emerald-400 mb-0.5">Goal</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{vs.goal}</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1">
+                      {vs.scoredOn.map((s) => (
+                        <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/15 text-emerald-400">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+
+                    <p className="text-[11px] text-muted-foreground/50">{vs.difficulty} • {vs.duration}</p>
+
+                    <Button
+                      variant="hero"
+                      size="sm"
+                      className="w-full h-9 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-500 border-emerald-500/30"
+                      asChild
+                    >
+                      <a href={`/practice?env=${vs.env}&role=${vs.role}&voiceMode=true&voicePrompt=${encodeURIComponent(vs.prompt)}&personality=${selectedPersonality}`}>
+                        <Mic className="h-3 w-3" /> Start Voice Drill <ArrowRight className="h-3 w-3" />
+                      </a>
+                    </Button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Scenario Chains */}
         <div className="max-w-5xl mx-auto mb-14">
           <div className="flex items-center gap-2 mb-6">
