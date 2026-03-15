@@ -683,6 +683,35 @@ const LeaderboardPage = () => {
             </p>
           </div>
 
+          {/* Ranking Mode Tabs */}
+          <div className="flex items-center justify-center">
+            <div className="inline-flex items-center rounded-xl bg-muted/50 border border-border p-1 gap-1">
+              {([
+                { mode: "text" as RankingMode, label: "Text", icon: MessageSquare },
+                { mode: "voice" as RankingMode, label: "Voice", icon: Mic },
+                { mode: "overall" as RankingMode, label: "Overall", icon: BarChart3 },
+              ]).map(({ mode, label, icon: Icon }) => (
+                <button
+                  key={mode}
+                  onClick={() => setRankingMode(mode)}
+                  className={`flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                    rankingMode === mode
+                      ? "bg-background text-foreground shadow-sm border border-border"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                  {mode === "voice" && (
+                    <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                      BETA
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Season Selector */}
           <SeasonSelector
             onSeasonChange={setSelectedSeasonId}
