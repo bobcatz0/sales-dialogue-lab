@@ -25,6 +25,7 @@ import {
 import FlashChallengeBanner from "@/components/scenarios/FlashChallengeBanner";
 import { useTopReps, TopRepBadge } from "@/components/scenarios/TopRepSystem";
 import { PERSONALITIES, type InterviewerPersonality } from "@/components/practice/interviewerPersonality";
+import { VOICE_SCENARIOS } from "@/components/scenarios/voiceScenarios";
 
 interface Scenario {
   id: string;
