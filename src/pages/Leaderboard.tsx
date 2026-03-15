@@ -721,6 +721,10 @@ const LeaderboardPage = () => {
           {/* Past season archive view */}
           {selectedSeasonId ? (
             <SeasonResultsLeaderboard seasonId={selectedSeasonId} />
+          ) : rankingMode === "voice" ? (
+            <VoiceLeaderboardTable entries={voiceEntries} userId={user?.id} loading={voiceLoading} />
+          ) : rankingMode === "overall" ? (
+            <OverallLeaderboardPlaceholder />
           ) : (
           <>
           {/* User card or sign-in prompt */}
@@ -764,7 +768,6 @@ const LeaderboardPage = () => {
                     <MovementIndicator gain={entries[userRank - 1].weekly_elo_gain ?? 0} />
                   )}
                 </div>
-                {/* Past Season Badges */}
                 <PastSeasonBadges userId={user.id} />
               </div>
             </motion.div>
