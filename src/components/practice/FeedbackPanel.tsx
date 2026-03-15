@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { Feedback, SkillScore, ExposureMoment, CriticalWeakness, FinalRoundMetrics } from "./types";
 import { ShareableSummary } from "./ShareableSummary";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
+import { buildVoiceReview } from "./voiceInterviewDesign";
 import { loadHistory } from "./sessionStorage";
 import type { PromoSeriesState } from "./promotionSeries";
 
@@ -581,51 +582,133 @@ export function FeedbackPanel({
           </div>
         )}
 
-        {/* Voice Metrics — voice mode only */}
-        {voiceMetrics && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-              <Mic className="h-3 w-3 text-primary" />
-              Voice Analysis
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="text-center p-2 rounded-lg bg-muted/40 border border-border">
-                <p className="text-lg font-bold font-heading text-foreground">
-                  {voiceMetrics.fillerFrequency}
-                </p>
-                <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">Fillers/min</p>
-              </div>
-              <div className="text-center p-2 rounded-lg bg-muted/40 border border-border">
-                <p className="text-lg font-bold font-heading text-foreground">
-                  {voiceMetrics.verbalPace}
-                </p>
-                <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">Words/min</p>
-              </div>
-              <div className="text-center p-2 rounded-lg bg-muted/40 border border-border">
-                <p className="text-lg font-bold font-heading text-foreground">
-                  {voiceMetrics.responseDuration}s
-                </p>
-                <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">Total Duration</p>
-              </div>
-            </div>
-            {voiceFeedbackLines && voiceFeedbackLines.length > 0 && (
-              <div className="space-y-1">
-                {voiceFeedbackLines.map((line, i) => (
-                  <p key={i} className="text-[11px] text-muted-foreground leading-snug pl-3.5 relative before:content-['•'] before:absolute before:left-0 before:text-primary before:text-[10px]">
-                    {line}
+        {/* Voice Performance Review — voice mode only */}
+        {voiceMetrics && (() => {
+          const review = buildVoiceReview(voiceMetrics);
+          return (
+            <div className="rounded-xl border border-primary/20 bg-primary/5 overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-primary/15">
+                <div className="flex items-center gap-1.5">
+                  <Mic className="h-3.5 w-3.5 text-primary" />
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-wider">
+                    Voice Performance Review
                   </p>
-                ))}
+                </div>
+                {voiceScoreAdjustment !== undefined && voiceScoreAdjustment !== 0 && (
+                  <span className={`text-[10px] font-semibold ${voiceScoreAdjustment > 0 ? "text-primary" : "text-destructive"}`}>
+                    {voiceScoreAdjustment > 0 ? "+" : ""}{voiceScoreAdjustment} pts
+                  </span>
+                )}
               </div>
-            )}
-            {voiceScoreAdjustment !== undefined && voiceScoreAdjustment !== 0 && (
-              <p className="text-[10px] text-muted-foreground text-center">
-                Voice adjustment: <span className={`font-bold ${voiceScoreAdjustment > 0 ? "text-primary" : "text-destructive"}`}>
-                  {voiceScoreAdjustment > 0 ? "+" : ""}{voiceScoreAdjustment}
-                </span> points
-              </p>
-            )}
-          </div>
-        )}
+
+              <div className="px-4 py-3 space-y-3.5">
+                {/* Voice score */}
+                <div className="flex items-center gap-3">
+                  <motion.span
+                    initial={{ scale: 0.7, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 22, delay: 0.1 }}
+                    className="text-4xl font-bold font-heading text-primary leading-none"
+                  >
+                    {review.voiceScore}
+                  </motion.span>
+                  <div>
+                    <p className="text-[11px] font-semibold text-foreground leading-tight">Voice Score</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">Across 6 delivery categories</p>
+                    <div className="w-24 h-1 bg-muted rounded-full overflow-hidden mt-1.5">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${review.voiceScore}%` }}
+                        transition={{ duration: 0.55, ease: "easeOut", delay: 0.2 }}
+                        className={`h-full rounded-full ${getScoreBarColor(review.voiceScore)}`}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Category breakdown */}
+                <div className="space-y-2">
+                  {review.categories.map((cat, i) => {
+                    const isWeakest = cat.name === review.weakestCategory.name;
+                    const isStrongest = cat.name === review.strongestCategory.name;
+                    return (
+                      <div key={cat.name} className="space-y-0.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-[11px] ${isWeakest ? "text-amber-500/90 font-medium" : "text-muted-foreground"}`}>
+                              {cat.name}
+                            </span>
+                            {isStrongest && (
+                              <span className="text-[9px] font-semibold text-primary uppercase tracking-wider bg-primary/10 px-1 py-0.5 rounded">
+                                Best
+                              </span>
+                            )}
+                            {isWeakest && (
+                              <span className="text-[9px] font-semibold text-amber-500/80 uppercase tracking-wider bg-amber-500/10 px-1 py-0.5 rounded">
+                                Focus
+                              </span>
+                            )}
+                          </div>
+                          <span className={`text-[11px] font-medium tabular-nums ${isWeakest ? "text-amber-500/90" : "text-foreground"}`}>
+                            {cat.score}
+                          </span>
+                        </div>
+                        <div className="h-1 bg-muted rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${cat.score}%` }}
+                            transition={{ duration: 0.45, ease: "easeOut", delay: 0.15 + i * 0.07 }}
+                            className={`h-full rounded-full ${isWeakest ? "bg-amber-500/70" : getBarColor(cat.score)}`}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Strongest / Weakest summary row */}
+                <div className="grid grid-cols-2 gap-2 pt-0.5">
+                  <div className="rounded-lg p-2.5 bg-primary/8 border border-primary/15">
+                    <p className="text-[9px] font-semibold text-primary uppercase tracking-wider mb-0.5">Strongest</p>
+                    <p className="text-[11px] font-medium text-foreground">{review.strongestCategory.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{review.strongestCategory.score}/100</p>
+                  </div>
+                  <div className="rounded-lg p-2.5 bg-amber-500/8 border border-amber-500/20">
+                    <p className="text-[9px] font-semibold text-amber-500/80 uppercase tracking-wider mb-0.5">Weakest</p>
+                    <p className="text-[11px] font-medium text-foreground">{review.weakestCategory.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{review.weakestCategory.score}/100</p>
+                  </div>
+                </div>
+
+                {/* Coaching tip */}
+                <div className="flex items-start gap-2 rounded-lg p-2.5 bg-muted/50 border border-border">
+                  <Compass className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-muted-foreground leading-snug">
+                    <span className="font-semibold text-foreground">Coaching: </span>
+                    {review.coachingTip}
+                  </p>
+                </div>
+
+                {/* Raw metrics as secondary context */}
+                <div className="grid grid-cols-3 gap-1.5 pt-0.5 border-t border-border/50">
+                  <div className="text-center">
+                    <p className="text-[13px] font-bold font-heading text-foreground tabular-nums">{voiceMetrics.fillerFrequency}</p>
+                    <p className="text-[9px] text-muted-foreground leading-tight">Fillers/min</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[13px] font-bold font-heading text-foreground tabular-nums">{voiceMetrics.verbalPace}</p>
+                    <p className="text-[9px] text-muted-foreground leading-tight">Words/min</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[13px] font-bold font-heading text-foreground tabular-nums">{voiceMetrics.responseDuration}s</p>
+                    <p className="text-[9px] text-muted-foreground leading-tight">Duration</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {interview && feedback.resumeAlignment && (
           <div className="space-y-1.5">

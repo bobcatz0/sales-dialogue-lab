@@ -209,3 +209,113 @@ export function generateVoiceFeedback(metrics: VoiceMetrics): string[] {
  * for controlled beta testing.
  */
 export const VOICE_INTERVIEW_ENABLED = true;
+
+/**
+ * ============================================================
+ * VOICE PERFORMANCE REVIEW
+ * ============================================================
+ *
+ * Computes 6 voice-specific scoring categories from VoiceMetrics.
+ * Used to replace raw metric display with a structured review.
+ */
+
+export interface VoiceSkillScore {
+  name: string;
+  score: number; // 0-100
+}
+
+export interface VoiceReview {
+  voiceScore: number;
+  categories: VoiceSkillScore[];
+  strongestCategory: VoiceSkillScore;
+  weakestCategory: VoiceSkillScore;
+  coachingTip: string;
+}
+
+const VOICE_COACHING_TIPS: Record<string, string> = {
+  "Clarity": "Cut filler words (uh, um, like, basically). Pause instead of filling — silence signals command of the room.",
+  "Confidence": "Remove hedging language and hesitation fillers. Consistent pacing reads as prepared and in control.",
+  "Pace": "Target 140–170 words per minute. Rushing signals nerves; deliberately slowing down creates impact.",
+  "Conciseness": "Lead with your point, then one supporting detail. Every word should earn its place — cut verbal padding.",
+  "Response Quality": "Structure each answer: point → proof → impact. Avoid trailing off — land each response cleanly.",
+  "Verbal Readiness": "Start with one change: reduce fillers first. Once that's consistent, focus on pacing, then structure.",
+};
+
+function computeCategories(metrics: VoiceMetrics): VoiceSkillScore[] {
+  const { fillerFrequency, verbalPace, pauseLengthAvg, pauseLengthVariance } = metrics;
+
+  // Clarity — driven primarily by filler word frequency
+  const clarity = Math.max(20, Math.min(100, 100 - fillerFrequency * 10));
+
+  // Confidence — filler + erratic pauses both signal uncertainty
+  let confidence = 85;
+  if (fillerFrequency > 5) confidence -= 30;
+  else if (fillerFrequency > 2) confidence -= 15;
+  if (pauseLengthAvg > 0) {
+    if (pauseLengthVariance > 0.8) confidence -= 15;
+    else if (pauseLengthAvg > 3.0) confidence -= 20;
+  }
+  confidence = Math.max(20, Math.min(100, confidence));
+
+  // Pace — proximity to ideal 140–170 wpm SDR range
+  let pace = 50;
+  if (verbalPace > 0) {
+    if (verbalPace >= 140 && verbalPace <= 170) pace = 95;
+    else if (verbalPace >= 120 && verbalPace < 140) pace = 75;
+    else if (verbalPace > 170 && verbalPace <= 190) pace = 75;
+    else if (verbalPace >= 100 && verbalPace < 120) pace = 52;
+    else if (verbalPace > 190 && verbalPace <= 210) pace = 52;
+    else pace = 28;
+  }
+
+  // Conciseness — anti-filler + penalize rambling pace
+  let conciseness = 80;
+  if (fillerFrequency > 5) conciseness -= 25;
+  else if (fillerFrequency > 2) conciseness -= 12;
+  else if (fillerFrequency <= 1) conciseness += 10;
+  if (verbalPace > 0 && verbalPace > 200) conciseness -= 10;
+  conciseness = Math.max(20, Math.min(100, conciseness));
+
+  // Response Quality — organized delivery proxy: pace control + low filler
+  let quality = 65;
+  if (verbalPace >= 140 && verbalPace <= 170) quality += 18;
+  else if (verbalPace >= 120 && verbalPace <= 190) quality += 8;
+  if (fillerFrequency <= 1) quality += 12;
+  else if (fillerFrequency <= 2) quality += 6;
+  else if (fillerFrequency > 5) quality -= 15;
+  quality = Math.max(20, Math.min(100, quality));
+
+  // Verbal Readiness — weighted composite of all above
+  const verbalReadiness = Math.round(
+    clarity * 0.2 + confidence * 0.2 + pace * 0.2 + conciseness * 0.15 + quality * 0.25
+  );
+
+  return [
+    { name: "Clarity", score: Math.round(clarity) },
+    { name: "Confidence", score: Math.round(confidence) },
+    { name: "Pace", score: Math.round(pace) },
+    { name: "Conciseness", score: Math.round(conciseness) },
+    { name: "Response Quality", score: Math.round(quality) },
+    { name: "Verbal Readiness", score: Math.round(verbalReadiness) },
+  ];
+}
+
+/**
+ * Build a full voice performance review from session metrics.
+ * Returns scored categories, strongest/weakest areas, and a coaching tip.
+ */
+export function buildVoiceReview(metrics: VoiceMetrics): VoiceReview {
+  const categories = computeCategories(metrics);
+
+  const strongest = categories.reduce((best, c) => c.score > best.score ? c : best, categories[0]);
+  const weakest = categories.reduce((min, c) => c.score < min.score ? c : min, categories[0]);
+
+  // Overall voice score — average of the 6 categories
+  const voiceScore = Math.round(
+    categories.reduce((sum, c) => sum + c.score, 0) / categories.length
+  );
+
+  const coachingTip = VOICE_COACHING_TIPS[weakest.name] ?? VOICE_COACHING_TIPS["Verbal Readiness"];
+
+  return { voiceScore, categories, strongestCategory: strongest, weakestCategory: weakest, coachingTip };
+}
