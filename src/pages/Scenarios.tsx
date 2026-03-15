@@ -211,6 +211,7 @@ const Scenarios = () => {
   const [chainProgressMap, setChainProgressMap] = useState<Record<string, ChainProgress>>({});
   const [seriesEligibility, setSeriesEligibility] = useState<SeriesEligibility | null>(null);
   const [completedSeries, setCompletedSeries] = useState<PromotionSeries | null>(null);
+  const [selectedPersonality, setSelectedPersonality] = useState<InterviewerPersonality>("neutral");
   const { profile, user } = useAuth();
   const userElo = profile?.elo ?? 1000;
   const userRank = getEloRank(userElo);
