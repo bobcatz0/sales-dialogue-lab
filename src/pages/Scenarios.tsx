@@ -313,6 +313,7 @@ const Scenarios = () => {
                   progress={chainProgressMap[chain.id] ?? null}
                   userRank={userRank}
                   onReset={handleResetChain}
+                  personality={selectedPersonality}
                 />
               </motion.div>
             ))}
