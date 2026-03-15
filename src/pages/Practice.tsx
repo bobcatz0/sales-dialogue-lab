@@ -94,7 +94,7 @@ import { VoiceOnboardingModal, hasSeenVoiceOnboarding, markVoiceOnboarded } from
 import { VoicePostSessionScreen } from "@/components/practice/VoicePostSessionScreen";
 import { VOICE_SCENARIOS } from "@/components/scenarios/voiceScenarios";
 import { DrillMode } from "@/components/practice/DrillMode";
-import { getDrillForWeakness, type Drill } from "@/components/practice/drillData";
+import { getDrillForWeakness, DRILLS, type Drill } from "@/components/practice/drillData";
 import { qualifiesForInterviewReady, grantInterviewReady, checkStatusRevocation, checkExpiryRevocation } from "@/components/practice/interviewReadyStatus";
 import { trackDrillCompletion } from "@/components/practice/drillTracking";
 import {
