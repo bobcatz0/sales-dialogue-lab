@@ -241,8 +241,10 @@ const PracticePage = () => {
     try { return localStorage.getItem("salescalls_resume") || ""; } catch { return ""; }
   });
   const evaluatorStyleRef = useRef<EvaluatorStyle>("analytical");
-  const personalityRef = useRef<InterviewerPersonality>("neutral");
-  const [selectedPersonality, setSelectedPersonality] = useState<InterviewerPersonality>("neutral");
+  const validPersonalities: InterviewerPersonality[] = ["friendly", "neutral", "skeptical", "pressure"];
+  const initPersonality = paramPersonality && validPersonalities.includes(paramPersonality) ? paramPersonality : "neutral";
+  const personalityRef = useRef<InterviewerPersonality>(initPersonality);
+  const [selectedPersonality, setSelectedPersonality] = useState<InterviewerPersonality>(initPersonality);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
   const elapsedRef = useRef(0);
