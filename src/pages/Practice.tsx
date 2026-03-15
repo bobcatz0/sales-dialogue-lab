@@ -91,6 +91,7 @@ import {
 import { OnboardingModal } from "@/components/practice/OnboardingModal";
 import { PostSessionPrompt } from "@/components/practice/PostSessionPrompt";
 import { VoiceOnboardingModal, hasSeenVoiceOnboarding, markVoiceOnboarded } from "@/components/practice/VoiceOnboardingModal";
+import { VoicePostSessionScreen } from "@/components/practice/VoicePostSessionScreen";
 import { VOICE_SCENARIOS } from "@/components/scenarios/voiceScenarios";
 import { DrillMode } from "@/components/practice/DrillMode";
 import { getDrillForWeakness, type Drill } from "@/components/practice/drillData";
@@ -1975,6 +1976,48 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       }}
                       onDismiss={() => setActiveDrill(null)}
                     />
+                  ) : voice.voiceMode && voice.getSessionVoiceMetrics() ? (
+                    <>
+                      <VoicePostSessionScreen
+                        voiceMetrics={voice.getSessionVoiceMetrics()!}
+                        baseScore={feedback.score}
+                        voiceScoreAdjustment={voice.getVoiceScoreAdjustment()}
+                        transcript={messages.filter((m) => m.role === "user").map((m) => m.text).join("\n\n")}
+                        scenarioRole={selectedRole ?? undefined}
+                        onRetry={() => {
+                          markFirstSessionRetried();
+                          setFeedback(null);
+                          setLastPoints(null);
+                          setEloDelta(null);
+                          setLastSessionValid(false);
+                          if (selectedRole) handleStart(selectedRole);
+                        }}
+                        onNewScenario={() => {
+                          setFeedback(null);
+                          setSelectedRole(null);
+                          setSelectedEnv("interview");
+                          setMessages([]);
+                          setInput("");
+                          setLastPoints(null);
+                          setEloDelta(null);
+                          setLastSessionValid(false);
+                          setActiveSDRRound(null);
+                          setSdrProgress(loadSDRTrackProgress());
+                          setActiveDrill(null);
+                          setGhostResult(null);
+                        }}
+                        onSwitchToText={() => {
+                          voice.setVoiceMode(false);
+                          setFeedback(null);
+                          setSelectedRole(null);
+                          setMessages([]);
+                          setInput("");
+                          setLastPoints(null);
+                          setEloDelta(null);
+                          setLastSessionValid(false);
+                        }}
+                      />
+                    </>
                   ) : (
                     <>
                       <FeedbackPanel
