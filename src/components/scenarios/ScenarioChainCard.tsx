@@ -211,7 +211,7 @@ export default function ScenarioChainCard({ chain, progress, userRank, onReset, 
               className="w-full h-9 text-xs gap-1.5"
               asChild
             >
-              <a href={`/practice?env=${nextStage.env}&role=${nextStage.role}&chain=${chain.id}&stage=${nextStageIndex}`}>
+              <a href={`/practice?env=${nextStage.env}&role=${nextStage.role}&chain=${chain.id}&stage=${nextStageIndex}&personality=${personality}`}>
                 {completedStages > 0 ? "Continue Chain" : "Start Chain"} — {nextStage.title}
                 <ArrowRight className="h-3.5 w-3.5" />
               </a>
