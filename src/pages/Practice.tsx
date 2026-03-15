@@ -1592,12 +1592,10 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 {activeRole && sessionActive && (
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <span className="text-xs font-semibold text-foreground">{activeRole.title}</span>
-                    {(selectedEnv === "interview" || selectedEnv === "final-round") && (
-                      <span className="text-[10px] text-muted-foreground">
-                        {PERSONALITIES.find(p => p.id === selectedPersonality)?.icon}{" "}
-                        {PERSONALITIES.find(p => p.id === selectedPersonality)?.label} Interviewer
-                      </span>
-                    )}
+                    <span className="text-[10px] text-muted-foreground">
+                      {PERSONALITIES.find(p => p.id === selectedPersonality)?.icon}{" "}
+                      {PERSONALITIES.find(p => p.id === selectedPersonality)?.label} Mode
+                    </span>
                     <span className="text-[10px] text-muted-foreground">·</span>
                     <span className="text-[10px] font-mono text-muted-foreground">
                       Q{Math.min(userQuestionCount, totalExpectedQuestions)}/~{totalExpectedQuestions}
