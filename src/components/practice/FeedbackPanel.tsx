@@ -19,6 +19,7 @@ import { AnimatedScore } from "./AnimatedScore";
 import { RetryLoopPanel } from "./RetryLoopPanel";
 import { ReplayImprovementPanel } from "./ReplayImprovementPanel";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
+import { VoiceResultsPanel } from "./VoiceResultsPanel";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
 import { SkillXpSummary } from "./SkillXpSummary";
