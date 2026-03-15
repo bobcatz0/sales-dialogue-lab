@@ -19,6 +19,7 @@ import { AnimatedScore } from "./AnimatedScore";
 import { RetryLoopPanel } from "./RetryLoopPanel";
 import { ReplayImprovementPanel } from "./ReplayImprovementPanel";
 import type { VoiceMetrics } from "./voiceInterviewDesign";
+import { VoiceResultsPanel } from "./VoiceResultsPanel";
 import { updateProgress } from "./skillProgress";
 import { RubricScoresSection, AnswerComparisonSection } from "./FrameworkFeedback";
 import { SkillXpSummary } from "./SkillXpSummary";
@@ -581,40 +582,13 @@ export function FeedbackPanel({
           </div>
         )}
 
-        {/* Voice Metrics */}
+        {/* Voice Performance Review */}
         {voiceMetrics && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-              <Mic className="h-3 w-3 text-primary" />
-              Voice Analysis
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { val: voiceMetrics.fillerFrequency, label: "Fillers/min" },
-                { val: voiceMetrics.verbalPace, label: "Words/min" },
-                { val: `${voiceMetrics.responseDuration}s`, label: "Total Duration" },
-              ].map((m) => (
-                <div key={m.label} className="text-center p-2 rounded-lg bg-muted/40 border border-border">
-                  <p className="text-lg font-bold font-heading text-foreground">{m.val}</p>
-                  <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">{m.label}</p>
-                </div>
-              ))}
-            </div>
-            {voiceFeedbackLines && voiceFeedbackLines.length > 0 && (
-              <div className="space-y-1">
-                {voiceFeedbackLines.map((line, i) => (
-                  <p key={i} className="text-[11px] text-muted-foreground leading-snug pl-3.5 relative before:content-['•'] before:absolute before:left-0 before:text-primary before:text-[10px]">{line}</p>
-                ))}
-              </div>
-            )}
-            {voiceScoreAdjustment !== undefined && voiceScoreAdjustment !== 0 && (
-              <p className="text-[10px] text-muted-foreground text-center">
-                Voice adjustment: <span className={`font-bold ${voiceScoreAdjustment > 0 ? "text-primary" : "text-destructive"}`}>
-                  {voiceScoreAdjustment > 0 ? "+" : ""}{voiceScoreAdjustment}
-                </span> points
-              </p>
-            )}
-          </div>
+          <VoiceResultsPanel
+            voiceMetrics={voiceMetrics}
+            baseScore={feedback.score}
+            voiceScoreAdjustment={voiceScoreAdjustment}
+          />
         )}
 
         {/* Resume Alignment — interview only */}
