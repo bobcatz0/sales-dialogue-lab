@@ -56,7 +56,7 @@ const HeroSection = () => {
 
           <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
             <Button variant="hero" size="lg" className="gap-2 text-base px-8 py-6" asChild>
-              <a href="/scenarios">Browse Scenarios <ArrowRight className="h-4 w-4" /></a>
+              <a href="/challenge/daily">Take Today's Challenge <ArrowRight className="h-4 w-4" /></a>
             </Button>
             <Button variant="outline" size="lg" className="gap-2 text-base px-8 py-6" asChild>
               <a href="/practice">Full Practice Mode</a>

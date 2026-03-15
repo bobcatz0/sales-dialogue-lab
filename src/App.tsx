@@ -12,6 +12,7 @@ import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 import DrillLibrary from "./pages/DrillLibrary";
 import Scenarios from "./pages/Scenarios";
+import DailyChallengePage from "./pages/DailyChallengePage";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { PlanProvider } from "./context/PlanContext";
 
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/drills" element={<DrillLibrary />} />
           <Route path="/scenarios" element={<Scenarios />} />
+          <Route path="/challenge/daily" element={<DailyChallengePage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

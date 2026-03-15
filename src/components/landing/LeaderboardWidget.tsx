@@ -140,7 +140,7 @@ export function LeaderboardWidget() {
                 </div>
                 <div className="ml-auto">
                   <a
-                    href="/practice"
+                    href="/challenge/daily"
                     className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors"
                   >
                     <RotateCcw className="h-3 w-3" /> Replay
@@ -159,7 +159,7 @@ export function LeaderboardWidget() {
                   </span>
                 </div>
                 <a
-                  href="/practice"
+                  href="/challenge/daily"
                   className="flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
                 >
                   Start today's challenge <ArrowRight className="h-3 w-3" />
@@ -201,7 +201,7 @@ export function LeaderboardWidget() {
           ) : (
             <p className="text-xs text-muted-foreground text-center py-4">
               No sessions this week yet.{" "}
-              <a href="/practice" className="text-primary hover:underline">
+              <a href="/challenge/daily" className="text-primary hover:underline">
                 Start practicing
               </a>
             </p>

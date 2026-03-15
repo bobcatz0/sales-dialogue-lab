@@ -16,11 +16,14 @@ const CTASection = () => {
             Ready to <span className="text-gradient">Rehearse</span>?
           </h2>
           <p className="mt-4 text-muted-foreground max-w-md mx-auto">
-            Run a full interview simulation. Review your performance report. Repeat until you're confident.
+            Start with today's quick challenge, or jump into a full practice session.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button variant="hero" size="lg" className="gap-2" asChild>
-              <a href="/practice">Start Mock SDR Interview <ArrowRight className="h-4 w-4" /></a>
+              <a href="/challenge/daily">Take Today's Challenge <ArrowRight className="h-4 w-4" /></a>
+            </Button>
+            <Button variant="outline" size="lg" className="gap-2" asChild>
+              <a href="/practice">Full Practice Mode</a>
             </Button>
           </div>
         </motion.div>
