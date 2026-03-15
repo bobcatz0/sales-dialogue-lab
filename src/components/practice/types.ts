@@ -69,3 +69,23 @@ export interface SessionRecord {
   messageCount: number;
   skillBreakdown?: SkillScore[];
 }
+
+export interface VoiceSessionRecord {
+  id: string;
+  roleId: string;
+  roleTitle: string;
+  voiceScore: number;    // 0-100 from voice analysis
+  voiceRank: string;     // "Elite", "Pro", "Developing", etc.
+  strongestSkill: string;
+  weakestSkill: string;
+  date: string;
+}
+
+export interface VoiceRankingData {
+  bestVoiceScore: number;
+  totalVoiceSessions: number;
+  weeklyVoiceSessions: number;
+  weeklyVoicePoints: number;
+  weekStart: string;
+  strongestSkill: string | null; // most frequently strongest skill across sessions
+}
