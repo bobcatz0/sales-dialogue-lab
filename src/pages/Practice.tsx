@@ -259,6 +259,7 @@ const PracticePage = () => {
   const [showRunAgainPrompt, setShowRunAgainPrompt] = useState(false);
   const sessionStartedWithRole = useRef(false);
   const [activeDrill, setActiveDrill] = useState<Drill | null>(null);
+  const [practiceTab, setPracticeTab] = useState<string>(() => paramEnv ? "practice" : "challenge");
   const [showExitQuestion, setShowExitQuestion] = useState(false);
   const [showTextModeFallback, setShowTextModeFallback] = useState(false);
   const [showPlacementResult, setShowPlacementResult] = useState(false);
