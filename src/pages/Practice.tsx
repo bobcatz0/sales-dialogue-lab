@@ -91,6 +91,7 @@ import {
 import { OnboardingModal } from "@/components/practice/OnboardingModal";
 import { PostSessionPrompt } from "@/components/practice/PostSessionPrompt";
 import { VoiceOnboardingModal, hasSeenVoiceOnboarding, markVoiceOnboarded } from "@/components/practice/VoiceOnboardingModal";
+import { VoicePostSessionScreen } from "@/components/practice/VoicePostSessionScreen";
 import { VOICE_SCENARIOS } from "@/components/scenarios/voiceScenarios";
 import { DrillMode } from "@/components/practice/DrillMode";
 import { getDrillForWeakness, type Drill } from "@/components/practice/drillData";
