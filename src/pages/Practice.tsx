@@ -260,7 +260,8 @@ const PracticePage = () => {
   const [activeDrill, setActiveDrill] = useState<Drill | null>(null);
   const [showExitQuestion, setShowExitQuestion] = useState(false);
   const [showTextModeFallback, setShowTextModeFallback] = useState(false);
-  const [showPlacementResult, setShowPlacementResult] = useState(false);
+  const [showVoiceOnboarding, setShowVoiceOnboarding] = useState(false);
+  const [showVoiceMicDenied, setShowVoiceMicDenied] = useState(false);
   const [proChallengeResult, setProChallengeResult] = useState<{ userScore: number; proScore: number; beatPro: boolean; bonusElo: number } | null>(null);
   const [ghostResult, setGhostResult] = useState<{ userScore: number; ghostScore: number; ghostName: string; ghostAvatar: string | null; beatGhost: boolean; tied: boolean; eloDelta: number } | null>(null);
   const [placementElo, setPlacementElo] = useState<number>(1000);
