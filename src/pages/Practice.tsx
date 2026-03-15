@@ -4,6 +4,7 @@ import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, Mic
 import { useGhostBattle, calculateGhostElo } from "@/components/practice/useGhostBattle";
 import { GhostBattleBanner, GhostBattleResult } from "@/components/practice/GhostBattle";
 import { Link, useSearchParams } from "react-router-dom";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { RankProgressCard } from "@/components/practice/RankProgressCard";
