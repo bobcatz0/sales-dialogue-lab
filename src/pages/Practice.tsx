@@ -1976,6 +1976,47 @@ This evaluation style should subtly influence your questions and reactions. Do N
                       }}
                       onDismiss={() => setActiveDrill(null)}
                     />
+                  ) : voice.voiceMode && voice.getSessionVoiceMetrics() ? (
+                    <>
+                      <VoicePostSessionScreen
+                        voiceMetrics={voice.getSessionVoiceMetrics()!}
+                        baseScore={feedback.score}
+                        voiceScoreAdjustment={voice.getVoiceScoreAdjustment()}
+                        transcript={messages.filter((m) => m.role === "user").map((m) => m.content).join("\n\n")}
+                        scenarioRole={selectedRole ?? undefined}
+                        onRetry={() => {
+                          markFirstSessionRetried();
+                          setFeedback(null);
+                          setLastPoints(null);
+                          setEloDelta(null);
+                          setLastSessionValid(false);
+                          if (selectedRole) handleStart(selectedRole);
+                        }}
+                        onNewScenario={() => {
+                          setFeedback(null);
+                          setSelectedRole(null);
+                          setSelectedEnv("interview");
+                          setMessages([]);
+                          setInput("");
+                          setLastPoints(null);
+                          setEloDelta(null);
+                          setLastSessionValid(false);
+                          setActiveSDRRound(null);
+                          setSdrProgress(loadSDRTrackProgress());
+                          setActiveDrill(null);
+                          setGhostResult(null);
+                        }}
+                        onSwitchToText={() => {
+                          voice.setVoiceMode(false);
+                          setFeedback(null);
+                          setSelectedRole(null);
+                          setMessages([]);
+                          setInput("");
+                          setLastPoints(null);
+                          setEloDelta(null);
+                          setLastSessionValid(false);
+                        }}
+                      />
                   ) : (
                     <>
                       <FeedbackPanel
