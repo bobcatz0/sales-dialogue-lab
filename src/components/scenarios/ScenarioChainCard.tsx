@@ -23,9 +23,10 @@ interface Props {
   progress: ChainProgress | null;
   userRank: RankTier;
   onReset?: (chainId: string) => void;
+  personality?: string;
 }
 
-export default function ScenarioChainCard({ chain, progress, userRank, onReset }: Props) {
+export default function ScenarioChainCard({ chain, progress, userRank, onReset, personality = "neutral" }: Props) {
   const [expanded, setExpanded] = useState(false);
   const Icon = chain.icon;
   const isLocked = !!chain.requiredRank && !isRankSufficient(userRank, chain.requiredRank);
