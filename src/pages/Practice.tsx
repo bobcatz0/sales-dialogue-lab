@@ -38,6 +38,7 @@ import { VoiceRecorder } from "@/components/practice/VoiceRecorder";
 import { VoiceModeBanner } from "@/components/practice/VoiceModeBanner";
 import { VoiceModeToggle } from "@/components/practice/VoiceModeToggle";
 import { VoiceCallInterface } from "@/components/practice/VoiceCallInterface";
+import { VoiceInterviewScreen } from "@/components/practice/VoiceInterviewScreen";
 import { useVoiceSession } from "@/components/practice/useVoiceSession";
 import { MicPreflight, useMicPermission } from "@/components/practice/MicPreflight";
 import { processSession, loadConsistency } from "@/components/practice/consistencyScoring";
@@ -1638,7 +1639,36 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 <GhostBattleBanner ghost={ghostBattle.ghost} />
               )}
 
-              {/* Chat messages + input (used for both text and voice modes) */}
+              {/* Voice Interview Screen OR Chat Interface */}
+              {(voice.voiceMode || (isColdCall && !coldCallTextMode)) && selectedRole && sessionActive && !feedback ? (
+                <VoiceInterviewScreen
+                  scenarioTitle={activeEnv?.title ?? "Session"}
+                  roleTitle={activeRole?.title ?? "Interviewer"}
+                  questionProgress={`${Math.min(userQuestionCount, totalExpectedQuestions)}/~${totalExpectedQuestions}`}
+                  timerDisplay={timer.display}
+                  sessionActive={sessionActive}
+                  isAISpeaking={voice.isAISpeaking}
+                  isLoading={isLoading}
+                  lastAIMessage={messages.filter(m => m.role === "prospect").pop()?.text}
+                  isReadyForScore={isReadyForScore}
+                  isMuted={voice.isMuted}
+                  volume={voice.volume}
+                  onTranscript={(text, duration, pauseData) => {
+                    voice.recordVoiceMetrics(text, duration, pauseData);
+                    sendUserMessage(text);
+                  }}
+                  onEndSession={handleEndSession}
+                  onRetryQuestion={handleReset}
+                  onSwitchToText={() => {
+                    if (isColdCall) {
+                      setColdCallTextMode(true);
+                    }
+                    voice.setVoiceMode(false);
+                  }}
+                  onToggleMute={voice.toggleMute}
+                  onVolumeChange={voice.setVolume}
+                />
+              ) : (
               <>
               {/* Messages */}
               <div
@@ -1708,100 +1738,8 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 )}
               </div>
 
-              {/* Input Area */}
+              {/* Input Area — Text Mode only */}
               <div className="border-t border-border p-3 sm:p-4">
-                {(voice.voiceMode || (isColdCall && !coldCallTextMode)) && selectedRole ? (
-                  /* Voice Mode: recording UI */
-                  <div className="space-y-1">
-                    <MicPreflight status={mic.status} onRequestMic={mic.requestMic} compact deviceDetected={mic.deviceDetected} permissionState={mic.permissionState} />
-                    <VoiceRecorder
-                      onTranscript={(text, duration, pauseData) => {
-                        voice.recordVoiceMetrics(text, duration, pauseData);
-                        sendUserMessage(text);
-                      }}
-                      onTextModeFallbackToggle={(enabled) => {
-                        if (isColdCall) {
-                          setColdCallTextMode(enabled);
-                          setShowTextModeFallback(false);
-                          if (!enabled) {
-                            void mic.requestMic();
-                          }
-                        }
-                        voice.setVoiceMode(!enabled);
-                      }}
-                      textModeFallbackEnabled={isColdCall ? coldCallTextMode : !voice.voiceMode}
-                      disabled={!selectedRole || isLoading || voice.isAISpeaking}
-                      isAISpeaking={voice.isAISpeaking}
-                    />
-                    {/* TTS controls */}
-                    <div className="flex items-center justify-center gap-3 mt-1">
-                      <button
-                        onClick={voice.toggleMute}
-                        className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                        aria-label={voice.isMuted ? "Unmute AI voice" : "Mute AI voice"}
-                      >
-                        {voice.isMuted ? (
-                          <VolumeX className="h-3.5 w-3.5" />
-                        ) : (
-                          <Volume2 className="h-3.5 w-3.5" />
-                        )}
-                      </button>
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={voice.volume}
-                        onChange={(e) => voice.setVolume(parseFloat(e.target.value))}
-                        className="w-16 h-1 accent-primary"
-                        aria-label="AI voice volume"
-                      />
-                    </div>
-                    {/* "Type instead" fallback */}
-                    {!isColdCall && (
-                      <div className="flex items-center justify-center mt-2">
-                        <button
-                          onClick={() => {
-                            const text = prompt("Type your response:");
-                            if (text?.trim()) sendUserMessage(text);
-                          }}
-                          className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground underline transition-colors"
-                        >
-                          Type instead
-                        </button>
-                      </div>
-                    )}
-                    <div className="flex gap-1.5 sm:gap-2 mt-2 justify-center">
-                      {!isColdCall && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-8 text-muted-foreground"
-                          onClick={handleReset}
-                          disabled={!selectedRole || isLoading}
-                        >
-                          <RotateCcw className="h-3 w-3 mr-1" />
-                          Reset
-                        </Button>
-                      )}
-                      <Button
-                        variant={isReadyForScore ? "hero" : isColdCall ? "destructive" : "outline"}
-                        size="sm"
-                        className={`text-xs h-8 ${isColdCall && !isReadyForScore ? "px-6" : ""}`}
-                        onClick={handleEndSession}
-                        disabled={!selectedRole || isLoading || isFeedbackLoading || !hasEnoughMessages}
-                      >
-                        {isReadyForScore ? (
-                          <><Target className="h-3 w-3 mr-1" />Get My Score</>
-                        ) : (
-                          <><StopCircle className="h-3 w-3 mr-1" />{isColdCall ? "End Call" : "End Session"}</>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  /* Text Mode: standard input */
-                  <>
                     <div className="flex gap-1.5 sm:gap-2 items-end">
                       <Textarea
                         value={input}
@@ -1857,10 +1795,9 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         )}
                       </Button>
                     </div>
-                  </>
-                )}
               </div>
               </>
+              )}
 
             </motion.main>
 
