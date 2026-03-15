@@ -710,6 +710,32 @@ export function FeedbackPanel({
           </div>
         )}
 
+        {/* ═══════════════ RETRY & COMPETE (PRIMARY) ═══════════════ */}
+        <RetryLoopPanel
+          currentScore={feedback.score}
+          scenarioRole={scenarioRole}
+          scenarioEnv={scenarioEnv}
+          scenarioTitle={scenarioTitle}
+          onRetry={onTrySameRole}
+          onNewScenario={onStartNew}
+        />
+
+        {/* ═══════════════ CHALLENGE A FRIEND ═══════════════ */}
+        {isValidSession && scenarioEnv && scenarioRole && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-4 space-y-3"
+          >
+            <div className="flex items-center gap-2 justify-center">
+              <Swords className="h-4 w-4 text-primary" />
+              <span className="text-xs font-bold text-foreground">Think your friends can beat {feedback.score}?</span>
+            </div>
+            <ChallengeButton score={feedback.score} scenarioEnv={scenarioEnv} scenarioRole={scenarioRole} isLoggedIn={!!profile} />
+          </motion.div>
+        )}
+
         {/* ═══════════════ REPLAY & IMPROVEMENT ═══════════════ */}
         <ReplayImprovementPanel
           answerComparisons={feedback.answerComparisons}
@@ -723,22 +749,6 @@ export function FeedbackPanel({
           onRetry={onTrySameRole}
         />
 
-        {/* ═══════════════ BOTTOM SECTION: Retry Loop ═══════════════ */}
-        <RetryLoopPanel
-          currentScore={feedback.score}
-          scenarioRole={scenarioRole}
-          scenarioEnv={scenarioEnv}
-          scenarioTitle={scenarioTitle}
-          onRetry={onTrySameRole}
-          onNewScenario={onStartNew}
-        />
-
-        {/* Download */}
-        <Button variant="ghost" size="sm" className="w-full h-8 text-xs text-muted-foreground" onClick={handleDownload}>
-          <Download className="h-3 w-3 mr-1.5" />
-          Download Full Report
-        </Button>
-
         {/* Share Result Card */}
         <ShareResultCard
           scenarioTitle={scenarioTitle || feedback.rank}
@@ -748,13 +758,14 @@ export function FeedbackPanel({
           elo={profile?.elo ?? null}
         />
 
+        {/* Download */}
+        <Button variant="ghost" size="sm" className="w-full h-8 text-xs text-muted-foreground" onClick={handleDownload}>
+          <Download className="h-3 w-3 mr-1.5" />
+          Download Full Report
+        </Button>
+
         {/* Scorecard */}
         <ScorecardShare feedback={feedback} scenarioTitle={scenarioTitle || feedback.rank} alias={alias ?? null} isValidSession={!!isValidSession} elo={profile?.elo ?? null} eloDelta={eloDelta} />
-
-        {/* Challenge */}
-        {isValidSession && scenarioEnv && scenarioRole && (
-          <ChallengeButton score={feedback.score} scenarioEnv={scenarioEnv} scenarioRole={scenarioRole} isLoggedIn={!!profile} />
-        )}
 
         {/* Shareable summary */}
         {interview && (
