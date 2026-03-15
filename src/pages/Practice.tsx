@@ -1749,6 +1749,20 @@ This evaluation style should subtly influence your questions and reactions. Do N
 
             </motion.main>
 
+            {/* Standalone Drill Mode — started from Drills tab */}
+            {activeDrill && !feedback && !selectedRole && (
+              <div className="card-elevated overflow-hidden">
+                <DrillMode
+                  drill={activeDrill}
+                  onComplete={() => {
+                    trackDrillCompletion(activeDrill.category);
+                    setActiveDrill(null);
+                  }}
+                  onCancel={() => setActiveDrill(null)}
+                />
+              </div>
+            )}
+
             {/* Feedback Section */}
             <AnimatePresence>
               {isFeedbackLoading && (
