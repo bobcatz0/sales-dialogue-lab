@@ -1795,10 +1795,9 @@ This evaluation style should subtly influence your questions and reactions. Do N
                         )}
                       </Button>
                     </div>
-                  </>
-                )}
               </div>
               </>
+              )}
 
             </motion.main>
 
