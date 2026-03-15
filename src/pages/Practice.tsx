@@ -19,6 +19,7 @@ import { VoiceRecorder } from "@/components/practice/VoiceRecorder";
 import { VoiceModeBanner } from "@/components/practice/VoiceModeBanner";
 import { useVoiceSession } from "@/components/practice/useVoiceSession";
 import { MicPreflight, useMicPermission } from "@/components/practice/MicPreflight";
+import { VoiceInterviewScreen } from "@/components/practice/VoiceInterviewScreen";
 import { processSession, loadConsistency } from "@/components/practice/consistencyScoring";
 import {
   loadProgression,
@@ -796,6 +797,12 @@ This evaluation style should subtly influence your questions and reactions. Do N
   };
 
   const hasEnoughMessages = messages.filter((m) => m.role === "user").length >= 2;
+  // True while a voice session is in progress — renders VoiceInterviewScreen
+  const isVoiceInterviewMode =
+    (voice.voiceMode || (isColdCall && !coldCallTextMode)) &&
+    !!selectedRole &&
+    sessionActive &&
+    !feedback;
 
   return (
     <div className="min-h-screen bg-background">
@@ -1197,7 +1204,45 @@ This evaluation style should subtly influence your questions and reactions. Do N
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col card-elevated overflow-hidden flex-1"
             >
+              {/* Voice Interview Screen — dedicated UI for turn-based voice sessions */}
+              {isVoiceInterviewMode && (
+                <VoiceInterviewScreen
+                  roleTitle={activeRole?.title ?? ""}
+                  envTitle={activeEnv?.title}
+                  messages={messages}
+                  isLoading={isLoading}
+                  isAISpeaking={voice.isAISpeaking}
+                  isMuted={voice.isMuted}
+                  volume={voice.volume}
+                  mic={mic}
+                  timer={timer.display}
+                  onTranscript={(text, duration, pauseData) => {
+                    voice.recordVoiceMetrics(text, duration, pauseData);
+                    sendUserMessage(text);
+                  }}
+                  onEndSession={handleEndSession}
+                  onReset={handleReset}
+                  onSwitchToText={() => {
+                    if (isColdCall) setColdCallTextMode(true);
+                    voice.setVoiceMode(false);
+                  }}
+                  onToggleMute={voice.toggleMute}
+                  onSetVolume={voice.setVolume}
+                  isColdCall={isColdCall}
+                  onTextModeFallbackToggle={(enabled) => {
+                    if (isColdCall) {
+                      setColdCallTextMode(enabled);
+                      setShowTextModeFallback(false);
+                      if (!enabled) void mic.requestMic();
+                    }
+                    voice.setVoiceMode(!enabled);
+                  }}
+                  textModeFallbackEnabled={isColdCall ? coldCallTextMode : !voice.voiceMode}
+                  isFeedbackLoading={isFeedbackLoading}
+                />
+              )}
               {/* Chat Header — compact / call-style for cold call */}
+              {!isVoiceInterviewMode && <>
               <div className={`flex items-center justify-between px-4 py-3 border-b border-border ${isColdCall && sessionActive ? "bg-muted/40" : ""}`}>
                 <div className="flex items-center gap-2 min-w-0">
                   {activeEnv && (
@@ -1460,6 +1505,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   </>
                 )}
               </div>
+              </>}
             </motion.main>
 
             {/* Feedback Section */}
