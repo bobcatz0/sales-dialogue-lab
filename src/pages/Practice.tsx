@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, RotateCcw, StopCircle, Loader2, Lock, ArrowLeft, Target, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,7 +68,7 @@ import {
 import { OnboardingModal } from "@/components/practice/OnboardingModal";
 import { PostSessionPrompt } from "@/components/practice/PostSessionPrompt";
 import { DrillMode } from "@/components/practice/DrillMode";
-import { getDrillForWeakness, type Drill } from "@/components/practice/drillData";
+import { getDrillForWeakness, DRILLS, type Drill } from "@/components/practice/drillData";
 import { qualifiesForInterviewReady, grantInterviewReady, checkStatusRevocation, checkExpiryRevocation } from "@/components/practice/interviewReadyStatus";
 import { trackDrillCompletion } from "@/components/practice/drillTracking";
 import {
@@ -233,6 +233,7 @@ const PracticePage = () => {
   const [showPlanUpgrade, setShowPlanUpgrade] = useState(false);
   const [planUpgradeReason, setPlanUpgradeReason] = useState<string | undefined>();
   const [challengeResult, setChallengeResult] = useState<ChallengeResult | null>(null);
+  const [practiceTab, setPracticeTab] = useState<"challenge" | "practice" | "drills">("challenge");
   const timer = useCallTimer(sessionActive);
   const voice = useVoiceSession();
   const mic = useMicPermission();
@@ -371,6 +372,25 @@ const PracticePage = () => {
         voice.speakAIMessage(openingText);
       }
     }
+  };
+
+  const handleBackToTabs = () => {
+    setSelectedEnv(null);
+    setSelectedRole(null);
+    setMessages([]);
+    setInput("");
+    setFeedback(null);
+    setSessionActive(false);
+    setActiveSDRRound(null);
+    setColdCallTextMode(false);
+    setShowTextModeFallback(false);
+    setChallengeResult(null);
+    setLastPoints(null);
+    setLastSessionValid(false);
+    setHardCloseWin(false);
+    setShowHelpfulPrompt(false);
+    setShowRunAgainPrompt(false);
+    callEndTriggeredRef.current = false;
   };
 
   const handleStartChallenge = (envId: EnvironmentId, personaId: string) => {
@@ -919,432 +939,499 @@ This evaluation style should subtly influence your questions and reactions. Do N
             animate={{ opacity: 1, x: 0 }}
             className="flex flex-col gap-4"
           >
-            {/* Step 1: Environment Selection */}
-            {!selectedEnv && (
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="font-heading text-base font-bold text-foreground">
-                    Interview Rehearsal Simulator
-                  </h2>
-                </div>
-                <p className="text-[10px] text-primary font-medium mb-1">Pre-Interview Preparation</p>
-                <p className="text-[10px] text-muted-foreground/70 mb-3 leading-relaxed">
-                  Built on structured SDR evaluation principles: clarity, ownership, metrics, conciseness, recovery under pressure.
-                </p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
-                  Structured interview simulation with personalized evaluation. Your final rehearsal before the real thing.
-                </p>
-                <h3 className="font-heading text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Simulation Mode
-                </h3>
-                <div className="space-y-3">
-                  {ENVIRONMENTS.filter((env) => {
-                    // Hide enterprise mode in validation mode
-                    if (validationOn && (VALIDATION_HIDDEN_ENVS as readonly string[]).includes(env.id)) return false;
-                    if (env.id !== "final-round") return true;
-                    // Unlock final round if score >= 85 or SDR track completed
-                    const prog = loadProgression();
-                    const sdr = loadSDRTrackProgress();
-                    return prog.highestSessionScore >= 85 || sdr.trackCompleted;
-                  }).map((env) => (
-                    <motion.div
-                      key={env.id}
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      onClick={() => setSelectedEnv(env.id)}
-                      className={`card-elevated p-4 flex items-start gap-3 cursor-pointer transition-all duration-200 hover:border-primary/40 ${
-                        env.id !== "interview" && env.id !== "final-round" ? "opacity-70" : ""
-                      }`}
-                    >
-                      <div className={`mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center ${
-                        env.id === "final-round" ? "bg-primary/10" : "bg-muted"
-                      }`}>
-                        <env.icon className={`h-4 w-4 ${env.id === "final-round" ? "text-primary" : "text-muted-foreground"}`} />
+            {/* ─── Session / Drill Active Context ─── */}
+            {(sessionActive || isFeedbackLoading || !!feedback || (!!activeDrill && !sessionActive && !feedback)) ? (
+              <div className="space-y-3">
+                {/* Standalone drill context (launched from Drills tab) */}
+                {!!activeDrill && !sessionActive && !feedback && !isFeedbackLoading && (
+                  <div className="card-elevated p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                        <Target className="h-3.5 w-3.5 text-destructive" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
-                            {env.title}
-                          </h3>
-                          {env.id === "interview" && (
-                            <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                              PRIMARY
-                            </span>
-                          )}
-                          {env.id === "final-round" && (
-                            <span className="text-[9px] font-bold text-foreground bg-muted px-1.5 py-0.5 rounded border border-border">
-                              ELEVATED
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                          {env.description}
-                        </p>
+                        <p className="text-xs font-semibold text-foreground leading-tight">{activeDrill.title}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{activeDrill.directive}</p>
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Drill Library link */}
-                <Link to="/drills" className="block mt-2">
-                  <div className="card-elevated p-4 flex items-start gap-3 cursor-pointer transition-all duration-200 hover:border-primary/40 opacity-90">
-                    <div className="mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center bg-muted">
-                      <Target className="h-4 w-4 text-destructive" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
-                          Skill Drills
-                        </h3>
-                        <span className="text-[9px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border">
-                          QUICK
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                        Targeted 3-minute drills. Sharpen specific skills before your interview.
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            )}
-
-            {/* Resume Highlights — interview env, before persona selection */}
-            {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
-              <div className="mb-4">
-                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
-                  Paste Key Resume Highlights <span className="text-muted-foreground/60">(optional)</span>
-                </label>
-                <Textarea
-                  value={resumeHighlights}
-                  onChange={(e) => {
-                    setResumeHighlights(e.target.value);
-                    localStorage.setItem("salescalls_resume", e.target.value);
-                  }}
-                  placeholder={"- SDR at XYZ, 120 outbound calls/week\n- Closed 15% of booked meetings\n- Used Salesforce and Outreach\n- Led college sales club"}
-                  className="text-xs min-h-[80px] resize-none"
-                  rows={4}
-                />
-                <p className="text-[9px] text-muted-foreground mt-1">
-                  Questions will be personalized to your background. Leave blank for standard questions.
-                </p>
-              </div>
-            )}
-
-            {/* Interviewer Personality — all environments, before persona selection */}
-            {selectedEnv !== null && !selectedRole && (
-              <div className="mb-4">
-                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
-                  Interviewer Personality
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {PERSONALITIES.map((p) => (
                     <button
-                      key={p.id}
-                      onClick={() => setPersonality(p.id)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
-                        personality === p.id
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-muted/40 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
-                      }`}
-                      title={p.description}
+                      onClick={() => { setActiveDrill(null); setPracticeTab("drills"); }}
+                      className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors flex items-center gap-1"
                     >
-                      {p.shortLabel}
+                      <ArrowLeft className="h-3 w-3" /> Back to drills
+                    </button>
+                  </div>
+                )}
+
+                {/* Session context: env + role header */}
+                {selectedEnv && (sessionActive || !!feedback || isFeedbackLoading) && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 shrink-0"
+                      onClick={handleBackToTabs}
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="font-heading text-sm font-bold text-foreground truncate">
+                        {activeEnv?.title}
+                      </h2>
+                      {activeRole && (
+                        <p className="text-[10px] text-muted-foreground">{activeRole.title}</p>
+                      )}
+                    </div>
+                    <Badge variant="outline" className="text-[10px] font-medium border-border text-muted-foreground shrink-0">
+                      {currentRank}
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Attempt limit banner */}
+                {isAtDailyLimit && (
+                  <AttemptLimitBanner onUpgrade={() => {
+                    setPlanUpgradeReason("Upgrade to Pro for unlimited daily sessions.");
+                    setShowPlanUpgrade(true);
+                  }} />
+                )}
+              </div>
+            ) : (
+              /* ─── Idle: Tab Interface ─── */
+              <div className="space-y-4">
+                {/* Tab switcher */}
+                <div className="flex rounded-lg border border-border overflow-hidden">
+                  {(["challenge", "practice", "drills"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => {
+                        setPracticeTab(tab);
+                        if (tab !== "practice") {
+                          setSelectedEnv(null);
+                          setSelectedRole(null);
+                        }
+                      }}
+                      className={`flex-1 py-2 text-[11px] font-semibold transition-colors ${
+                        practiceTab === tab
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground bg-transparent"
+                      }`}
+                    >
+                      {tab === "challenge" ? "Daily" : tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
                   ))}
                 </div>
-                {personality !== "neutral" && (
-                  <p className="text-[9px] text-muted-foreground mt-1.5 leading-relaxed">
-                    {PERSONALITIES.find((p) => p.id === personality)?.description}
-                  </p>
-                )}
-              </div>
-            )}
 
-            {/* Voice Mode Toggle — all non-cold-call environments */}
-            {selectedEnv !== "cold-call" && selectedEnv !== null && !selectedRole && (
-              <div className="mb-4 space-y-2">
-                <VoiceModeBanner
-                  enabled={voice.voiceMode}
-                  onToggle={handleVoiceModeToggle}
-                />
-                {voice.voiceMode && (
-                  <MicPreflight
-                    status={mic.status}
-                    onRequestMic={mic.requestMic}
-                    deviceDetected={mic.deviceDetected}
-                    permissionState={mic.permissionState}
-                  />
+                {/* ── Daily Challenge Tab ── */}
+                {practiceTab === "challenge" && (
+                  <DailyChallengeCard onStart={handleStartChallenge} />
                 )}
-              </div>
-            )}
 
-            {/* Cold Call: voice required notice or text-mode fallback */}
-            {selectedEnv === "cold-call" && !selectedRole && (
-              <div className="mb-4 space-y-2">
-                {showTextModeFallback ? (
-                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-3">
-                    <div className="flex items-start gap-2">
-                      <MicOff className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium text-destructive">
-                          No microphone detected
-                        </p>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          Please connect a mic to use Cold Call mode with voice, or switch to Text Mode below. Text Mode uses the same pressure logic, persona, and scoring — without voice analysis.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10"
-                        onClick={() => {
-                          setShowTextModeFallback(false);
-                          mic.requestMic();
-                        }}
-                      >
-                        <Mic className="h-3 w-3" />
-                        Re-check Mic
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="default"
-                        className="h-8 text-xs gap-1.5"
-                        onClick={() => {
-                          setShowTextModeFallback(false);
-                          setColdCallTextMode(true);
-                          voice.setVoiceMode(false);
-                        }}
-                      >
-                        Switch to Text Mode Instead
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
+                {/* ── Practice Tab ── */}
+                {practiceTab === "practice" && (
                   <>
-                    <VoiceModeBanner
-                      enabled={true}
-                      onToggle={() => {}}
-                      locked={!showTextModeFallback && mic.status !== "no-device" && mic.status !== "blocked"}
-                    />
-                    <MicPreflight
-                      status={mic.status}
-                      onRequestMic={mic.requestMic}
-                      deviceDetected={mic.deviceDetected}
-                      permissionState={mic.permissionState}
-                    />
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Step 2: Persona Selection (after environment chosen) */}
-            {selectedEnv && (
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 shrink-0"
-                    onClick={() => {
-                      setSelectedEnv(null);
-                      setSelectedRole(null);
-                      setMessages([]);
-                      setFeedback(null);
-                      setSessionActive(false);
-                      setActiveSDRRound(null);
-                      setColdCallTextMode(false);
-                      setShowTextModeFallback(false);
-                    }}
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </Button>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-heading text-sm font-bold text-foreground truncate">
-                      {activeEnv?.title}
-                    </h2>
-                    <p className="text-[10px] text-muted-foreground">{activeEnv?.subtitle}</p>
-                  </div>
-                  <Badge variant="outline" className="text-[10px] font-medium border-border text-muted-foreground shrink-0">
-                    {currentRank}
-                  </Badge>
-                </div>
-                <div className="space-y-3">
-                  {filteredRoles.map((role) => {
-                    const isActive = selectedRole === role.id;
-                    const unlocked = isPersonaUnlocked(role.id, progression);
-                    const hint = !unlocked ? getUnlockHint(role.id, progression) : null;
-                    return (
-                      <div
-                        key={role.id}
-                        className={`card-elevated p-4 flex items-start gap-3 transition-all duration-200 ${
-                          isActive
-                            ? "border-primary/60 shadow-[0_0_20px_hsl(145_72%_50%/0.1)]"
-                            : !unlocked
-                            ? "opacity-60"
-                            : ""
-                        }`}
-                      >
-                        <div
-                          className={`mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center transition-colors ${
-                            !unlocked ? "bg-muted" : isActive ? "bg-primary/20" : "bg-muted"
-                          }`}
-                        >
-                          {unlocked ? (
-                            <role.icon
-                              className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`}
-                            />
-                          ) : (
-                            <Lock className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">
-                            {role.title}
-                          </h3>
-                          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                            {unlocked ? role.description : hint}
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant={isActive ? "default" : "outline"}
-                          className="shrink-0 text-xs h-8"
-                          onClick={() => unlocked && handleStart(role.id)}
-                          disabled={!unlocked}
-                        >
-                          {!unlocked ? "Locked" : isActive ? "Active" : "Start"}
-                        </Button>
+                    {/* Voice mode toggle — before role selection, not for cold call */}
+                    {!selectedRole && selectedEnv !== "cold-call" && (
+                      <div className="space-y-2">
+                        <VoiceModeBanner
+                          enabled={voice.voiceMode}
+                          onToggle={handleVoiceModeToggle}
+                        />
+                        {voice.voiceMode && (
+                          <MicPreflight
+                            status={mic.status}
+                            onRequestMic={mic.requestMic}
+                            deviceDetected={mic.deviceDetected}
+                            permissionState={mic.permissionState}
+                          />
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                    )}
 
-                {/* SDR Interview Track — only in interview env */}
-                {selectedEnv === "interview" && (
-                  <div className="mt-5 pt-4 border-t border-border">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-heading text-xs font-bold text-foreground uppercase tracking-wider">
-                        SDR Interview Track
-                      </h3>
-                      {sdrProgress.trackCompleted && (
-                        <span className="text-[9px] font-bold text-primary flex items-center gap-1">
-                          <Award className="h-3 w-3" /> Complete
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-muted-foreground mb-3 leading-relaxed">
-                      Focused on outbound prospecting, objection handling, and pipeline generation.
-                    </p>
-                    <div className="space-y-2">
-                      {SDR_ROUNDS.map((round) => {
-                        const roundData = sdrProgress.rounds[round.id];
-                        const isCompleted = roundData?.completed;
-                        const isActiveRound = activeSDRRound?.id === round.id;
-                        return (
-                          <div
-                            key={round.id}
-                            className={`p-3 rounded-lg border transition-all duration-200 ${
-                              isActiveRound
-                                ? "border-primary/60 bg-primary/5"
-                                : isCompleted
-                                ? "border-border bg-muted/30"
-                                : "border-border hover:border-primary/30 cursor-pointer"
-                            }`}
-                          >
+                    {/* Cold call: voice required notice or text-mode fallback */}
+                    {selectedEnv === "cold-call" && !selectedRole && (
+                      <div className="space-y-2">
+                        {showTextModeFallback ? (
+                          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-3">
                             <div className="flex items-start gap-2">
-                              <div className="mt-0.5 shrink-0">
-                                {isCompleted ? (
-                                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                                ) : (
-                                  <Circle className="h-3.5 w-3.5 text-muted-foreground" />
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-semibold text-foreground leading-tight">
-                                  {round.title}
+                              <MicOff className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium text-destructive">No microphone detected</p>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  Please connect a mic to use Cold Call mode with voice, or switch to Text Mode below. Text Mode uses the same pressure logic, persona, and scoring — without voice analysis.
                                 </p>
-                                <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
-                                  {round.description}
-                                </p>
-                                {isCompleted && roundData && (
-                                  <p className="text-[9px] text-muted-foreground mt-1 tabular-nums">
-                                    Score: {roundData.score} · Level {roundData.peakDifficulty}
-                                  </p>
-                                )}
                               </div>
+                            </div>
+                            <div className="flex gap-2">
                               <Button
                                 size="sm"
-                                variant={isActiveRound ? "default" : "outline"}
-                                className="shrink-0 text-[10px] h-7 px-2.5"
-                                onClick={() => {
-                                  setActiveSDRRound(round);
-                                  handleStart(round.personaId, round);
-                                }}
+                                variant="outline"
+                                className="h-8 text-xs gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10"
+                                onClick={() => { setShowTextModeFallback(false); mic.requestMic(); }}
                               >
-                                {isActiveRound ? "Active" : isCompleted ? "Redo" : "Start"}
+                                <Mic className="h-3 w-3" /> Re-check Mic
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="h-8 text-xs gap-1.5"
+                                onClick={() => { setShowTextModeFallback(false); setColdCallTextMode(true); voice.setVoiceMode(false); }}
+                              >
+                                Switch to Text Mode
                               </Button>
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                    {/* Track completion requirements */}
-                    {!sdrProgress.trackCompleted && (
-                      <p className="text-[9px] text-muted-foreground mt-2 leading-relaxed">
-                        Complete all 3 rounds with avg. score 70+ and at least one Level 3 peak to earn SDR Interview Ready.
-                      </p>
+                        ) : (
+                          <>
+                            <VoiceModeBanner
+                              enabled={true}
+                              onToggle={() => {}}
+                              locked={!showTextModeFallback && mic.status !== "no-device" && mic.status !== "blocked"}
+                            />
+                            <MicPreflight
+                              status={mic.status}
+                              onRequestMic={mic.requestMic}
+                              deviceDetected={mic.deviceDetected}
+                              permissionState={mic.permissionState}
+                            />
+                          </>
+                        )}
+                      </div>
                     )}
-                    {/* Track summary after completion */}
-                    {sdrProgress.trackCompleted && (() => {
-                      const summary = getSDRTrackSummary(sdrProgress);
-                      return (
-                        <div className="mt-3 p-3 rounded-lg bg-muted/40 border border-border">
-                          <p className="text-[10px] font-semibold text-foreground mb-1">SDR Interview Assessment</p>
-                          <p className="text-[10px] text-muted-foreground">Average Score: {summary.averageScore}</p>
-                          <p className="text-[10px] text-muted-foreground">Peak Difficulty Reached: Level 3</p>
-                          <p className="text-[10px] text-muted-foreground mt-1">Track completed {sdrProgress.completedDate ? new Date(sdrProgress.completedDate).toLocaleDateString() : ""}</p>
+
+                    {/* Environment selection (no env chosen) */}
+                    {!selectedEnv && (
+                      <div>
+                        <h3 className="font-heading text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                          Simulation Mode
+                        </h3>
+                        <div className="space-y-3">
+                          {ENVIRONMENTS.filter((env) => {
+                            if (validationOn && (VALIDATION_HIDDEN_ENVS as readonly string[]).includes(env.id)) return false;
+                            if (env.id !== "final-round") return true;
+                            const prog = loadProgression();
+                            const sdr = loadSDRTrackProgress();
+                            return prog.highestSessionScore >= 85 || sdr.trackCompleted;
+                          }).map((env) => (
+                            <motion.div
+                              key={env.id}
+                              whileHover={{ scale: 1.01 }}
+                              whileTap={{ scale: 0.99 }}
+                              onClick={() => setSelectedEnv(env.id)}
+                              className={`card-elevated p-4 flex items-start gap-3 cursor-pointer transition-all duration-200 hover:border-primary/40 ${
+                                env.id !== "interview" && env.id !== "final-round" ? "opacity-70" : ""
+                              }`}
+                            >
+                              <div className={`mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center ${
+                                env.id === "final-round" ? "bg-primary/10" : "bg-muted"
+                              }`}>
+                                <env.icon className={`h-4 w-4 ${env.id === "final-round" ? "text-primary" : "text-muted-foreground"}`} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">{env.title}</h3>
+                                  {env.id === "interview" && (
+                                    <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">PRIMARY</span>
+                                  )}
+                                  {env.id === "final-round" && (
+                                    <span className="text-[9px] font-bold text-foreground bg-muted px-1.5 py-0.5 rounded border border-border">ELEVATED</span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{env.description}</p>
+                              </div>
+                            </motion.div>
+                          ))}
                         </div>
-                      );
-                    })()}
+                      </div>
+                    )}
+
+                    {/* After env selected: back + persona + personality */}
+                    {selectedEnv && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 shrink-0"
+                            onClick={() => {
+                              setSelectedEnv(null);
+                              setSelectedRole(null);
+                              setMessages([]);
+                              setFeedback(null);
+                              setSessionActive(false);
+                              setActiveSDRRound(null);
+                              setColdCallTextMode(false);
+                              setShowTextModeFallback(false);
+                            }}
+                          >
+                            <ArrowLeft className="h-4 w-4" />
+                          </Button>
+                          <div className="flex-1 min-w-0">
+                            <h2 className="font-heading text-sm font-bold text-foreground truncate">{activeEnv?.title}</h2>
+                            <p className="text-[10px] text-muted-foreground">{activeEnv?.subtitle}</p>
+                          </div>
+                          <Badge variant="outline" className="text-[10px] font-medium border-border text-muted-foreground shrink-0">
+                            {currentRank}
+                          </Badge>
+                        </div>
+
+                        {/* Resume highlights — interview/final-round, before role start */}
+                        {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
+                          <div className="mb-4">
+                            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+                              Paste Key Resume Highlights <span className="text-muted-foreground/60">(optional)</span>
+                            </label>
+                            <Textarea
+                              value={resumeHighlights}
+                              onChange={(e) => {
+                                setResumeHighlights(e.target.value);
+                                localStorage.setItem("salescalls_resume", e.target.value);
+                              }}
+                              placeholder={"- SDR at XYZ, 120 outbound calls/week\n- Closed 15% of booked meetings\n- Used Salesforce and Outreach\n- Led college sales club"}
+                              className="text-xs min-h-[80px] resize-none"
+                              rows={4}
+                            />
+                            <p className="text-[9px] text-muted-foreground mt-1">
+                              Questions will be personalized to your background. Leave blank for standard questions.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Personality selector — after env selection, before role start */}
+                        {!selectedRole && (
+                          <div className="mb-4">
+                            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
+                              Interviewer Personality
+                            </label>
+                            <div className="flex flex-wrap gap-1.5">
+                              {PERSONALITIES.map((p) => (
+                                <button
+                                  key={p.id}
+                                  onClick={() => setPersonality(p.id)}
+                                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+                                    personality === p.id
+                                      ? "bg-primary text-primary-foreground border-primary"
+                                      : "bg-muted/40 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+                                  }`}
+                                  title={p.description}
+                                >
+                                  {p.shortLabel}
+                                </button>
+                              ))}
+                            </div>
+                            {personality !== "neutral" && (
+                              <p className="text-[9px] text-muted-foreground mt-1.5 leading-relaxed">
+                                {PERSONALITIES.find((p) => p.id === personality)?.description}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Persona cards */}
+                        <div className="space-y-3">
+                          {filteredRoles.map((role) => {
+                            const isActive = selectedRole === role.id;
+                            const unlocked = isPersonaUnlocked(role.id, progression);
+                            const hint = !unlocked ? getUnlockHint(role.id, progression) : null;
+                            return (
+                              <div
+                                key={role.id}
+                                className={`card-elevated p-4 flex items-start gap-3 transition-all duration-200 ${
+                                  isActive
+                                    ? "border-primary/60 shadow-[0_0_20px_hsl(145_72%_50%/0.1)]"
+                                    : !unlocked
+                                    ? "opacity-60"
+                                    : ""
+                                }`}
+                              >
+                                <div className={`mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center transition-colors ${
+                                  !unlocked ? "bg-muted" : isActive ? "bg-primary/20" : "bg-muted"
+                                }`}>
+                                  {unlocked ? (
+                                    <role.icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                                  ) : (
+                                    <Lock className="h-4 w-4 text-muted-foreground" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">{role.title}</h3>
+                                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                                    {unlocked ? role.description : hint}
+                                  </p>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant={isActive ? "default" : "outline"}
+                                  className="shrink-0 text-xs h-8"
+                                  onClick={() => unlocked && handleStart(role.id)}
+                                  disabled={!unlocked}
+                                >
+                                  {!unlocked ? "Locked" : isActive ? "Active" : "Start"}
+                                </Button>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* SDR Interview Track — interview env only */}
+                        {selectedEnv === "interview" && (
+                          <div className="mt-5 pt-4 border-t border-border">
+                            <div className="flex items-center justify-between mb-1">
+                              <h3 className="font-heading text-xs font-bold text-foreground uppercase tracking-wider">
+                                SDR Interview Track
+                              </h3>
+                              {sdrProgress.trackCompleted && (
+                                <span className="text-[9px] font-bold text-primary flex items-center gap-1">
+                                  <Award className="h-3 w-3" /> Complete
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mb-3 leading-relaxed">
+                              Focused on outbound prospecting, objection handling, and pipeline generation.
+                            </p>
+                            <div className="space-y-2">
+                              {SDR_ROUNDS.map((round) => {
+                                const roundData = sdrProgress.rounds[round.id];
+                                const isCompleted = roundData?.completed;
+                                const isActiveRound = activeSDRRound?.id === round.id;
+                                return (
+                                  <div
+                                    key={round.id}
+                                    className={`p-3 rounded-lg border transition-all duration-200 ${
+                                      isActiveRound
+                                        ? "border-primary/60 bg-primary/5"
+                                        : isCompleted
+                                        ? "border-border bg-muted/30"
+                                        : "border-border hover:border-primary/30 cursor-pointer"
+                                    }`}
+                                  >
+                                    <div className="flex items-start gap-2">
+                                      <div className="mt-0.5 shrink-0">
+                                        {isCompleted ? (
+                                          <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                                        ) : (
+                                          <Circle className="h-3.5 w-3.5 text-muted-foreground" />
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-[11px] font-semibold text-foreground leading-tight">{round.title}</p>
+                                        <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{round.description}</p>
+                                        {isCompleted && roundData && (
+                                          <p className="text-[9px] text-muted-foreground mt-1 tabular-nums">
+                                            Score: {roundData.score} · Level {roundData.peakDifficulty}
+                                          </p>
+                                        )}
+                                      </div>
+                                      <Button
+                                        size="sm"
+                                        variant={isActiveRound ? "default" : "outline"}
+                                        className="shrink-0 text-[10px] h-7 px-2.5"
+                                        onClick={() => {
+                                          setActiveSDRRound(round);
+                                          handleStart(round.personaId, round);
+                                        }}
+                                      >
+                                        {isActiveRound ? "Active" : isCompleted ? "Redo" : "Start"}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {!sdrProgress.trackCompleted && (
+                              <p className="text-[9px] text-muted-foreground mt-2 leading-relaxed">
+                                Complete all 3 rounds with avg. score 70+ and at least one Level 3 peak to earn SDR Interview Ready.
+                              </p>
+                            )}
+                            {sdrProgress.trackCompleted && (() => {
+                              const summary = getSDRTrackSummary(sdrProgress);
+                              return (
+                                <div className="mt-3 p-3 rounded-lg bg-muted/40 border border-border">
+                                  <p className="text-[10px] font-semibold text-foreground mb-1">SDR Interview Assessment</p>
+                                  <p className="text-[10px] text-muted-foreground">Average Score: {summary.averageScore}</p>
+                                  <p className="text-[10px] text-muted-foreground">Peak Difficulty Reached: Level 3</p>
+                                  <p className="text-[10px] text-muted-foreground mt-1">Track completed {sdrProgress.completedDate ? new Date(sdrProgress.completedDate).toLocaleDateString() : ""}</p>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* ── Drills Tab ── */}
+                {practiceTab === "drills" && (
+                  <div className="space-y-3">
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Targeted 3-minute drills. Focus on one skill at a time.
+                    </p>
+                    {Object.values(DRILLS).map((drill) => (
+                      <div key={drill.category} className="card-elevated p-4 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 h-8 w-8 shrink-0 rounded-full bg-destructive/10 flex items-center justify-center">
+                            <Target className="h-3.5 w-3.5 text-destructive" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">{drill.title}</h3>
+                            <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{drill.directive}</p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full text-xs h-8 gap-1.5"
+                          onClick={() => {
+                            setActiveDrill(drill);
+                            setFeedback(null);
+                            setMessages([]);
+                            setSessionActive(false);
+                            setSelectedRole(null);
+                          }}
+                        >
+                          <Target className="h-3 w-3" /> Start Drill
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 )}
+
+                {/* Profile Panel */}
+                {alias && (
+                  <ProfilePanel alias={alias} consistency={loadConsistency()} />
+                )}
+
+                {/* Session History */}
+                <SessionHistory
+                  sessions={history}
+                  onClear={() => setHistory([])}
+                />
               </div>
             )}
-
-            {/* Attempt limit banner — shown when free user has hit their daily cap */}
-            {isAtDailyLimit && (
-              <AttemptLimitBanner onUpgrade={() => {
-                setPlanUpgradeReason("Upgrade to Pro for unlimited daily sessions.");
-                setShowPlanUpgrade(true);
-              }} />
-            )}
-
-            {/* Daily Challenge — hidden in interview mode for flow clarity */}
-            {selectedEnv !== "interview" && (
-              <DailyChallengeCard onStart={handleStartChallenge} />
-            )}
-
-            {/* Profile Panel */}
-            {alias && (
-              <ProfilePanel alias={alias} consistency={loadConsistency()} />
-            )}
-
-            {/* Session History — below roles on left column */}
-            <SessionHistory
-              sessions={history}
-              onClear={() => setHistory([])}
-            />
           </motion.aside>
 
           {/* RIGHT COLUMN */}
           <div className="flex flex-col gap-4 min-w-0">
+            {/* Standalone drill (launched from Drills tab, no active session) */}
+            {activeDrill && !feedback && !isFeedbackLoading && !sessionActive && (
+              <DrillMode
+                drill={activeDrill}
+                onComplete={() => {
+                  trackDrillCompletion(activeDrill.category);
+                  setActiveDrill(null);
+                  setPracticeTab("drills");
+                }}
+                onDismiss={() => {
+                  setActiveDrill(null);
+                  setPracticeTab("drills");
+                }}
+              />
+            )}
             <motion.main
               initial={{ opacity: 0, x: 12 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex flex-col card-elevated overflow-hidden flex-1"
+              className={`flex flex-col card-elevated overflow-hidden flex-1 ${activeDrill && !feedback && !isFeedbackLoading && !sessionActive ? "hidden" : ""}`}
             >
               {/* Voice Interview Screen — dedicated UI for turn-based voice sessions */}
               {isVoiceInterviewMode && (
@@ -1719,6 +1806,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                           setActiveSDRRound(null);
                           setSdrProgress(loadSDRTrackProgress());
                           setActiveDrill(null);
+                          setPracticeTab("practice");
                         }}
                         onTrySameRole={() => {
                           markFirstSessionRetried();
