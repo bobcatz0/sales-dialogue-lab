@@ -169,7 +169,7 @@ export default function ChallengeHero() {
 
               <p className="text-sm text-muted-foreground">
                 <Zap className="h-3.5 w-3.5 text-primary inline mr-1.5 -mt-0.5" />
-                {challenge.successLabel}
+                60-second challenge · Beginner friendly
               </p>
 
               <Button variant="hero" className="w-full h-12 text-base gap-2" asChild>
