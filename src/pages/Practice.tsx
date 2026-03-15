@@ -1306,7 +1306,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                 )}
 
                 {/* Interviewer Personality Selector */}
-                {(selectedEnv === "interview" || selectedEnv === "final-round") && !selectedRole && (
+                {selectedEnv && !selectedRole && (
                   <div className="mb-4">
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Interviewer Personality
