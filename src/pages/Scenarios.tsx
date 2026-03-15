@@ -501,7 +501,7 @@ const Scenarios = () => {
                       className="w-full h-9 text-xs gap-1.5 group-hover:gap-2.5 transition-all"
                       asChild
                     >
-                      <a href={`/practice?env=${scenario.env}&role=${scenario.role}&topRep=${topReps.get(`${scenario.env}:${scenario.role}`)?.score ?? ""}`}>
+                      <a href={`/practice?env=${scenario.env}&role=${scenario.role}&personality=${selectedPersonality}&topRep=${topReps.get(`${scenario.env}:${scenario.role}`)?.score ?? ""}`}>
                         {topReps.has(`${scenario.env}:${scenario.role}`) ? "Beat the Top Rep" : "Start Challenge"} <ArrowRight className="h-3.5 w-3.5" />
                       </a>
                     </Button>
