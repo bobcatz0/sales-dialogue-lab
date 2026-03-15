@@ -319,6 +319,39 @@ const Scenarios = () => {
           </div>
         </div>
 
+        {/* Personality Selector */}
+        <div className="max-w-5xl mx-auto mb-8">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            Interviewer Personality
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {PERSONALITIES.map((p) => {
+              const isSelected = selectedPersonality === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => setSelectedPersonality(p.id)}
+                  className={`rounded-xl border p-3 text-left transition-all duration-200 cursor-pointer ${
+                    isSelected
+                      ? "border-primary/60 bg-primary/5 shadow-[0_0_16px_hsl(var(--primary)/0.08)]"
+                      : "border-border bg-card hover:border-border/80"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-base">{p.icon}</span>
+                    <span className={`text-xs font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
+                      {p.label}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    {p.description}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Single Scenarios Header */}
         <div className="flex items-center gap-2 mb-6 max-w-5xl mx-auto">
           <Swords className="h-4 w-4 text-primary" />
