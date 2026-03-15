@@ -199,7 +199,7 @@ export default function ScenarioChainCard({ chain, progress, userRank, onReset, 
                 className="flex-1 h-9 text-xs gap-1.5"
                 asChild
               >
-                <a href={`/practice?env=${chain.stages[0].env}&role=${chain.stages[0].role}&chain=${chain.id}&stage=0`}>
+                <a href={`/practice?env=${chain.stages[0].env}&role=${chain.stages[0].role}&chain=${chain.id}&stage=0&personality=${personality}`}>
                   Replay <ArrowRight className="h-3.5 w-3.5" />
                 </a>
               </Button>
