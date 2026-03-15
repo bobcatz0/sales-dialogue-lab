@@ -13,7 +13,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Volume2, VolumeX, RotateCcw, StopCircle,
-  MessageSquare, Loader2,
+  MessageSquare, Loader2, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VoiceRecorder } from "./VoiceRecorder";
@@ -58,6 +58,8 @@ export interface VoiceInterviewScreenProps {
   textModeFallbackEnabled?: boolean;
   /** True while feedback is loading — disables End Session */
   isFeedbackLoading?: boolean;
+  /** Show "Answer in 1–3 clear sentences" helper tip for first-time voice users */
+  showHelperTip?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -140,6 +142,7 @@ export function VoiceInterviewScreen({
   onTextModeFallbackToggle,
   textModeFallbackEnabled = false,
   isFeedbackLoading = false,
+  showHelperTip = false,
 }: VoiceInterviewScreenProps) {
   // Derive display data from messages
   const prospectMsgs = messages.filter((m) => m.role === "prospect");
@@ -304,6 +307,16 @@ export function VoiceInterviewScreen({
           )}
         </AnimatePresence>
       </div>
+
+      {/* ── First-session helper tip ──────────────────────────── */}
+      {showHelperTip && (
+        <div className="shrink-0 mx-4 mb-1 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-1.5 flex items-center gap-2">
+          <Info className="h-3 w-3 text-amber-500 shrink-0" />
+          <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+            Answer in 1–3 clear sentences.
+          </p>
+        </div>
+      )}
 
       {/* ── Interaction area ──────────────────────────────────── */}
       <div className="shrink-0 border-t border-border">

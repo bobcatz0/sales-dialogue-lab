@@ -90,6 +90,14 @@ import {
 import { processPromoSession, loadPromoSeries, type PromoSeriesState } from "@/components/practice/promotionSeries";
 import { pushActivityEvent } from "@/components/practice/activityFeed";
 import { buildPersonalityPrompt, PERSONALITIES, type Personality } from "@/components/practice/interviewerPersonality";
+import {
+  hasSeenVoiceOnboarding,
+  setSeenVoiceOnboarding,
+  getVoiceSessionCount,
+  incrementVoiceSessionCount,
+  VOICE_STARTER_ROLE_IDS,
+} from "@/components/practice/voiceOnboarding";
+import { VoiceOnboardingModal } from "@/components/practice/VoiceOnboardingModal";
 
 // --- Streaming ---
 
@@ -215,7 +223,9 @@ const PracticePage = () => {
   const [coldCallTextMode, setColdCallTextMode] = useState(false);
   const [validationOn, setValidationOn] = useState(() => isValidationMode());
   const [personality, setPersonality] = useState<Personality>("neutral");
-   const timer = useCallTimer(sessionActive);
+  const [showVoiceOnboarding, setShowVoiceOnboarding] = useState(false);
+  const [isFirstVoiceSession, setIsFirstVoiceSession] = useState(() => getVoiceSessionCount() === 0);
+  const timer = useCallTimer(sessionActive);
   const voice = useVoiceSession();
   const mic = useMicPermission();
 
@@ -226,8 +236,13 @@ const PracticePage = () => {
   const filteredRoles = activeEnv
     ? roles.filter((r) => {
         if (!activeEnv.personaIds.includes(r.id)) return false;
-        // Hide voice-only roles unless voice mode is on or session already started with that role
-        if ((r as { voiceOnly?: boolean }).voiceOnly && !voice.voiceMode && selectedRole !== r.id) return false;
+        const isVoiceOnly = (r as { voiceOnly?: boolean }).voiceOnly;
+        // Hide voice-only roles when text mode is active (unless it's the currently active role)
+        if (isVoiceOnly && !voice.voiceMode && selectedRole !== r.id) return false;
+        // In first voice session, show only the 3 starter scenarios (unless it's the active role)
+        if (isVoiceOnly && voice.voiceMode && isFirstVoiceSession && selectedRole !== r.id) {
+          if (!(VOICE_STARTER_ROLE_IDS as readonly string[]).includes(r.id)) return false;
+        }
         return true;
       })
     : [];
@@ -237,6 +252,14 @@ const PracticePage = () => {
     if (paramVoice) voice.setVoiceMode(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /** Toggle voice mode. Shows onboarding modal on first activation. */
+  const handleVoiceModeToggle = useCallback((enabled: boolean) => {
+    if (enabled && !hasSeenVoiceOnboarding()) {
+      setShowVoiceOnboarding(true);
+    }
+    voice.setVoiceMode(enabled);
+  }, [voice]);
 
   // Load history on mount
   useEffect(() => {
@@ -303,6 +326,12 @@ const PracticePage = () => {
     sessionStartRef.current = Date.now();
     setSessionActive(true);
     sessionStartedWithRole.current = true;
+    // Track first voice session
+    const startingRole = roles.find((r) => r.id === id);
+    if ((startingRole as { voiceOnly?: boolean } | undefined)?.voiceOnly || voice.voiceMode || isColdCall) {
+      incrementVoiceSessionCount();
+      setIsFirstVoiceSession(getVoiceSessionCount() <= 1);
+    }
     // Randomly assign evaluator style for interview sessions
     const styles: EvaluatorStyle[] = ["analytical", "results-oriented", "behavioral"];
     evaluatorStyleRef.current = styles[Math.floor(Math.random() * styles.length)];
@@ -821,6 +850,13 @@ This evaluation style should subtly influence your questions and reactions. Do N
 
   return (
     <div className="min-h-screen bg-background">
+      <VoiceOnboardingModal
+        open={showVoiceOnboarding}
+        onDismiss={() => {
+          setSeenVoiceOnboarding();
+          setShowVoiceOnboarding(false);
+        }}
+      />
       <Navbar />
       <div className="container mx-auto px-4 md:px-6 pt-24 pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 lg:gap-6 min-h-[calc(100vh-8rem)]">
@@ -977,7 +1013,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
               <div className="mb-4 space-y-2">
                 <VoiceModeBanner
                   enabled={voice.voiceMode}
-                  onToggle={voice.setVoiceMode}
+                  onToggle={handleVoiceModeToggle}
                 />
                 {voice.voiceMode && (
                   <MicPreflight
@@ -1284,6 +1320,7 @@ This evaluation style should subtly influence your questions and reactions. Do N
                   }}
                   textModeFallbackEnabled={isColdCall ? coldCallTextMode : !voice.voiceMode}
                   isFeedbackLoading={isFeedbackLoading}
+                  showHelperTip={isFirstVoiceSession}
                 />
               )}
               {/* Chat Header — compact / call-style for cold call */}
